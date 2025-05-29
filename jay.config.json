@@ -1,0 +1,5 @@
+{
+  "buildPath": "./dist",
+  "include404": false,
+  "outputPath": "dist"
+}
