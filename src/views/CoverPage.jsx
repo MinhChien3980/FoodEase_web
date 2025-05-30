@@ -554,10 +554,10 @@ const CoverPage = () => {
                     component="img"
                     src={
                       setting?.landing_page_main_image ||
-                      "/assets/coverpage/cover_image_hero.jpg"
+                      "/assets/coverpage/index.jpg"
                     }
                     alt="Hero Image"
-                    className="object-fit"
+                    className="object-fit height100 width100"
                   />
                 </CardCover>
               </Card>
@@ -1050,9 +1050,9 @@ const CoverPage = () => {
         </Grid>
       </Box>
 
-      <Box width={"100%"} mt={2}>
+      {/* <Box width={"100%"} mt={2}>
         <DownloadApp />
-      </Box>
+      </Box> */}
 
       <Box
         className="full-width"

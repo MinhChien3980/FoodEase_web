@@ -86,12 +86,12 @@ const Homepage = () => {
       <Box mt={4}>
         <Services />
       </Box>
-      <Box mt={4}>
+      {/* <Box mt={4}>
         <DownloadApp />
       </Box>
       <Box mt={4}>
         <Faqs />
-      </Box>
+      </Box> */}
 
       <Box mt={4}>
         <Boxes />
