@@ -25,6 +25,7 @@ import {
 } from "@remixicon/react";
 import { Parallax } from "react-parallax";
 import { useTranslation } from "react-i18next";
+import { routes } from "@/lib/routes";
 
 const Footer = () => {
   const data = useSelector((state) => state.settings.value);
@@ -102,8 +103,7 @@ const Footer = () => {
                 </Typography>
                 <List sx={{ padding: 0 }}>
                   <ListItem sx={{ padding: 0 }}>
-                    {/* <Link href="/privacy-policy"> */}
-                    <Link href="#">
+                    <Link href={routes.privacyPolicy}>
                       <Typography
                         variant="body1"
                         sx={{
@@ -121,8 +121,7 @@ const Footer = () => {
                     </Link>
                   </ListItem>
                   <ListItem sx={{ padding: 0 }}>
-                    {/* <Link href="/terms-conditions"> */}
-                    <Link href="#">
+                    <Link href={routes.termsConditions}>
                       <Typography
                         variant="body1"
                         sx={{
@@ -140,8 +139,7 @@ const Footer = () => {
                     </Link>
                   </ListItem>
                   <ListItem sx={{ padding: 0 }}>
-                    {/* <Link href="/contact-us"> */}
-                    <Link href="#">
+                    <Link href={routes.contactUs}>
                       <Typography
                         variant="body1"
                         sx={{

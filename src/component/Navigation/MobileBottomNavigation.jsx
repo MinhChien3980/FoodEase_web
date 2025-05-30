@@ -32,6 +32,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import ExchangeDollarLineIcon from "remixicon-react/FileListLineIcon";
 import { logout } from "@/events/actions";
+import { routes } from "@/lib/routes";
 
 const TabButton = ({ icon, label, onClick, theme }) => (
   <Box
@@ -87,7 +88,7 @@ const MobileBottomNavigation = () => {
   const isSearchOpen = useSelector((state) => state.searchDrawer.isSearchOpen);
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollPosition, setLastScrollPosition] = useState(0); // Define lastScrollPosition
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
   const handleNavigate = (path) => () => {
     setProfileOpen(false);
@@ -102,9 +103,9 @@ const MobileBottomNavigation = () => {
       setIndex(2);
     } else {
       const currentPath = router.pathname;
-      if (currentPath === "/home") {
+      if (currentPath === routes.home) {
         setIndex(0);
-      } else if (currentPath === "/user/favourites") {
+      } else if (currentPath === routes.user.favorites) {
         setIndex(1);
       }
     }
@@ -122,9 +123,9 @@ const MobileBottomNavigation = () => {
 
   useEffect(() => {
     const path = router.pathname;
-    if (path === "/home") {
+    if (path === routes.home) {
       setIndex(0);
-    } else if (path === "/user/favourites") {
+    } else if (path === routes.user.favorites) {
       if (!authentication) {
         toast.error("Please Login First!");
         setIndex(0);
@@ -160,86 +161,77 @@ const MobileBottomNavigation = () => {
       sx={{
         position: "fixed",
         bottom: 0,
-        zIndex: 999,
-        width: "100%",
-        transition: "transform 0.3s",
+        left: 0,
+        right: 0,
+        zIndex: theme.zIndex.modal,
+        display: { xs: "block", md: "block", lg: "none" },
         transform: isVisible ? "translateY(0)" : "translateY(100%)",
+        transition: "transform 0.3s ease-in-out",
       }}
     >
-      <Tabs
-        size="lg"
-        aria-label="Bottom Navigation"
-        value={index}
-        onChange={handleTabChange}
-        sx={(theme) => ({
-          p: 1,
-          backgroundColor:
-            theme.palette.mode === "dark"
-              ? theme.palette.body
-              : theme.palette.primary[300],
-          borderRadius: "16px 8px 0px 0px",
-          mx: "auto",
-        })}
+      <Box
+        sx={{
+          backgroundColor: theme.palette.background.surface,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.shadow.lg,
+        }}
       >
-        <TabList
-          variant="plain"
+        <Tabs
           size="sm"
-          disableUnderline
+          value={index}
+          onChange={handleTabChange}
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            p: 0,
-            borderRadius: "lg",
-            py: 0.5,
+            [`& .${tabClasses.root}`]: {
+              flex: 1,
+              fontSize: "xs",
+              fontWeight: "md",
+              color: theme.palette.text.secondary,
+              [`&.${tabClasses.selected}`]: {
+                color: theme.palette.primary.solidBg,
+              },
+            },
           }}
         >
-          {[
-            {
-              icon: <RiHome4Fill />,
-              onClick: handleNavigate("/home"),
-            },
-            {
-              icon: <RiHeartLine />,
-              onClick: authentication
-                ? handleNavigate("/user/favorites/")
-                : () => toast.error("Please Login First!"),
-            },
-            {
-              icon: <RiSearchLine />,
-              onClick: handleSearchButtonClick,
-            },
-            {
-              icon: <RiUserFill />,
-              onClick: authentication
-                ? handleNavigate("/user/profile/")
-                : () => toast.error("Please Login First!"),
-            },
-          ].map((item, idx) => (
-            <Tab
-              key={idx}
-              disableIndicator
-              orientation="vertical"
-              {...(index === idx && {
-                sx: {
-                  backgroundColor: `${theme.palette.primary[50]}!important`,
-                  color:
-                    theme.palette.mode === "dark" && index === idx
-                      ? theme.palette.common.black
-                      : theme.palette.mode === "dark"
-                      ? theme.palette.common.white
-                      : theme.palette.common.black,
-                  boxShadow:
-                    index === idx
-                      ? `0 0 8px ${theme.palette.common.white}`
-                      : "none",
-                },
-              })}
-            >
-              <TabButton {...item} theme={theme} />
+          <TabList
+            variant="plain"
+            sx={{
+              width: "100%",
+              justifyContent: "space-around",
+              backgroundColor: "transparent",
+              padding: "8px 0",
+            }}
+          >
+            <Tab onClick={handleNavigate(routes.home)}>
+              <TabButton
+                icon={<RiHome4Fill />}
+                label={t("home")}
+                theme={theme}
+              />
             </Tab>
-          ))}
-        </TabList>
-      </Tabs>
+            <Tab onClick={handleNavigate(routes.user.favorites)}>
+              <TabButton
+                icon={<RiHeartLine />}
+                label={t("favourites")}
+                theme={theme}
+              />
+            </Tab>
+            <Tab onClick={handleSearchButtonClick}>
+              <TabButton
+                icon={<RiSearchLine />}
+                label={t("search")}
+                theme={theme}
+              />
+            </Tab>
+            <Tab onClick={handleProfileOpen}>
+              <TabButton
+                icon={<RiUserFill />}
+                label={t("profile")}
+                theme={theme}
+              />
+            </Tab>
+          </TabList>
+        </Tabs>
+      </Box>
 
       {isProfileOpen && (
         <Drawer
@@ -262,7 +254,7 @@ const MobileBottomNavigation = () => {
                 fontSize={"md"}
                 fontWeight={"lg"}
                 component={Link}
-                href={"/user/my-orders"}
+                href={routes.user.orders}
                 startDecorator={<RiFilePaper2Line />}
                 onClick={handleProfileOpen}
               >
@@ -273,7 +265,7 @@ const MobileBottomNavigation = () => {
                 fontSize={"md"}
                 fontWeight={"lg"}
                 component={Link}
-                href={"/user/transactions"}
+                href={routes.user.transactions}
                 startDecorator={<ExchangeDollarLineIcon />}
                 onClick={handleProfileOpen}
               >
@@ -284,7 +276,7 @@ const MobileBottomNavigation = () => {
                 fontSize={"md"}
                 fontWeight={"lg"}
                 component={Link}
-                href={"/user/address"}
+                href={routes.user.addresses}
                 startDecorator={
                   <RiMapPin2Line color={theme.palette.text.primary} />
                 }
@@ -297,13 +289,13 @@ const MobileBottomNavigation = () => {
                 fontSize={"md"}
                 fontWeight={"lg"}
                 component={Link}
-                href={"/user/address"}
+                href={routes.index}
                 startDecorator={
                   <RiShutDownLine color={theme.palette.text.primary} />
                 }
                 onClick={() => {
                   handleProfileOpen();
-                  router.replace("/");
+                  router.replace(routes.index);
                   logout();
                 }}
               >

@@ -25,6 +25,7 @@ import {
 } from "@remixicon/react";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
+import { routes } from "@/lib/routes";
 
 const ProfileButton = () => {
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
@@ -49,75 +50,59 @@ const ProfileButton = () => {
   };
 
   const menuItems = [
-    { label: t("my-profile"), icon: <RiUserLine />, route: "/user/profile" },
+    { label: t("my-profile"), icon: <RiUserLine />, route: routes.user.profile },
     {
       label: t("my-orders"),
       icon: <RiFileList3Line />,
-      route: "/user/orders",
+      route: routes.user.orders,
     },
     {
       label: t("favourites"),
       icon: <RiHeartLine />,
-      route: "/user/favorites",
+      route: routes.user.favorites,
     },
     {
       label: t("Addresses"),
       icon: <RiMapPinLine />,
-      route: "/user/addresses",
+      route: routes.user.addresses,
     },
     {
       label: t("notifications"),
       icon: <RiNotification3Line />,
-      route: "/notifications",
+      route: routes.notifications,
     },
   ];
 
   return (
     <>
       <Box sx={{ display: { xs: "none", lg: "block" } }}>
-        <Dropdown open={open} onOpenChange={(_, newOpen) => setOpen(newOpen)}>
+        <Dropdown>
           <MenuButton
+            variant="plain"
+            size="sm"
             sx={{
+              maxWidth: "32rem",
+              minHeight: "2rem",
+              backgroundColor: "transparent",
               border: "none",
-              ":hover": {
-                backgroundColor: "transparent",
-              },
             }}
+            endDecorator={
+              !open ? <ArrowDownSLineIcon /> : <ArrowUpSLineIcon />
+            }
+            onClick={() => setOpen(!open)}
           >
-            <Avatar
-              variant="soft"
-              src={userData?.user_profile || defaultImage}
-              alt="User Profile"
-              sx={{
-                width: 44,
-                height: 44,
-                overflow: "hidden",
-                transition: "transform 0.3s ease",
-                "&:hover": {
-                  "& img": {
-                    transform: "scale(1.1)",
-                  },
-                },
-                "& img": {
-                  transition: "transform 0.3s ease",
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                },
-              }}
-            />
-            <Typography variant="body1" ml={0.5}>
-              {userData?.username}
-            </Typography>
-            <Box ml={0.5} pt={1}>
-              {open ? (
-                <ArrowUpSLineIcon color={theme.palette.primary[500]} />
-              ) : (
-                <ArrowDownSLineIcon color={theme.palette.primary[500]} />
-              )}
+            <Box display="flex" alignItems="center" gap={2}>
+              <Avatar
+                src={userData?.user_profile}
+                alt={defaultImage}
+                sx={{
+                  height: 45,
+                  width: 45,
+                  borderRadius: "50%",
+                }}
+              />
             </Box>
           </MenuButton>
-
           <Menu>
             {menuItems.map((item, index) => (
               <MenuItem
@@ -148,8 +133,7 @@ const ProfileButton = () => {
       </Box>
 
       <Box sx={{ display: { xs: "block", lg: "none" } }}>
-        {/* <Link href="/user/profile" passHref> */}
-        <Link href="#" target="_self">
+        <Link href={routes.user.profile} target="_self">
           <Box
             display="flex"
             alignItems="center"

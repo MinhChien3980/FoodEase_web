@@ -25,6 +25,8 @@ import DarkModeToggle from "@/component/ToggleComponents/DarkModeToggle";
 import { FlagIcon } from "react-flag-kit";
 import FirebaseData from "@/@core/firebase";
 import { RiNotification3Line } from "@remixicon/react";
+import { routes, navigationMenus, isActiveRoute } from "@/lib/routes";
+import { useRouter } from "next/router";
 
 // Dynamically import components with SSR disabled
 const Link = dynamic(() => import("next/link"), {
@@ -54,6 +56,8 @@ const Navbar = () => {
   const cartItemsCount = useSelector((state) => state.cart?.data)?.length;
 
   const { t, i18n } = useTranslation();
+
+  const router = useRouter();
 
   useEffect(() => {
     const handleLogoSource = () => {
@@ -98,8 +102,7 @@ const Navbar = () => {
         gap={3}
       >
         <Box height={"50px"} width={"200px"}>
-          {/* <Link href="/home" underline="none" color="inherit" height={"100%"}> */}
-          <Link href="#" target="_self">
+          <Link href={routes.home} target="_self">
             {logoSource && (
               <Box
                 component="img"
@@ -124,30 +127,25 @@ const Navbar = () => {
           <LocationModal />
         </Box>
 
-        {/* <Link href="/categories" underline="none" color="inherit"> */}
-        <Link href="#" target="_self">
-          <Typography sx={{ fontWeight: "lg", fontSize: "lg" }}>
-            {t("Categories")}
-          </Typography>
-        </Link>
-        {/* <Link href="/products" underline="none" color="inherit"> */}
-        <Link href="#" target="_self">
-          <Typography sx={{ fontWeight: "lg", fontSize: "lg" }}>
-            {t("Products")}
-          </Typography>
-        </Link>
-        {/* <Link href="/offers" underline="none" color="inherit"> */}
-        <Link href="#" target="_self">
-          <Typography sx={{ fontWeight: "lg", fontSize: "lg" }}>
-            {t("offers")}
-          </Typography>
-        </Link>
-        {/* <Link href="/restaurants" underline="none" color="inherit"> */}
-        <Link href="#" target="_self">
-          <Typography sx={{ fontWeight: "lg", fontSize: "lg" }}>
-            {t("restaurants")}
-          </Typography>
-        </Link>
+        {/* Navigation menu items */}
+        {navigationMenus.main.map((item) => (
+          <Link key={item.label} href={item.href} target="_self">
+            <Typography 
+              sx={{ 
+                fontWeight: "lg", 
+                fontSize: "lg",
+                color: isActiveRoute(router.pathname, item.href) ? 
+                  theme.palette.primary[500] : 
+                  theme.palette.text.primary,
+                '&:hover': {
+                  color: theme.palette.primary[500]
+                }
+              }}
+            >
+              {t(item.label)}
+            </Typography>
+          </Link>
+        ))}
       </Box>
 
       <Box
@@ -160,12 +158,12 @@ const Navbar = () => {
           <SearchModal displayType={"icon"} />
         </Box>
         <Box mt={1} ml={-1}>
-          <Link href={"/notifications"}>
+          <Link href={routes.notifications}>
             <RiNotification3Line color={theme.palette.text.primary} />
           </Link>
         </Box>
         {isLogin ? (
-          <Link href={"/cart"}>
+          <Link href={routes.cart}>
             <Badge badgeContent={cartItemsCount} variant="solid" size="sm">
               <ShoppingCartLineIcon color={theme.palette.text.primary} />
             </Badge>

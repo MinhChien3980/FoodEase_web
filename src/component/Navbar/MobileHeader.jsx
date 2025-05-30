@@ -33,6 +33,7 @@ import dynamic from "next/dynamic";
 import { useTranslation } from "react-i18next";
 import { logout } from "@/events/actions";
 import FirebaseData from "@/@core/firebase";
+import { routes, navigationMenus } from "@/lib/routes";
 
 const LoginModel = dynamic(() => import("../Models/LoginModel"), {
   ssr: false,
@@ -108,33 +109,26 @@ const MobileNavigation = () => {
     setOpen(false);
   };
 
-  const menuItems = useMemo(
-    () => [
-      { label: "Categories", icon: RiLayoutGrid2Fill, href: "/categories" },
-      { label: "offers", icon: RiDiscountPercentLine, href: "/offers" },
-      { label: "Products", icon: RiStackLine, href: "/products" },
-      { label: "restaurants", icon: RiRestaurantLine, href: "/restaurants" },
-    ],
-    []
-  );
+  // Use centralized navigation menus
+  const menuItems = useMemo(() => navigationMenus.main, []);
 
   const loggedInMenuItems = useMemo(
     () => [
       {
         label: "cart",
         icon: RiShoppingCartLine,
-        href: "/cart",
+        href: routes.cart,
         badge: cartData.length,
       },
-      { label: "my-orders", icon: RiFileList3Line, href: "/user/orders" },
+      { label: "my-orders", icon: RiFileList3Line, href: routes.user.orders },
       {
         label: "notifications",
         icon: RiNotification3Line,
-        href: "/notifications",
+        href: routes.notifications,
       },
-      { label: "Wallet", icon: RiWalletFill, href: "/user/wallet" },
-      { label: "Transactions", icon: RiBankFill, href: "/user/transactions" },
-      { label: "Addresses", icon: RiMapPinLine, href: "/user/addresses" },
+      { label: "Wallet", icon: RiWalletFill, href: routes.user.wallet },
+      { label: "Transactions", icon: RiBankFill, href: routes.user.transactions },
+      { label: "Addresses", icon: RiMapPinLine, href: routes.user.addresses },
     ],
     [cartData.length]
   );
@@ -174,7 +168,7 @@ const MobileNavigation = () => {
       >
         <Box
           component={Link}
-          href="/home"
+          href={routes.home}
           display="flex"
           alignItems="center"
           justifyContent={"start"}

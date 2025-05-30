@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { routes } from "@/lib/routes";
 
 const ProfileNavigation = () => {
   const { t } = useTranslation();
@@ -16,10 +17,10 @@ const ProfileNavigation = () => {
   const router = useRouter();
 
   const navItems = [
-    { icon: RiShoppingCart2Fill, label: "cart", href: "/cart" },
-    { icon: RiFileList3Fill, label: "my-orders", href: "/user/orders" },
-    { icon: RiMapPinFill, label: "Addresses", href: "/user/addresses" },
-    { icon: RiWalletFill, label: "Wallet", href: "/user/wallet" },
+    { icon: RiShoppingCart2Fill, label: "cart", href: routes.cart },
+    { icon: RiFileList3Fill, label: "my-orders", href: routes.user.orders },
+    { icon: RiMapPinFill, label: "Addresses", href: routes.user.addresses },
+    { icon: RiWalletFill, label: "Wallet", href: routes.user.wallet },
   ];
 
   const iconWrapper = {

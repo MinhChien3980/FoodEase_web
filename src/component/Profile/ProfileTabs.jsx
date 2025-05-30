@@ -22,6 +22,7 @@ import {
   RiNotification3Fill,
 } from "@remixicon/react";
 import { useTranslation } from "react-i18next";
+import { routes } from "@/lib/routes";
 
 // Define styled icons with a fixed color
 const StyledIcon = styled(({ icon: Icon, ...props }) => <Icon {...props} />)`
@@ -82,27 +83,27 @@ const ProfileTabs = () => {
     {
       icon: RiFileList3Fill,
       label: t("my-orders"),
-      link: "/user/orders",
+      link: routes.user.orders,
     },
     {
       icon: RiWalletFill,
       label: t("Wallet"),
-      link: "/user/wallet",
+      link: routes.user.wallet,
     },
     {
       icon: RiMapPinFill,
       label: t("Addresses"),
-      link: "/user/addresses",
+      link: routes.user.addresses,
     },
     {
       icon: RiNotification3Fill,
       label: t("notifications"),
-      link: "/notifications",
+      link: routes.notifications,
     },
     {
       icon: RiBankFill,
       label: t("Transactions"),
-      link: "/user/transactions",
+      link: routes.user.transactions,
     },
   ];
 
