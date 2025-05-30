@@ -71,6 +71,7 @@ const GET_MIDTRANS_TRANSACTION_STATUS = "get_midtrans_transaction_status";
 const MIDTRANS_WALLET_TRANSACTION = "midtrans_wallet_transaction";
 const PHONEPE_WEB = "phonepe_web";
 const GET_RESTAURANTS_ALL = "restaurants/all";
+const GET_MENU_ITEMS_ALL = "menu-items/all";
 
 let isHandlingUnauthorized = false; // Flag to prevent multiple retries
 
@@ -1340,6 +1341,17 @@ export const get_restaurants_all = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching restaurants:", error);
+    throw error;
+  }
+};
+
+// Thêm function mới để lấy menu items
+export const get_menu_items = async () => {
+  try {
+    const response = await axios.get(GET_MENU_ITEMS_ALL);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching menu items:", error);
     throw error;
   }
 };

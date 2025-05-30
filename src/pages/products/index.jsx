@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { get_products } from "@/interceptor/api";
+import { get_menu_items } from "@/interceptor/api";
 import { Box, Grid, CircularProgress, Typography } from "@mui/joy";
 import dynamic from "next/dynamic";
 import debounce from "lodash.debounce";
@@ -17,17 +17,48 @@ import ProductFlatCardSkeleton from "../../component/Skeleton/ProductFlatCardSke
 import FilterSection from "../../component/RestaurantsPage/FilterSection";
 import ProductCard from "@/component/Cards/ProductCard";
 
-const Index = () => {
-  const [products, setProducts] = useState([]);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [viewMode, setViewMode] = useState("list");
-  const limit = 16;
-  const [searchQuery, setSearchQuery] = useState("");
+// Component wrapper để handle image loading với fallback
+const ImageWithFallback = ({ src, alt, ...props }) => {
+  const [imgSrc, setImgSrc] = useState(src);
   const [isLoading, setIsLoading] = useState(true);
 
-  const observerRef = useRef(null);
-  const city_id = localStorage.getItem("city");
+  const handleError = () => {
+    console.log(`Failed to load image: ${imgSrc}, falling back to default`);
+    setImgSrc("/assets/images/default-food.jpg");
+    setIsLoading(false);
+  };
+
+  const handleLoad = () => {
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    setImgSrc(src);
+    setIsLoading(true);
+  }, [src]);
+
+  return (
+    <img
+      {...props}
+      src={imgSrc}
+      alt={alt}
+      onError={handleError}
+      onLoad={handleLoad}
+      style={{ 
+        ...props.style,
+        opacity: isLoading ? 0.7 : 1,
+        transition: 'opacity 0.3s ease'
+      }}
+    />
+  );
+};
+
+const Index = () => {
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("list");
 
   const [prefill, setPrefill] = useState({
     order: "DESC",
@@ -39,83 +70,115 @@ const Index = () => {
 
   const { t } = useTranslation();
 
-  const fetchProducts = async (reset = false) => {
-    if (!hasMore && !reset) return;
+  // Adapter function để chuyển đổi data từ menu-items API thành format mà ProductCard expect
+  const adaptMenuItemToProduct = (menuItem) => {
+    // Chuyển đổi đường dẫn hình ảnh từ imageUrl
+    let imageUrl = "/assets/images/default-food.jpg"; // fallback image
+    
+    if (menuItem.imageUrl) {
+      // Kiểm tra xem imageUrl đã là URL đầy đủ chưa
+      if (menuItem.imageUrl.startsWith('http://') || menuItem.imageUrl.startsWith('https://')) {
+        imageUrl = menuItem.imageUrl;
+      } else {
+        // Nếu là đường dẫn local (E:/images/f1.jpg), chuyển thành URL server
+        const fileName = menuItem.imageUrl.split(/[/\\]/).pop(); // xử lý cả / và \ 
+        imageUrl = `http://localhost:8080/images/${fileName}`;
+        
+        // Log để debug
+        console.log(`Original imageUrl: ${menuItem.imageUrl}`);
+        console.log(`Converted imageUrl: ${imageUrl}`);
+        console.log(`Filename: ${fileName}`);
+      }
+    }
+
+    return {
+      id: menuItem.id,
+      name: menuItem.name,
+      image: imageUrl,
+      short_description: menuItem.description,
+      indicator: 1, // default value
+      variants: [
+        {
+          id: menuItem.id,
+          price: menuItem.price.toString(),
+          special_price: "0", // menu-items không có special price
+        }
+      ],
+      total_allowed_quantity: 100, // default value
+      minimum_order_quantity: 1, // default value
+      rating: "0", // default value
+      min_max_price: {
+        discount_in_percentage: "0"
+      },
+      partner_details: [
+        {
+          partner_name: "Default Restaurant",
+          is_restro_open: "1"
+        }
+      ],
+      partner_id: menuItem.restaurantId,
+      product_add_ons: [],
+      no_of_ratings: "0",
+      is_spicy: "0",
+      best_seller: "0",
+      is_favorite: "0",
+      // Thêm price trực tiếp để dễ filter
+      price: menuItem.price,
+      description: menuItem.description
+    };
+  };
+
+  const fetchMenuItems = async () => {
     setIsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("offset", reset ? 0 : offset);
-      formData.append("limit", limit);
-      formData.append("city_id", city_id);
-      formData.append("search", searchQuery);
-      formData.append(
-        "order",
-        prefill.top_rated_foods == 0 ? prefill.order : ""
-      );
-      formData.append("vegetarian", prefill.vegetarian);
-      formData.append(
-        "min_price",
-        prefill.min_price > 0 ? prefill.min_price : ""
-      );
-      formData.append("max_price", prefill.max_price);
-      formData.append("top_rated_foods", prefill.top_rated_foods);
-      formData.append("sort", "pv.price");
-      formData.append("filter_by", "p.id");
-
-      const response = await get_products(formData);
-      const newProducts = response?.data || [];
-
-      setProducts((prevProducts) => {
-        const combinedProducts = reset
-          ? newProducts
-          : [...prevProducts, ...newProducts];
-        const uniqueProducts = Array.from(
-          new Set(combinedProducts.map((product) => product.id))
-        ).map((id) => combinedProducts.find((product) => product.id === id));
-        return uniqueProducts;
-      });
-
-      setOffset((prevOffset) => (reset ? limit : prevOffset + limit));
-      setHasMore(newProducts.length === limit);
+      const response = await get_menu_items();
+      if (response.code === 200) {
+        // Chuyển đổi dữ liệu từ menu-items thành format của products
+        const adaptedProducts = response.data.map(adaptMenuItemToProduct);
+        setProducts(adaptedProducts);
+        setFilteredProducts(adaptedProducts);
+      }
     } catch (error) {
-      console.error("Error fetching Products:", error);
+      console.error("Error fetching Menu Items:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const lastProductRef = useCallback(
-    (node) => {
-      if (isLoading) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          fetchProducts();
-        }
-      });
-      if (node) observerRef.current.observe(node);
-    },
-    [isLoading, hasMore]
-  );
-
   useEffect(() => {
-    fetchProducts(true);
+    fetchMenuItems();
     fbq.customEvent("products-page-view");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Lọc sản phẩm theo tìm kiếm và filters
   useEffect(() => {
+    let filtered = [...products];
+    
+    // Lọc theo search query
     if (searchQuery) {
-      debounceFetchProducts();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
-  }, [searchQuery]);
 
-  const debounceFetchProducts = debounce(() => {
-    setProducts([]);
-    setOffset(0);
-    setHasMore(true);
-    fetchProducts(true);
-  }, 250);
+    // Lọc theo giá
+    if (prefill.min_price > 1) {
+      filtered = filtered.filter(product => product.price >= prefill.min_price);
+    }
+    if (prefill.max_price < 5000) {
+      filtered = filtered.filter(product => product.price <= prefill.max_price);
+    }
+
+    // Sắp xếp
+    if (prefill.order === "ASC") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (prefill.order === "DESC") {
+      filtered.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredProducts(filtered);
+  }, [products, searchQuery, prefill]);
 
   const handleInputChange = (e) => {
     const query = e.target.value;
@@ -123,10 +186,7 @@ const Index = () => {
   };
 
   const handleApplyFilters = () => {
-    setProducts([]);
-    setOffset(0);
-    setHasMore(true);
-    fetchProducts(true);
+    // Filters sẽ được apply tự động qua useEffect
   };
 
   const toggleViewMode = (mode) => {
@@ -163,7 +223,7 @@ const Index = () => {
           spacing={2}
           width="100%"
         >
-          {products.map((product, index) => (
+          {filteredProducts.map((product, index) => (
             <Grid
               xs={12}
               sm={6}
@@ -171,7 +231,6 @@ const Index = () => {
               lg={4}
               xl={3}
               key={product.id}
-              ref={index === products.length - 1 ? lastProductRef : null}
             >
               {viewMode === "list" ? (
                 <ProductFlatCard Product={product} />
@@ -181,8 +240,8 @@ const Index = () => {
             </Grid>
           ))}
         </Grid>
-        {isLoading && <ProductFlatCardSkeleton count={limit} />}
-        {!isLoading && products.length === 0 && <NotFound />}
+        {isLoading && <ProductFlatCardSkeleton count={8} />}
+        {!isLoading && filteredProducts.length === 0 && <NotFound />}
       </Box>
     </>
   );
