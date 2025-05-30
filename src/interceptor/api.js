@@ -70,6 +70,7 @@ const CREATE_MIDTRANS_TRANSACTION = "create_midtrans_transaction";
 const GET_MIDTRANS_TRANSACTION_STATUS = "get_midtrans_transaction_status";
 const MIDTRANS_WALLET_TRANSACTION = "midtrans_wallet_transaction";
 const PHONEPE_WEB = "phonepe_web";
+const GET_RESTAURANTS_ALL = "restaurants/all";
 
 let isHandlingUnauthorized = false; // Flag to prevent multiple retries
 
@@ -1331,3 +1332,14 @@ export async function registerUser({ email, password, fullName, phone, cityId, l
     return { error: true, message: "Network error" };
   }
 }
+
+// get_restaurants_all - New function for fetching all restaurants
+export const get_restaurants_all = async () => {
+  try {
+    const response = await axios.get(GET_RESTAURANTS_ALL);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching restaurants:", error);
+    throw error;
+  }
+};

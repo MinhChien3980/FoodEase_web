@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get_partners } from "@/interceptor/api";
+import { get_restaurants_all } from "@/interceptor/api";
 import { Box, CircularProgress, Grid } from "@mui/joy";
 import dynamic from "next/dynamic";
 import * as fbq from "@/lib/fpixel";
@@ -16,26 +16,10 @@ import NotFound from "../NotFound";
 const Index = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [offset, setOffset] = useState(0);
-  const [totalItems, setTotalItems] = useState(0);
-  const [showLess, setShowLess] = useState(false);
-  const [showMore, setShowMore] = useState(true);
-  const [fetchedDataCount, setFetchedDataCount] = useState(0);
-  const limit = 12;
+  const { t } = useTranslation();
 
   useEffect(() => {
-    if (offset >= restaurants.length) {
-      fetchRestaurants();
-    } else {
-      updateShowButtons();
-    }
-    // eslint-disable-next-line
-  }, [offset]);
-
-  useEffect(() => {
-    updateShowButtons(); // eslint-disable-next-line
-  }, [restaurants, totalItems]);
-  useEffect(() => {
+    fetchRestaurants();
     // Track a page view when the component mounts
     fbq.customEvent("restaurants-Page-view");
   }, []);
@@ -43,49 +27,15 @@ const Index = () => {
   const fetchRestaurants = async () => {
     setLoading(true);
     try {
-      const response = await get_partners({ offset, limit });
+      const response = await get_restaurants_all();
       const newRestaurants = response?.data || [];
-      setFetchedDataCount(newRestaurants.length);
-      setTotalItems(response?.total || 0);
-
-      setRestaurants((prevRestaurants) => {
-        const combinedRestaurants = [...prevRestaurants, ...newRestaurants];
-        const uniqueRestaurants = Array.from(
-          new Set(
-            combinedRestaurants.map((restaurant) => restaurant.partner_id)
-          )
-        ).map((id) =>
-          combinedRestaurants.find((restaurant) => restaurant.partner_id === id)
-        );
-        return uniqueRestaurants;
-      });
+      setRestaurants(newRestaurants);
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  const updateShowButtons = () => {
-    setShowLess(offset > 0);
-    setShowMore(offset + limit < totalItems);
-  };
-
-  const handleShowMore = () => {
-    setOffset((prevOffset) => prevOffset + limit);
-  };
-
-  const handleShowLess = () => {
-    setRestaurants((prevRestaurants) =>
-      prevRestaurants.slice(0, -fetchedDataCount)
-    );
-    if (limit > fetchedDataCount) {
-      setFetchedDataCount(limit);
-    }
-    setOffset((prevOffset) => Math.max(prevOffset - limit, 0));
-  };
-
-  const { t } = useTranslation();
 
   return (
     <>
@@ -109,7 +59,7 @@ const Index = () => {
               width={"100%"}
             >
               {restaurants?.map((restaurant) => (
-                <Grid sm={6} lg={3} xl={2} key={restaurant.partner_id}>
+                <Grid sm={6} lg={3} xl={2} key={restaurant.id}>
                   <RestaurantCard restaurant={restaurant} />
                 </Grid>
               ))}
@@ -119,23 +69,6 @@ const Index = () => {
           )}
         </>
         {loading && <RestaurantsSkeleton />}
-        <Box className="flexProperties" sx={{ gap: 2 }}>
-          {showMore && (
-            <Button onClick={handleShowMore} disabled={loading} sx={{ mb: 2 }}>
-              {t("show-more")}
-            </Button>
-          )}
-          {showLess && (
-            <Button
-              variant="outlined"
-              disabled={loading}
-              onClick={handleShowLess}
-              sx={{ mb: 2 }}
-            >
-              {t("show-less")}
-            </Button>
-          )}
-        </Box>
       </Box>
     </>
   );

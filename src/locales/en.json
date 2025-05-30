@@ -329,5 +329,6 @@
   "clickToSelectCity": "Click to select {{cityName}} City",
   "click_fetch_current_city": "Click Fetch Current City",
   "type_to_choose_a_location": "Type to Choose a location",
-  "Become-A-Delivery-Rider": "Become A Delivery Rider"
+  "Become-A-Delivery-Rider": "Become A Delivery Rider",
+  "menu-items": "menu items"
 }

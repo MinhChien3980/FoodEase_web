@@ -1,49 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Box,
   Card,
-  Divider,
   Grid,
-  Tooltip,
   Typography,
   useTheme,
 } from "@mui/joy";
 import Link from "next/link";
-import TimeFillIcon from "remixicon-react/TimeFillIcon";
-import HeartLineIcon from "remixicon-react/HeartLineIcon";
-import HeartFillIcon from "remixicon-react/HeartFillIcon";
-import { useDispatch, useSelector } from "react-redux";
-import RatingBox from "../RatingBox/RatingBox";
-import FoodType from "../FoodType/FoodType";
 import { useTranslation } from "react-i18next";
-import { FavToggle, formatePrice } from "@/helpers/functionHelpers";
 
-const RestaurantCard = ({ restaurant, handleFavoriteToggleParent }) => {
-  const [isFavorite, setIsFavorite] = useState(restaurant?.is_favorite == "1");
-  const settings = useSelector((state) => state.settings.value);
+const RestaurantCard = ({ restaurant }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const restaurants = useSelector((state) => state.homepage?.restaurants);
 
-  useEffect(() => {
-    setIsFavorite(restaurant?.is_favorite);
-  }, [restaurant]);
+  // Array of default restaurant images
+  const defaultImages = [
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Restaurant interior
+    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Restaurant dining
+    "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Restaurant kitchen
+    "https://images.unsplash.com/photo-1552566626-52f8b828add9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Restaurant exterior
+    "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Modern restaurant
+  ];
 
-  const handleFavoriteToggle = async () => {
-    let x = await FavToggle({
-      isFavorite: isFavorite,
-      favType: "partners",
-      restaurant: restaurant,
-      setIsFavorite: setIsFavorite,
-      handleFavoriteToggleParent,
-    });
-  };
-  const handleMapClick = () => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${Number(
-      restaurant.latitude
-    )},${Number(restaurant.longitude)}`;
-    window.open(url, "_blank");
+  // Select image based on restaurant ID to ensure consistency
+  const getDefaultImage = () => {
+    const index = restaurant?.id ? restaurant.id % defaultImages.length : 0;
+    return defaultImages[index];
   };
 
   return (
@@ -68,127 +50,36 @@ const RestaurantCard = ({ restaurant, handleFavoriteToggleParent }) => {
               height: { xs: "130px", sm: "200px" },
               borderTopLeftRadius: "16px",
               borderTopRightRadius: "16px",
+              backgroundColor: theme.palette.background.body,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
             }}
           >
             <Box
-              component={Link}
-              href={"/restaurants/" + restaurant?.slug}
+              component="img"
+              src={getDefaultImage()}
+              alt={restaurant?.name || "Restaurant"}
               sx={{
                 width: "100%",
                 height: "100%",
+                objectFit: "cover",
                 borderTopLeftRadius: "16px",
                 borderTopRightRadius: "16px",
-                overflow: "hidden ",
               }}
-            >
-              <Box
-                component="img"
-                src={restaurant?.partner_profile}
-                alt="Partner profile"
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  overflow: "hidden ",
-                  objectFit: "cover",
-                  borderTopLeftRadius: "16px",
-                  borderTopRightRadius: "16px",
-                }}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                position: "absolute",
-                top: "12px",
-                right: "12px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px", // Space between heart and map icons
+              onError={(e) => {
+                // Fallback to a gradient background if image fails to load
+                e.target.style.display = "none";
+                e.target.parentElement.style.background = "linear-gradient(45deg, #FF6B6B, #4ECDC4)";
+                const fallbackText = document.createElement("div");
+                fallbackText.innerHTML = restaurant?.name?.[0]?.toUpperCase() || "R";
+                fallbackText.style.fontSize = "3rem";
+                fallbackText.style.color = "white";
+                fallbackText.style.fontWeight = "bold";
+                e.target.parentElement.appendChild(fallbackText);
               }}
-            >
-              {/* Google Map Icon without Background */}
-              <Tooltip title="Open in Google Maps" placement="bottom">
-                <Box
-                  sx={{
-                    borderRadius: "xl",
-                    padding: 0.5,
-                    backgroundColor: theme.palette.common.white,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src="/assets/images/google-map-pin.svg"
-                    alt="Google Map Icon"
-                    width={24}
-                    height={24}
-                    sx={{ cursor: "pointer" }}
-                    onClick={handleMapClick}
-                  />
-                </Box>
-              </Tooltip>
-
-              {/* Heart Icon with White Background */}
-              <Box
-                sx={{
-                  borderRadius: "xl",
-                  padding: 0.8,
-                  backgroundColor: theme.palette.common.white,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {isFavorite == "1" ? (
-                  <HeartFillIcon
-                    size={18}
-                    onClick={handleFavoriteToggle}
-                    color={theme.palette.primary[600]}
-                    cursor={"pointer"}
-                  />
-                ) : (
-                  <HeartLineIcon
-                    color={theme.palette.primary[600]}
-                    cursor={"pointer"}
-                    size={18}
-                    onClick={handleFavoriteToggle}
-                  />
-                )}
-              </Box>
-            </Box>
-
-            {/* cooking time */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "absolute",
-                whiteSpace: "nowrap",
-                bottom: { xs: "8%", sm: "7%" },
-                right: { xs: "8%", sm: "2.5%" },
-                backgroundColor: theme.palette.background.cookingTime,
-                borderRadius: theme.radius.lg,
-                width: { xs: "45%", sm: "30%" },
-                height: "20%",
-              }}
-            >
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: { xs: "xs", md: "sm" },
-                  padding: 0.5,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: theme.palette.text.black,
-                }}
-                startDecorator={<TimeFillIcon alignmentBaseline="center" />}
-              >
-                {restaurant?.partner_cook_time}
-              </Typography>
-            </Box>
+            />
           </Box>
         </Grid>
       </Grid>
@@ -199,7 +90,7 @@ const RestaurantCard = ({ restaurant, handleFavoriteToggleParent }) => {
         paddingX={2}
         paddingBottom={3}
         component={Link}
-        href={"/restaurants/" + restaurant?.slug}
+        href={"/restaurants/" + restaurant?.id}
       >
         <Grid xs={12}>
           <Typography
@@ -217,110 +108,46 @@ const RestaurantCard = ({ restaurant, handleFavoriteToggleParent }) => {
               WebkitLineClamp: 1,
             }}
           >
-            {restaurant?.partner_name &&
-              restaurant.partner_name.replace(/\\/g, "").replace(/\\'/g, "'")}
+            {restaurant?.name}
           </Typography>
         </Grid>
 
-        <Grid xs={8}>
+        <Grid xs={12}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontSize: { xs: "xs", md: "sm" },
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: "1.2em",
+              maxHeight: "2.4em",
+              marginBottom: 1,
+              color: theme.palette.text.secondary,
+            }}
+          >
+            {restaurant?.address}
+          </Typography>
+        </Grid>
+
+        <Grid xs={12}>
           <Box
             sx={{
               display: "flex",
-              flexDirection: "column",
-              height: "100%",
+              alignItems: "center",
+              whiteSpace: "nowrap",
             }}
           >
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: { xs: "xs", md: "sm" },
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                lineHeight: "1.2em",
-                maxHeight: "2.4em",
-                marginBottom: "auto",
+                color: theme.palette.text.tertiary,
               }}
             >
-              {restaurant?.description}
+              {restaurant?.menuItems?.length || 0} {t("menu-items")}
             </Typography>
           </Box>
         </Grid>
-
-        <Grid xs={4} display="flex" justifyContent="flex-end">
-          <RatingBox
-            partnerRating={restaurant.partner_rating}
-            totalRaters={restaurant.no_of_ratings}
-          />
-        </Grid>
-
-        <Grid xs={12}>
-          <Divider sx={{ my: 1, height: 2 }} />
-        </Grid>
-        {/* is restro open */}
-        {restaurant.is_restro_open === 0 ? (
-          <Typography
-            variant="h6"
-            component="h5"
-            color="error"
-            sx={{ fontWeight: 300 }}
-          >
-            {t("currently_closed")}
-          </Typography>
-        ) : null}
-
-        <Grid xs={10}>
-          {restaurant.price_for_one && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                fontSize="md"
-                sx={{
-                  color: theme.palette.text.currency,
-                  fontSize: { xs: "xs", md: "md" },
-                  fontWeight: "md",
-                  marginRight: 1, // Use theme.spacing(1) if you prefer
-                }}
-              >
-                {formatePrice(restaurant.price_for_one)}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontSize: { xs: "xs", md: "md" } }}
-              >
-                {t("for-one")}
-              </Typography>
-            </Box>
-          )}
-        </Grid>
-
-        <Grid
-          xs={2}
-          display="flex"
-          gap={1}
-          justifyContent="flex-end"
-          alignItems="center"
-        >
-          <FoodType foodIndicator={restaurant?.partner_indicator} />
-        </Grid>
-
-        {!restaurant.is_restro_open && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: theme.palette.primary[600],
-              position: "absolute",
-              bottom: 2,
-            }}
-          >
-            {t("currently-closed")}
-          </Typography>
-        )}
       </Grid>
     </Box>
   );
