@@ -772,7 +772,7 @@ const CartModel = ({
               )}
             </Grid>
 
-            {isAvailable ? (
+            {/* {isAvailable ? ( */}
               <Box
                 mt={1}
                 sx={{
@@ -890,18 +890,18 @@ const CartModel = ({
                   </Box>
                 </Box>
               </Box>
-            ) : (
-              <Alert
-                startDecorator={<RiErrorWarningFill size={28} />}
-                variant="soft"
-                color="danger"
-                sx={{ marginTop: 2, borderRadius: "xl" }}
-              >
-                <Typography textAlign={"center"} sx={{ fontWeight: "xl" }}>
-                  {availabilityMessage}
-                </Typography>
-              </Alert>
-            )}
+            {/* ) : ( */}
+              {/* <Alert */}
+                {/* // startDecorator={<RiErrorWarningFill size={28} />} */}
+                {/* // // variant="soft" */}
+                {/* color="danger" */}
+                {/* sx={{ marginTop: 2, borderRadius: "xl" }} */}
+              {/* > */}
+                {/* <Typography textAlign={"center"} sx={{ fontWeight: "xl" }}> */}
+                  {/* {availabilityMessage} */}
+                {/* </Typography> */}
+              {/* </Alert> */}
+            {/* )} */}
           </DialogContent>
         </DialogContent>
       </Dialog>
