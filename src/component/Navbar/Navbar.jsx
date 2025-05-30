@@ -76,8 +76,9 @@ const Navbar = () => {
   };
   const languageFlags = {
     en: <FlagIcon code="GB" size={24} />,
-    hi: <FlagIcon code="IN" size={24} />,
-    ar: <FlagIcon code="SA" size={24} />,
+    // hi: <FlagIcon code="IN" size={24} />,
+    // ar: <FlagIcon code="SA" size={24} />,
+    vi: <FlagIcon code="VN" size={24} />,
   };
 
   if (FirebaseData() === false) {
@@ -178,13 +179,13 @@ const Navbar = () => {
           <DarkModeToggle />
         </Box>
 
-        <IconButton onClick={toggleLayoutDirection} color="inherit" sx={{}}>
+        {/* <IconButton onClick={toggleLayoutDirection} color="inherit" sx={{}}>
           {layoutDirection == "rtl" ? (
             <TextDirectionRIcon size={"24px"} />
           ) : (
             <TextDirectionLIcon size={"24px"} />
           )}
-        </IconButton>
+        </IconButton> */}
 
         <Dropdown>
           <MenuButton
