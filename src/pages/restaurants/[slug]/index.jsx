@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { HeadTitle } from "@/component/HeadTitle";
 import PartnerBanner from "@/component/RestaurantsPage/PartnerBanner";
-import { get_categories, get_partners, get_products } from "@/interceptor/api";
+import { get_categories, get_partners, get_menu_items_by_restaurant } from "@/interceptor/api";
 import { Box } from "@mui/joy";
 import * as fbq from "@/lib/fpixel";
 const BreadCrumb = dynamic(() => import("@/component/BreadCrumps/BreadCrumb"), {
@@ -17,19 +17,17 @@ import PartnerBannerSkeleton from "@/component/Skeleton/PartnerBannerSkeleton";
 import CategoryTabs from "@/component/RestaurantsPage/CategoryTabs";
 
 const SpecificRestaurant = () => {
-  let partnerId0;
-
   const [restaurant, setRestaurant] = useState([]);
   const [products, setProducts] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [filteredMenuItems, setFilteredMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [slug, setSlug] = useState(null);
   const [Loading, setLoading] = useState(true);
-  const [partnerId, setPartnerId] = useState(null);
+  const [restaurantId, setRestaurantId] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
-  const [perPageProducts, setPerPageProducts] = useState(15);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [prefill, setPrefill] = useState({
     order: "DESC",
@@ -46,6 +44,7 @@ const SpecificRestaurant = () => {
   useEffect(() => {
     if (router.query.slug) {
       setSlug(router.query.slug);
+      setRestaurantId(router.query.slug);
     }
   }, [router.query.slug]);
 
@@ -57,17 +56,41 @@ const SpecificRestaurant = () => {
     // eslint-disable-next-line
   }, [slug]);
 
+  useEffect(() => {
+    if (restaurantId) {
+      getMenuItems();
+    }
+  }, [restaurantId]);
+
+  useEffect(() => {
+    // Update menu items with restaurant details when restaurant data becomes available
+    if (restaurant && restaurant.partner_name && menuItems.length > 0) {
+      const updatedItems = menuItems.map(item => ({
+        ...item,
+        partner_details: [
+          {
+            partner_name: restaurant.partner_name,
+            slug: slug
+          }
+        ]
+      }));
+      setMenuItems(updatedItems);
+      setFilteredMenuItems(updatedItems);
+    }
+  }, [restaurant, slug]);
+
+  useEffect(() => {
+    filterMenuItems();
+  }, [menuItems, selectedCategoryId, searchQuery, prefill]);
+
   const getPartners = async () => {
     try {
       const response = await get_partners({ slug });
       if (!response.error) {
-        partnerId0 = response.data[0].partner_id;
-        setPartnerId(response.data[0].partner_id);
         setRestaurant(response.data[0]);
         fbq.customEvent("specific-restaurants-Page-view", {
           name: response.data[0].partner_name,
         });
-        getProducts();
       }
     } catch (error) {
       console.error("Error fetching partners:", error);
@@ -85,78 +108,96 @@ const SpecificRestaurant = () => {
     }
   };
 
-  const getProducts = async (categoryId, searchQuery = "") => {
+  const getMenuItems = async () => {
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("product_id", "");
-      formData.append("category_slug", "");
-      formData.append("category_id", categoryId || "");
-      formData.append("search", searchQuery);
-      formData.append("limit", perPageProducts);
-      formData.append("offset", offset);
-      formData.append("partner_slug", slug || "");
-      formData.append(
-        "vegetarian",
-        prefill.vegetarian == 3 ? "" : prefill.vegetarian
-      );
-      formData.append(
-        "min_price",
-        prefill.min_price > 1 ? prefill.min_price : ""
-      );
-      formData.append("max_price", prefill.max_price);
-      formData.append("order", prefill.order);
-      formData.append("top_rated_foods", prefill.top_rated_foods);
-      formData.append(
-        "partner_id",
-        partnerId !== null ? partnerId : partnerId0
-      );
-      formData.append("sort", "pv.price");
-      formData.append("filter_by", "p.id");
-
-      const response = await get_products(formData);
-
-      if (!response.error) {
-        setProducts((prevProducts) => [...prevProducts, ...response.data]);
-        setHasMore(response.data.length === perPageProducts);
-        setOffset((prevOffset) => prevOffset + response.data.length);
-        setLoading(false);
-      } else {
-        setLoading(false);
+      const response = await get_menu_items_by_restaurant(restaurantId);
+      if (response.code === 200) {
+        // Transform the data to match the expected format
+        const transformedItems = response.data.map(item => ({
+          // Fields from API
+          id: item.id,
+          name: item.name,
+          short_description: item.description,
+          price: item.price,
+          image: item.imageUrl,
+          category_id: item.categoryId,
+          partner_id: item.restaurantId,
+          
+          // Minimum required fields for UI components
+          rating: 0,
+          indicator: 0,
+          variants: [
+            {
+              id: item.id,
+              price: item.price,
+              special_price: "0",
+              stock: 1
+            }
+          ],
+          partner_details: [
+            {
+              partner_name: "Restaurant",
+              slug: slug
+            }
+          ]
+        }));
+        setMenuItems(transformedItems);
+        setFilteredMenuItems(transformedItems);
       }
+      setLoading(false);
     } catch (error) {
+      console.error("Error fetching menu items:", error);
       setLoading(false);
     }
   };
 
-  const loadMoreProducts = debounce(() => {
-    if (!Loading) {
-      getProducts(selectedCategoryId);
+  const filterMenuItems = () => {
+    let filtered = [...menuItems];
+
+    // Filter by category
+    if (selectedCategoryId) {
+      filtered = filtered.filter(item => item.category_id === selectedCategoryId);
     }
-  }, 300);
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.short_description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by price range (only if API actually has price data)
+    if (prefill.min_price > 1) {
+      filtered = filtered.filter(item => item.price >= prefill.min_price);
+    }
+    if (prefill.max_price < 5000) {
+      filtered = filtered.filter(item => item.price <= prefill.max_price);
+    }
+
+    // Sort by order
+    if (prefill.order === "ASC") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (prefill.order === "DESC") {
+      filtered.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredMenuItems(filtered);
+    setProducts(filtered); // Set products for ProductsView component
+  };
 
   const handleSearch = debounce((query) => {
-    setProducts([]);
-    setOffset(0);
-    getProducts("", query);
+    setSearchQuery(query);
   }, 250);
 
   const handleInputChange = (e) => {
     const query = e.target.value;
     if (query.length === 0) {
-      setProducts([]);
-      setOffset(0);
-      getProducts();
+      setSearchQuery("");
     } else {
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        setPrefill({
-          order: "",
-          top_rated_foods: 0,
-          min_price: 1,
-          max_price: "",
-          vegetarian: "3",
-        });
         handleSearch(query);
       }, 1000);
     }
@@ -167,15 +208,11 @@ const SpecificRestaurant = () => {
   };
 
   const handleApplyFilters = () => {
-    setProducts([]);
-    setOffset(0);
-    getProducts();
+    filterMenuItems();
   };
 
   const handleTabChange = (event, newValue) => {
-    setProducts([]);
-    setOffset(0);
-    getProducts(newValue);
+    setSelectedCategoryId(newValue);
   };
 
   return (
@@ -213,11 +250,11 @@ const SpecificRestaurant = () => {
 
       <Box my={2} minHeight={"40vh"}>
         <ProductsView
-          products={products}
+          products={filteredMenuItems}
           viewMode={viewMode}
           Loading={Loading}
-          hasMore={hasMore}
-          loadMoreProducts={loadMoreProducts}
+          hasMore={false}
+          loadMoreProducts={() => {}}
         />
       </Box>
     </>

@@ -72,6 +72,7 @@ const MIDTRANS_WALLET_TRANSACTION = "midtrans_wallet_transaction";
 const PHONEPE_WEB = "phonepe_web";
 const GET_RESTAURANTS_ALL = "restaurants/all";
 const GET_MENU_ITEMS_ALL = "menu-items/all";
+const GET_MENU_ITEMS_BY_RESTAURANT = "menu-items/by-restaurant";
 
 let isHandlingUnauthorized = false; // Flag to prevent multiple retries
 
@@ -1352,6 +1353,17 @@ export const get_menu_items = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching menu items:", error);
+    throw error;
+  }
+};
+
+// get_menu_items_by_restaurant - New function for fetching menu items by restaurant ID
+export const get_menu_items_by_restaurant = async (restaurantId) => {
+  try {
+    const response = await axios.get(`${GET_MENU_ITEMS_BY_RESTAURANT}?restaurantId=${restaurantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching menu items by restaurant:", error);
     throw error;
   }
 };
