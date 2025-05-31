@@ -11,42 +11,23 @@ import {
   Tooltip,
   CardActions,
   Button,
+  Badge,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
-import RatingBox from "../common/RatingBox";
-import { formatPrice, isRestaurantOpen } from "../../utils/foodHelpers";
+import { Restaurant } from "../../services/restaurantService";
 
 interface RestaurantCardProps {
-  restaurant: {
-    id: string;
-    name: string;
-    slug: string;
-    image: string;
-    rating: number;
-    reviewCount: number;
-    cuisineType: string[];
-    address: string;
-    preparationTime: number;
-    deliveryFee: number;
-    minimumOrder: number;
-    openTime: string;
-    closeTime: string;
-    isActive: boolean;
-    isVerified: boolean;
-    totalOrders: number;
-    latitude?: number;
-    longitude?: number;
-  };
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  onView?: (id: string) => void;
-  onToggleStatus?: (id: string, status: boolean) => void;
+  restaurant: Restaurant;
+  onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
+  onView?: (id: number) => void;
+  onToggleStatus?: (id: number, status: boolean) => void;
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
@@ -59,13 +40,11 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
 
-  const isOpen = isRestaurantOpen(restaurant.openTime, restaurant.closeTime);
-
   const handleStatusToggle = async () => {
     if (onToggleStatus) {
       setIsLoading(true);
       try {
-        await onToggleStatus(restaurant.id, !restaurant.isActive);
+        await onToggleStatus(restaurant.id, true); // Assuming active by default
       } finally {
         setIsLoading(false);
       }
@@ -73,10 +52,26 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   };
 
   const handleMapClick = () => {
-    if (restaurant.latitude && restaurant.longitude) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`;
-      window.open(url, "_blank");
-    }
+    // Search for restaurant address on Google Maps
+    const searchQuery = encodeURIComponent(restaurant.address);
+    const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+    window.open(url, "_blank");
+  };
+
+  // Get unique categories from menu items
+  const categories = [...new Set(restaurant.menuItems.map(item => item.categoryName))];
+  const menuItemCount = restaurant.menuItems.length;
+
+  // Calculate price range
+  const prices = restaurant.menuItems.map(item => item.price);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
   };
 
   return (
@@ -93,7 +88,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
         transition: "all 0.3s ease-in-out",
       }}
     >
-      {/* Status Indicator */}
+      {/* Menu Items Badge */}
       <Box
         sx={{
           position: "absolute",
@@ -102,42 +97,29 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
           zIndex: 1,
         }}
       >
-        <Chip
-          label={restaurant.isActive ? "Active" : "Inactive"}
-          color={restaurant.isActive ? "success" : "error"}
-          size="small"
-          variant="filled"
-        />
-      </Box>
-
-      {/* Verification Badge */}
-      {restaurant.isVerified && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            zIndex: 1,
-          }}
-        >
+        <Badge badgeContent={menuItemCount} color="primary">
           <Chip
-            label="Verified"
+            label="Food"
             color="primary"
             size="small"
             variant="filled"
-            icon={<RestaurantIcon />}
+            icon={<RestaurantMenuIcon />}
           />
-        </Box>
-      )}
+        </Badge>
+      </Box>
 
-      {/* Restaurant Image */}
+      {/* Restaurant Image - Using placeholder since no image URL in API */}
       <CardMedia
         component="img"
         height="200"
-        image={restaurant.image || "/placeholder-restaurant.jpg"}
+        image="/placeholder-restaurant.jpg"
         alt={restaurant.name}
         sx={{
           objectFit: "cover",
+          backgroundColor: theme.palette.grey[200],
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       />
 
@@ -157,29 +139,20 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
           {restaurant.name}
         </Typography>
 
-        {/* Rating */}
-        <Box sx={{ mb: 1 }}>
-          <RatingBox
-            rating={restaurant.rating}
-            reviewCount={restaurant.reviewCount}
-            size="small"
-          />
-        </Box>
-
-        {/* Cuisine Types */}
+        {/* Categories */}
         <Box sx={{ mb: 2 }}>
-          {restaurant.cuisineType.slice(0, 3).map((cuisine, index) => (
+          {categories.slice(0, 3).map((category, index) => (
             <Chip
               key={index}
-              label={cuisine}
+              label={category}
               size="small"
               variant="outlined"
               sx={{ mr: 0.5, mb: 0.5 }}
             />
           ))}
-          {restaurant.cuisineType.length > 3 && (
+          {categories.length > 3 && (
             <Chip
-              label={`+${restaurant.cuisineType.length - 3} more`}
+              label={`+${categories.length - 3} more`}
               size="small"
               variant="outlined"
               sx={{ mr: 0.5, mb: 0.5 }}
@@ -204,50 +177,39 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
             >
               {restaurant.address}
             </Typography>
-            {restaurant.latitude && restaurant.longitude && (
-              <Tooltip title="Open in Google Maps">
-                <IconButton size="small" onClick={handleMapClick}>
-                  <LocationOnIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
+            <Tooltip title="Open in Google Maps">
+              <IconButton size="small" onClick={handleMapClick}>
+                <LocationOnIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Box>
 
-          {/* Timing and Status */}
+          {/* Menu Items Count */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <AccessTimeIcon fontSize="small" color="action" />
+            <RestaurantMenuIcon fontSize="small" color="action" />
             <Typography variant="body2" color="text.secondary">
-              {restaurant.preparationTime} mins
-            </Typography>
-            <Chip
-              label={isOpen ? "Open" : "Closed"}
-              size="small"
-              color={isOpen ? "success" : "error"}
-              variant="outlined"
-            />
-          </Box>
-
-          {/* Order Info */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mt: 1,
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Min: {formatPrice(restaurant.minimumOrder)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Delivery: {formatPrice(restaurant.deliveryFee)}
+              {menuItemCount} Food
             </Typography>
           </Box>
 
-          {/* Total Orders */}
-          <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-            {restaurant.totalOrders} total orders
-          </Typography>
+          {/* Price Range */}
+          {menuItemCount > 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mt: 1,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                From: {formatPrice(minPrice)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                To: {formatPrice(maxPrice)}
+              </Typography>
+            </Box>
+          )}
         </Box>
       </CardContent>
 
@@ -262,7 +224,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
               size="small"
               sx={{ flex: 1 }}
             >
-              View
+              View Menu
             </Button>
           )}
           {onEdit && (
@@ -290,22 +252,18 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
         </Box>
       </CardActions>
 
-      {/* Toggle Status Button */}
+      {/* Toggle Status Button - Optional since API doesn't have status field */}
       {onToggleStatus && (
         <Box sx={{ p: 2, pt: 0 }}>
           <Button
-            variant={restaurant.isActive ? "outlined" : "contained"}
-            color={restaurant.isActive ? "error" : "success"}
+            variant="contained"
+            color="success"
             fullWidth
             onClick={handleStatusToggle}
             disabled={isLoading}
             size="small"
           >
-            {isLoading
-              ? "Updating..."
-              : restaurant.isActive
-              ? "Deactivate"
-              : "Activate"}
+            {isLoading ? "Updating..." : "Active"}
           </Button>
         </Box>
       )}
