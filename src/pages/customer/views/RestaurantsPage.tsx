@@ -20,6 +20,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useLocation } from "react-router";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import RestaurantCard from "../../../components/restaurant/RestaurantCard";
@@ -38,6 +39,15 @@ const RestaurantsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 6;
+  const location = useLocation();
+
+  // Get initial category from navigation state (from HomePage)
+  useEffect(() => {
+    const navigationState = location.state as { selectedCategory?: string } | null;
+    if (navigationState?.selectedCategory) {
+      setSelectedCategory(navigationState.selectedCategory);
+    }
+  }, [location.state]);
 
   // Get all unique categories from all restaurants
   const getAllCategories = () => {

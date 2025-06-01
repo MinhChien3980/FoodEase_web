@@ -15,9 +15,11 @@ import {
   Avatar,
   Paper,
   InputBase,
+  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -30,105 +32,128 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import RestaurantCard from "../../../components/restaurant/RestaurantCard";
 import RatingBox from "../../../components/common/RatingBox";
 import { formatPrice } from "../../../utils/foodHelpers";
-
-// Mock data - replace with real API calls
-const mockRestaurants = [
-  {
-    id: "1",
-    name: "Pizza Palace",
-    slug: "pizza-palace",
-    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400",
-    rating: 4.5,
-    reviewCount: 128,
-    cuisineType: ["Italian", "Pizza"],
-    address: "123 Main St, Downtown",
-    preparationTime: 25,
-    deliveryFee: 2.99,
-    minimumOrder: 15.00,
-    openTime: "10:00",
-    closeTime: "23:00",
-    isActive: true,
-    isVerified: true,
-    totalOrders: 1250,
-    latitude: 40.7128,
-    longitude: -74.0060
-  },
-  {
-    id: "2",
-    name: "Burger King",
-    slug: "burger-king",
-    image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400",
-    rating: 4.2,
-    reviewCount: 89,
-    cuisineType: ["American", "Fast Food"],
-    address: "456 Oak Ave, Midtown",
-    preparationTime: 15,
-    deliveryFee: 1.99,
-    minimumOrder: 10.00,
-    openTime: "09:00",
-    closeTime: "22:00",
-    isActive: true,
-    isVerified: true,
-    totalOrders: 890,
-    latitude: 40.7589,
-    longitude: -73.9851
-  },
-  {
-    id: "3",
-    name: "Sushi Express",
-    slug: "sushi-express",
-    image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400",
-    rating: 4.8,
-    reviewCount: 267,
-    cuisineType: ["Japanese", "Sushi"],
-    address: "789 Pine St, Uptown",
-    preparationTime: 35,
-    deliveryFee: 3.99,
-    minimumOrder: 20.00,
-    openTime: "11:00",
-    closeTime: "22:30",
-    isActive: true,
-    isVerified: true,
-    totalOrders: 2100,
-    latitude: 40.7831,
-    longitude: -73.9712
-  }
-];
-
-const mockFoodCategories = [
-  { id: "1", name: "Pizza", icon: "🍕", count: 24 },
-  { id: "2", name: "Burgers", icon: "🍔", count: 18 },
-  { id: "3", name: "Sushi", icon: "🍣", count: 12 },
-  { id: "4", name: "Chinese", icon: "🥡", count: 15 },
-  { id: "5", name: "Indian", icon: "🍛", count: 20 },
-  { id: "6", name: "Mexican", icon: "🌮", count: 16 }
-];
+import { Restaurant, restaurantService } from "../../../services/restaurantService";
+import { Category, categoryService } from "../../../services/categoryService";
 
 const HomePage: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("New York, NY");
-  const [restaurants, setRestaurants] = useState(mockRestaurants);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [allRestaurants, setAllRestaurants] = useState<Restaurant[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
   const { t } = useTranslation();
+
+  // Fetch restaurants from API
+  const fetchRestaurants = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await restaurantService.getAllRestaurants();
+      setAllRestaurants(data);
+      setRestaurants(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch restaurants');
+      console.error('Error fetching restaurants:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      setCategoriesError(null);
+      const data = await categoryService.getAllCategories();
+      // Remove duplicates based on category name (since categories might be repeated across restaurants)
+      const uniqueCategories = data.filter((category, index, self) => 
+        index === self.findIndex(c => c.name === category.name)
+      );
+      setCategories(uniqueCategories);
+    } catch (err) {
+      setCategoriesError(err instanceof Error ? err.message : 'Failed to fetch categories');
+      console.error('Error fetching categories:', err);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
 
   const handleSearch = (query: string) => {
     // Filter restaurants based on search query
-    const filtered = mockRestaurants.filter(restaurant =>
+    const filtered = allRestaurants.filter(restaurant =>
       restaurant.name.toLowerCase().includes(query.toLowerCase()) ||
-      restaurant.cuisineType.some(cuisine => 
-        cuisine.toLowerCase().includes(query.toLowerCase())
+      restaurant.menuItems.some(item => 
+        item.name.toLowerCase().includes(query.toLowerCase()) ||
+        item.description.toLowerCase().includes(query.toLowerCase())
       )
     );
     setRestaurants(filtered);
   };
 
   useEffect(() => {
+    fetchRestaurants();
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     if (searchQuery.trim() === "") {
-      setRestaurants(mockRestaurants);
+      setRestaurants(allRestaurants);
     } else {
       handleSearch(searchQuery);
     }
-  }, [searchQuery]);
+  }, [searchQuery, allRestaurants]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        flexDirection: 'column',
+        gap: 2
+      }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" color="text.secondary">
+          {t('common.loading')}...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        flexDirection: 'column',
+        gap: 2,
+        textAlign: 'center',
+        p: 4
+      }}>
+        <Typography variant="h6" color="error">
+          {t('common.error')}: {error}
+        </Typography>
+        <Button 
+          variant="contained" 
+          onClick={fetchRestaurants}
+          startIcon={<RestaurantMenuIcon />}
+        >
+          {t('common.retry')}
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: theme.palette.grey[50] }}>
@@ -187,7 +212,7 @@ const HomePage: React.FC = () => {
                 <Grid item xs={4}>
                   <Box textAlign="center">
                     <Typography variant="h4" fontWeight="bold">
-                      500+
+                      {allRestaurants.length}+
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
                       {t("homePage.stats.restaurants")}
@@ -244,34 +269,104 @@ const HomePage: React.FC = () => {
           {t("homePage.browseByCategory.description")}
         </Typography>
         
+        {categoriesError && (
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+              {t('common.error')}: {categoriesError}
+            </Typography>
+            <Button 
+              variant="outlined" 
+              size="small"
+              onClick={fetchCategories}
+            >
+              {t('common.retry')}
+            </Button>
+          </Box>
+        )}
+        
         <Grid container spacing={3}>
-          {mockFoodCategories.map((category) => (
-            <Grid item xs={6} sm={4} md={2} key={category.id}>
-              <Card
-                sx={{
-                  p: 2,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: theme.shadows[8],
-                  },
-                }}
-              >
-                <Typography variant="h3" sx={{ mb: 1 }}>
-                  {category.icon}
-                </Typography>
-                <Typography variant="h6" fontWeight="600">
-                  {category.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {category.count} places
-                </Typography>
-              </Card>
-            </Grid>
-          ))}
+          {categoriesLoading 
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <Grid item xs={6} sm={4} md={2} key={index}>
+                  <Card sx={{ p: 2, textAlign: "center" }}>
+                    <Skeleton variant="text" height={60} sx={{ mb: 1 }} />
+                    <Skeleton variant="text" height={32} sx={{ mb: 1 }} />
+                    <Skeleton variant="text" height={24} />
+                  </Card>
+                </Grid>
+              ))
+            : categories.map((category, index) => {
+                // Get emoji based on category title or use a default one
+                const getCategoryIcon = (name: string) => {
+                  const lowerName = name.toLowerCase();
+                  if (lowerName.includes('pizza')) return '🍕';
+                  if (lowerName.includes('burger')) return '🍔';
+                  if (lowerName.includes('sushi') || lowerName.includes('japanese')) return '🍣';
+                  if (lowerName.includes('chinese')) return '🥡';
+                  if (lowerName.includes('indian')) return '🍛';
+                  if (lowerName.includes('mexican')) return '🌮';
+                  if (lowerName.includes('italian')) return '🍝';
+                  if (lowerName.includes('thai')) return '🍜';
+                  if (lowerName.includes('korean')) return '🥘';
+                  if (lowerName.includes('vietnamese')) return '🍲';
+                  if (lowerName.includes('dessert') || lowerName.includes('sweet')) return '🍰';
+                  if (lowerName.includes('drink') || lowerName.includes('beverage')) return '🥤';
+                  if (lowerName.includes('khai vị') || lowerName.includes('appetizer')) return '🥗';
+                  if (lowerName.includes('món chính') || lowerName.includes('main')) return '🍖';
+                  if (lowerName.includes('tráng miệng') || lowerName.includes('dessert')) return '🍰';
+                  // Default food icons rotation
+                  const defaultIcons = ['🍴', '🥗', '🍖', '🍳', '🥙', '🌯'];
+                  return defaultIcons[index % defaultIcons.length];
+                };
+
+                // Count restaurants that have items in this category
+                const categoryRestaurantCount = allRestaurants.filter(restaurant =>
+                  restaurant.menuItems.some(item => item.categoryId === category.id)
+                ).length;
+
+                return (
+                  <Grid item xs={6} sm={4} md={2} key={category.id}>
+                    <Card
+                      sx={{
+                        p: 2,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: theme.shadows[8],
+                        },
+                      }}
+                      onClick={() => {
+                        // Navigate to restaurants page with category filter
+                        navigate("/foodease/restaurants", { 
+                          state: { selectedCategory: category.name } 
+                        });
+                      }}
+                    >
+                      <Typography variant="h3" sx={{ mb: 1 }}>
+                        {getCategoryIcon(category.name)}
+                      </Typography>
+                      <Typography variant="h6" fontWeight="600">
+                        {category.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {categoryRestaurantCount} places
+                      </Typography>
+                    </Card>
+                  </Grid>
+                );
+              })
+          }
         </Grid>
+
+        {!categoriesLoading && !categoriesError && categories.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="body1" color="text.secondary">
+              No categories available
+            </Typography>
+          </Box>
+        )}
       </Container>
 
       {/* Featured Restaurants */}
@@ -285,7 +380,11 @@ const HomePage: React.FC = () => {
               {restaurants.length} restaurants found
             </Typography>
           </Box>
-          <Button variant="outlined" endIcon={<RestaurantMenuIcon />}>
+          <Button 
+            variant="outlined" 
+            endIcon={<RestaurantMenuIcon />}
+            onClick={() => navigate("/foodease/restaurants")}
+          >
             {t("homePage.popularRestaurants.viewAll")}
           </Button>
         </Box>
@@ -296,16 +395,15 @@ const HomePage: React.FC = () => {
               <RestaurantCard
                 restaurant={restaurant}
                 onView={(id) => console.log("View restaurant:", id)}
-                onEdit={(id) => console.log("Edit restaurant:", id)}
               />
             </Grid>
           ))}
         </Grid>
 
-        {restaurants.length === 0 && (
+        {restaurants.length === 0 && !loading && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <Typography variant="h6" color="text.secondary">
-              {t("homePage.popularRestaurants.noResults")}
+              {searchQuery ? t("homePage.popularRestaurants.noResults") : "No restaurants available"}
             </Typography>
             <Button
               variant="contained"

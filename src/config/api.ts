@@ -30,7 +30,7 @@ export const API_ENDPOINTS = {
     DELETE: (id: number) => `/menu-items/${id}`,
   },
   CATEGORIES: {
-    GET_ALL: '/categories',
+    GET_ALL: '/categories/all',
     GET_BY_ID: (id: number) => `/categories/${id}`,
   },
 }; 

@@ -4,6 +4,7 @@ export { handleApiError, handleApiResponse } from './apiClient';
 
 // Export Services
 export { restaurantService } from './restaurantService';
+export { categoryService } from './categoryService';
 
 // Export Types
 export type { 
@@ -13,6 +14,12 @@ export type {
   SingleRestaurantResponse,
   MenuItemsResponse
 } from './restaurantService';
+
+export type {
+  Category,
+  CategoryResponse,
+  SingleCategoryResponse
+} from './categoryService';
 
 // Export API Configuration
 export { API_CONFIG, API_ENDPOINTS } from '../config/api'; 
