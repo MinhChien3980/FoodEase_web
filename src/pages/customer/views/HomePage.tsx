@@ -27,9 +27,9 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import RestaurantCard from "../../components/restaurant/RestaurantCard";
-import RatingBox from "../../components/common/RatingBox";
-import { formatPrice } from "../../utils/foodHelpers";
+import RestaurantCard from "../../../components/restaurant/RestaurantCard";
+import RatingBox from "../../../components/common/RatingBox";
+import { formatPrice } from "../../../utils/foodHelpers";
 
 // Mock data - replace with real API calls
 const mockRestaurants = [

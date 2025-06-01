@@ -120,7 +120,6 @@ const CustomerLayout: React.FC = () => {
   };
 
   const navigation = [
-    { name: t("customer.navigation.home", { defaultValue: "Home" }), href: "/foodease", icon: <HomeIcon /> },
     { name: t("customer.navigation.restaurants", { defaultValue: "Restaurants" }), href: "/foodease/restaurants", icon: <RestaurantIcon /> },
     { name: t("customer.navigation.offers", { defaultValue: "Offers" }), href: "/foodease/offers", icon: <LocalOfferIcon /> },
     { name: t("customer.navigation.favorites", { defaultValue: "Favorites" }), href: "/foodease/favorites", icon: <FavoriteIcon /> },

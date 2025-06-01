@@ -2,11 +2,11 @@ import { Route } from "react-router";
 
 // Customer Layout and Components
 import CustomerLayout from "../layouts/CustomerLayout";
-import HomePage from "../pages/customer/HomePage";
-import RestaurantsPage from "../pages/customer/RestaurantsPage";
-import OffersPage from "../pages/customer/OffersPage";
+import HomePage from "../pages/customer/views/HomePage";
+import RestaurantsPage from "../pages/customer/views/RestaurantsPage";
+import OffersPage from "../pages/customer/views/OffersPage";
 import CartPage from "../pages/customer/cart/CartPage";
-import ProfilePage from "../pages/customer/ProfilePage";
+import ProfilePage from "../pages/customer/views/ProfilePage";
 import CustomerLogin from "../pages/customer/auth/CustomerLogin";
 import CustomerRegister from "../pages/customer/auth/CustomerRegister";
 import CustomerProtectedRoute from "../components/auth/CustomerProtectedRoute";

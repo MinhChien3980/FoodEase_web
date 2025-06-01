@@ -37,8 +37,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CancelIcon from "@mui/icons-material/Cancel";
 import LanguageIcon from "@mui/icons-material/Language";
-import OrderStatusChip from "../../components/order/OrderStatusChip";
-import { formatPrice } from "../../utils/foodHelpers";
+import OrderStatusChip from "../../../components/order/OrderStatusChip";
+import { formatPrice } from "../../../utils/foodHelpers";
 
 interface CustomerUser {
   id: number;

@@ -17,7 +17,7 @@ import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import StarIcon from "@mui/icons-material/Star";
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
-import { formatPrice } from "../../utils/foodHelpers";
+import { formatPrice } from "../../../utils/foodHelpers";
 
 const mockOffers = [
   {

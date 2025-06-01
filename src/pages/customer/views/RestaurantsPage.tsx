@@ -22,9 +22,9 @@ import {
 import { useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import RestaurantCard from "../../components/restaurant/RestaurantCard";
-import GoogleMapComponent from "../../components/maps/GoogleMapComponent";
-import { restaurantService, Restaurant } from "../../services";
+import RestaurantCard from "../../../components/restaurant/RestaurantCard";
+import GoogleMapComponent from "../../../components/maps/GoogleMapComponent";
+import { restaurantService, Restaurant } from "../../../services";
 
 const RestaurantsPage: React.FC = () => {
   const theme = useTheme();
