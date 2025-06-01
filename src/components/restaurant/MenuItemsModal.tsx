@@ -24,10 +24,12 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import LoginIcon from "@mui/icons-material/Login";
 import { restaurantService, MenuItem } from "../../services";
 import { ICartItem } from "../../interfaces";
 import { useCart } from "../../contexts/CartContext";
 import { isCustomerAuthenticated } from "../../utils/sessionManager";
+import { useCustomerNavigation } from "../../hooks/useCustomerNavigation";
 
 interface MenuItemsModalProps {
   open: boolean;
@@ -43,6 +45,7 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
   restaurantName,
 }) => {
   const theme = useTheme();
+  const { navigateToLogin } = useCustomerNavigation();
   const { addToCart, getItemQuantity } = useCart();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -104,6 +107,14 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
   };
 
   const handleAddToCart = (item: MenuItem) => {
+    if (!isAuthenticated) {
+      // Show a more friendly message and redirect to login
+      setTimeout(() => {
+        navigateToLogin();
+      }, 1500);
+      return;
+    }
+
     const cartItem: Omit<ICartItem, 'quantity'> = {
       id: item.id,
       name: item.name,
@@ -115,7 +126,10 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
       restaurantName: restaurantName,
     };
 
-    addToCart(cartItem);
+    addToCart(cartItem, () => {
+      // This callback shouldn't be called since we already checked auth above
+      navigateToLogin();
+    });
     
     // Show success message
     const currentQuantity = getItemQuantity(item.id);
@@ -270,7 +284,7 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
                       {/* Action Buttons */}
                       <CardActions sx={{ p: 2, pt: 0 }}>
                         <Button
-                           startIcon={<ShoppingCartIcon />}
+                           startIcon={isAuthenticated ? <ShoppingCartIcon /> : <LoginIcon />}
                            onClick={() => handleAddToCart(item)}
                            variant="contained"
                            size="small"

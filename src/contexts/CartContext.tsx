@@ -161,10 +161,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart.items, currentUserId]);
 
-  const addToCart = (item: Omit<ICartItem, 'quantity'>) => {
+  const addToCart = (item: Omit<ICartItem, 'quantity'>, onUnauthenticated?: () => void) => {
     // Check if user is authenticated before adding to cart
     if (!isCustomerAuthenticated()) {
-      window.location.href = '/foodease/login';
+      if (onUnauthenticated) {
+        onUnauthenticated();
+      }
       return;
     }
 

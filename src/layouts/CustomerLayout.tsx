@@ -41,10 +41,12 @@ import {
   validateStoredToken 
 } from "../utils/sessionManager";
 import { useCart } from "../contexts/CartContext";
+import { useCustomerNavigation } from "../hooks/useCustomerNavigation";
 
 const CustomerLayout: React.FC = () => {
   const theme = useTheme();
   const location = useLocation();
+  const { navigateToCart, navigateToHome } = useCustomerNavigation();
   const { t, i18n } = useTranslation();
   const { cart } = useCart();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -108,11 +110,13 @@ const CustomerLayout: React.FC = () => {
     setIsLoggedIn(false);
     setCustomerUser(null);
     handleMenuClose();
-    window.location.href = '/foodease'; // Refresh to update state
+    navigateToHome();
+    // Force re-render by updating the effect dependency
+    // This will trigger the cart context to reset for guest user
   };
 
   const handleCartClick = () => {
-    window.location.href = '/foodease/cart';
+    navigateToCart();
   };
 
   const navigation = [

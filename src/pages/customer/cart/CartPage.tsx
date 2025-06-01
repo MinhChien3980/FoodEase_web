@@ -30,14 +30,14 @@ import {
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router';
 import { useCart } from '../../../contexts/CartContext';
 import { isCustomerAuthenticated, getCustomerUser } from '../../../utils/sessionManager';
+import { useCustomerNavigation } from '../../../hooks/useCustomerNavigation';
 
 const CartPage: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { navigateToRestaurants, navigateToLogin } = useCustomerNavigation();
   const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -87,11 +87,11 @@ const CartPage: React.FC = () => {
   };
 
   const handleContinueShopping = () => {
-    navigate('/foodease/restaurants');
+    navigateToRestaurants();
   };
 
   const handleLogin = () => {
-    navigate('/foodease/login');
+    navigateToLogin();
   };
 
   // Show loading while checking authentication
