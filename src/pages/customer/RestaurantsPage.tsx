@@ -43,8 +43,10 @@ const RestaurantsPage: React.FC = () => {
   const getAllCategories = () => {
     const categories = new Set<string>();
     restaurants.forEach(restaurant => {
-      restaurant.menuItems.forEach(item => {
-        categories.add(item.categoryName);
+      (restaurant.menuItems || []).forEach(item => {
+        if (item.categoryId) {
+          categories.add(`Category ${item.categoryId}`);
+        }
       });
     });
     return ["All", ...Array.from(categories)];
@@ -86,9 +88,9 @@ const RestaurantsPage: React.FC = () => {
       filtered = filtered.filter(restaurant =>
         restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.menuItems.some(item => 
+        (restaurant.menuItems || []).some(item => 
           item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+          (item.categoryId && `Category ${item.categoryId}`.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       );
     }
@@ -96,7 +98,7 @@ const RestaurantsPage: React.FC = () => {
     // Category filter
     if (selectedCategory !== "All") {
       filtered = filtered.filter(restaurant =>
-        restaurant.menuItems.some(item => item.categoryName === selectedCategory)
+        (restaurant.menuItems || []).some(item => `Category ${item.categoryId}` === selectedCategory)
       );
     }
 

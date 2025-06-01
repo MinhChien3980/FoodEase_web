@@ -10,7 +10,8 @@ export type {
   Restaurant, 
   MenuItem, 
   RestaurantResponse,
-  SingleRestaurantResponse 
+  SingleRestaurantResponse,
+  MenuItemsResponse
 } from './restaurantService';
 
 // Export API Configuration

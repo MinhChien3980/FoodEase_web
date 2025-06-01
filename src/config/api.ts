@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   },
   MENU_ITEMS: {
     GET_BY_RESTAURANT: (restaurantId: number) => `/restaurants/${restaurantId}/menu-items`,
+    GET_BY_RESTAURANT_ID: (restaurantId: number) => `/menu-items/by-restaurant?restaurantId=${restaurantId}`,
     GET_BY_ID: (id: number) => `/menu-items/${id}`,
     CREATE: '/menu-items',
     UPDATE: (id: number) => `/menu-items/${id}`,

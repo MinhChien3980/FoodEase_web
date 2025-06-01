@@ -21,6 +21,7 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import { Restaurant } from "../../services/restaurantService";
+import MenuItemsModal from "./MenuItemsModal";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -39,6 +40,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
 }) => {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [showMenuModal, setShowMenuModal] = useState(false);
 
   const handleStatusToggle = async () => {
     if (onToggleStatus) {
@@ -58,9 +60,16 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
     window.open(url, "_blank");
   };
 
+  const handleViewMenu = () => {
+    if (onView) {
+      onView(restaurant.id);
+    }
+    setShowMenuModal(true);
+  };
+
   // Get unique categories from menu items
   const menuItems = restaurant.menuItems || [];
-  const categories = [...new Set(menuItems.map(item => item.categoryName))];
+  const categories = [...new Set(menuItems.map(item => `Category ${item.categoryId || 'Unknown'}`))];
   const menuItemCount = menuItems.length;
 
   // Calculate price range
@@ -76,6 +85,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   };
 
   return (
+    <>
     <Card
       sx={{
         height: "100%",
@@ -220,7 +230,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
           {onView && (
             <Button
               startIcon={<VisibilityIcon />}
-              onClick={() => onView(restaurant.id)}
+              onClick={handleViewMenu}
               variant="outlined"
               size="small"
               sx={{ flex: 1 }}
@@ -269,6 +279,15 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
         </Box>
       )}
     </Card>
+
+    {/* Menu Items Modal */}
+    <MenuItemsModal
+      open={showMenuModal}
+      onClose={() => setShowMenuModal(false)}
+      restaurantId={restaurant.id}
+      restaurantName={restaurant.name}
+    />
+    </>
   );
 };
 

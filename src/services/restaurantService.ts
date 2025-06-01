@@ -5,12 +5,12 @@ import { API_ENDPOINTS } from '../config/api';
 // Restaurant API service
 export interface MenuItem {
   id: number;
+  restaurantId: number;
+  categoryId: number;
   name: string;
   description: string;
   price: number;
   imageUrl: string;
-  categoryId: number;
-  categoryName: string;
 }
 
 export interface Restaurant {
@@ -30,6 +30,11 @@ export interface SingleRestaurantResponse {
   data: Restaurant;
 }
 
+export interface MenuItemsResponse {
+  code: number;
+  data: MenuItem[];
+}
+
 export const restaurantService = {
   async getAllRestaurants(): Promise<Restaurant[]> {
     try {
@@ -43,6 +48,22 @@ export const restaurantService = {
       }
     } catch (error) {
       console.error('Error fetching restaurants:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async getMenuItemsByRestaurantId(restaurantId: number): Promise<MenuItem[]> {
+    try {
+      const response: AxiosResponse<MenuItemsResponse> = await apiClient.get(API_ENDPOINTS.MENU_ITEMS.GET_BY_RESTAURANT_ID(restaurantId));
+      
+      if (response.data.code === 200) {
+        console.log(`🍽️ Fetched ${response.data.data.length} menu items for restaurant ${restaurantId}`);
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error(`Error fetching menu items for restaurant ${restaurantId}:`, error);
       throw new Error(handleApiError(error));
     }
   },
