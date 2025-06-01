@@ -17,20 +17,22 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { Link, useLocation, Outlet } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import PersonIcon from "@mui/icons-material/Person";
+import {
+  Home as HomeIcon,
+  Restaurant as RestaurantIcon,
+  LocalOffer as LocalOfferIcon,
+  Favorite as FavoriteIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  Language as LanguageIcon,
+} from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
-import HomeIcon from "@mui/icons-material/Home";
-import RestaurantIcon from "@mui/icons-material/Restaurant";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import LoginIcon from "@mui/icons-material/Login";
-import LanguageIcon from "@mui/icons-material/Language";
 import TranslateIcon from "@mui/icons-material/Translate";
 import { 
   isCustomerAuthenticated, 
@@ -38,14 +40,15 @@ import {
   clearCustomerSession,
   validateStoredToken 
 } from "../utils/sessionManager";
+import { useCart } from "../contexts/CartContext";
 
 const CustomerLayout: React.FC = () => {
   const theme = useTheme();
   const location = useLocation();
   const { t, i18n } = useTranslation();
+  const { cart } = useCart();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [cartItems] = React.useState(3); // Mock cart items count
   
   // Check if customer is logged in
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
@@ -106,6 +109,10 @@ const CustomerLayout: React.FC = () => {
     setCustomerUser(null);
     handleMenuClose();
     window.location.href = '/foodease'; // Refresh to update state
+  };
+
+  const handleCartClick = () => {
+    window.location.href = '/foodease/cart';
   };
 
   const navigation = [
@@ -224,8 +231,16 @@ const CustomerLayout: React.FC = () => {
               </Menu>
 
               {/* Cart */}
-              <IconButton color="inherit">
-                <Badge badgeContent={cartItems} color="primary">
+              <IconButton 
+                color="inherit"
+                onClick={handleCartClick}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: theme.palette.primary.light + "20",
+                  }
+                }}
+              >
+                <Badge badgeContent={isLoggedIn ? cart.totalItems : 0} color="primary" max={99}>
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>
@@ -249,55 +264,62 @@ const CustomerLayout: React.FC = () => {
                     onClose={handleMenuClose}
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                    sx={{ mt: 1 }}
                   >
-                    <Box sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
-                      <Typography variant="subtitle2" fontWeight="600">
-                        {customerUser?.fullName || 'Customer'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {customerUser?.email}
-                      </Typography>
-                    </Box>
-                    <MenuItem component={Link} to="/foodease/profile" onClick={handleMenuClose}>
-                      <AccountCircleIcon sx={{ mr: 1 }} />
-                      My Profile
+                    <MenuItem 
+                      component={Link} 
+                      to="/foodease/profile" 
+                      onClick={handleMenuClose}
+                    >
+                      <ListItemIcon>
+                        <PersonIcon />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Profile" 
+                        secondary={customerUser?.fullName}
+                      />
                     </MenuItem>
-                    <MenuItem onClick={handleMenuClose}>
-                      <FavoriteIcon sx={{ mr: 1 }} />
-                      My Favorites
-                    </MenuItem>
-                    <MenuItem onClick={handleMenuClose}>
-                      <RestaurantIcon sx={{ mr: 1 }} />
-                      Order History
-                    </MenuItem>
-                    <Divider />
-                    <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
-                      <LogoutIcon sx={{ mr: 1 }} />
-                      Logout
+                    <MenuItem onClick={handleLogout}>
+                      <ListItemIcon>
+                        <LogoutIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Logout" />
                     </MenuItem>
                   </Menu>
                 </>
               ) : (
-                <>
+                <Box sx={{ display: "flex", gap: 1 }}>
                   <Button
                     component={Link}
                     to="/foodease/login"
                     variant="outlined"
                     size="small"
-                    startIcon={<LoginIcon />}
-                    sx={{ display: { xs: "none", sm: "flex" } }}
+                    sx={{
+                      borderColor: theme.palette.primary.main,
+                      color: theme.palette.primary.main,
+                      "&:hover": {
+                        backgroundColor: theme.palette.primary.light + "20",
+                        borderColor: theme.palette.primary.main,
+                      },
+                    }}
                   >
-                    Sign In
+                    Login
                   </Button>
-                  <IconButton 
+                  <Button
                     component={Link}
-                    to="/foodease/login"
-                    color="inherit"
-                    sx={{ display: { xs: "flex", sm: "none" } }}
+                    to="/foodease/register"
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      backgroundColor: theme.palette.primary.main,
+                      "&:hover": {
+                        backgroundColor: theme.palette.primary.dark,
+                      },
+                    }}
                   >
-                    <PersonIcon />
-                  </IconButton>
-                </>
+                    Sign Up
+                  </Button>
+                </Box>
               )}
 
               {/* Mobile Menu */}

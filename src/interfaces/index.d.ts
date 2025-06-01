@@ -168,6 +168,34 @@ export type IVehicle = {
   id: number;
 };
 
+// Cart interfaces
+export interface ICartItem {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  categoryId: number;
+  restaurantId: number;
+  restaurantName: string;
+  quantity: number;
+}
+
+export interface ICart {
+  items: ICartItem[];
+  totalItems: number;
+  totalAmount: number;
+}
+
+export interface ICartContext {
+  cart: ICart;
+  addToCart: (item: Omit<ICartItem, 'quantity'>) => void;
+  removeFromCart: (itemId: number) => void;
+  updateQuantity: (itemId: number, quantity: number) => void;
+  clearCart: () => void;
+  getItemQuantity: (itemId: number) => number;
+}
+
 export type Nullable<T> = {
   [P in keyof T]: T[P] | null;
 };
