@@ -59,11 +59,12 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   };
 
   // Get unique categories from menu items
-  const categories = [...new Set(restaurant.menuItems.map(item => item.categoryName))];
-  const menuItemCount = restaurant.menuItems.length;
+  const menuItems = restaurant.menuItems || [];
+  const categories = [...new Set(menuItems.map(item => item.categoryName))];
+  const menuItemCount = menuItems.length;
 
   // Calculate price range
-  const prices = restaurant.menuItems.map(item => item.price);
+  const prices = menuItems.map(item => item.price);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
