@@ -74,7 +74,6 @@ const RestaurantsPage: React.FC = () => {
   const sortOptions = [
     { value: "name", label: "Name" },
     { value: "menuCount", label: "Menu Items Count" },
-    { value: "id", label: "Restaurant ID" },
   ];
 
   // Fetch restaurants and categories from API
@@ -139,8 +138,6 @@ const RestaurantsPage: React.FC = () => {
           return a.name.localeCompare(b.name);
         case "menuCount":
           return b.menuItems.length - a.menuItems.length;
-        case "id":
-          return a.id - b.id;
         default:
           return 0;
       }
