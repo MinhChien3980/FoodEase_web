@@ -25,12 +25,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import RestaurantCard from "../../../components/restaurant/RestaurantCard";
 import GoogleMapComponent from "../../../components/maps/GoogleMapComponent";
-import { restaurantService, Restaurant } from "../../../services";
+import { restaurantService, Restaurant, categoryService, Category } from "../../../services";
 
 const RestaurantsPage: React.FC = () => {
   const theme = useTheme();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
@@ -49,17 +50,24 @@ const RestaurantsPage: React.FC = () => {
     }
   }, [location.state]);
 
-  // Get all unique categories from all restaurants
+  // Get category name by ID
+  const getCategoryNameById = (categoryId: number): string => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.name : `Category ${categoryId}`;
+  };
+
+  // Get all unique categories from restaurants + API categories
   const getAllCategories = () => {
-    const categories = new Set<string>();
+    const categoryNames = new Set<string>();
     restaurants.forEach(restaurant => {
       (restaurant.menuItems || []).forEach(item => {
         if (item.categoryId) {
-          categories.add(`Category ${item.categoryId}`);
+          const categoryName = getCategoryNameById(item.categoryId);
+          categoryNames.add(categoryName);
         }
       });
     });
-    return ["All", ...Array.from(categories)];
+    return ["All", ...Array.from(categoryNames)];
   };
 
   const categoryTypes = getAllCategories();
@@ -69,24 +77,31 @@ const RestaurantsPage: React.FC = () => {
     { value: "id", label: "Restaurant ID" },
   ];
 
-  // Fetch restaurants from API
+  // Fetch restaurants and categories from API
   useEffect(() => {
-    const fetchRestaurants = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await restaurantService.getAllRestaurants();
-        setRestaurants(data);
-        setFilteredRestaurants(data);
+        
+        // Fetch both restaurants and categories in parallel
+        const [restaurantData, categoryData] = await Promise.all([
+          restaurantService.getAllRestaurants(),
+          categoryService.getAllCategories()
+        ]);
+        
+        setRestaurants(restaurantData);
+        setCategories(categoryData);
+        setFilteredRestaurants(restaurantData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch restaurants');
-        console.error('Error fetching restaurants:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch data');
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRestaurants();
+    fetchData();
   }, []);
 
   // Filter and sort restaurants
@@ -100,7 +115,7 @@ const RestaurantsPage: React.FC = () => {
         restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (restaurant.menuItems || []).some(item => 
           item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (item.categoryId && `Category ${item.categoryId}`.toLowerCase().includes(searchQuery.toLowerCase()))
+          (item.categoryId && getCategoryNameById(item.categoryId).toLowerCase().includes(searchQuery.toLowerCase()))
         )
       );
     }
@@ -108,7 +123,7 @@ const RestaurantsPage: React.FC = () => {
     // Category filter
     if (selectedCategory !== "All") {
       filtered = filtered.filter(restaurant =>
-        (restaurant.menuItems || []).some(item => `Category ${item.categoryId}` === selectedCategory)
+        (restaurant.menuItems || []).some(item => getCategoryNameById(item.categoryId) === selectedCategory)
       );
     }
 
@@ -133,7 +148,7 @@ const RestaurantsPage: React.FC = () => {
 
     setFilteredRestaurants(filtered);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [restaurants, searchQuery, selectedCategory, sortBy, showOnlyWithMenu]);
+  }, [restaurants, categories, searchQuery, selectedCategory, sortBy, showOnlyWithMenu]);
 
   // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -316,6 +331,7 @@ const RestaurantsPage: React.FC = () => {
                     <Grid item xs={12} sm={6} lg={4} key={restaurant.id}>
                       <RestaurantCard
                         restaurant={restaurant}
+                        categories={categories}
                         onView={handleViewRestaurant}
                       />
                     </Grid>

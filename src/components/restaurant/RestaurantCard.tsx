@@ -21,10 +21,12 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import { Restaurant } from "../../services/restaurantService";
+import { Category } from "../../services";
 import MenuItemsModal from "./MenuItemsModal";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
+  categories?: Category[];
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
   onView?: (id: number) => void;
@@ -33,6 +35,7 @@ interface RestaurantCardProps {
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
   restaurant,
+  categories = [],
   onEdit,
   onDelete,
   onView,
@@ -41,6 +44,12 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [showMenuModal, setShowMenuModal] = useState(false);
+
+  // Get category name by ID
+  const getCategoryNameById = (categoryId: number): string => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.name : `Category ${categoryId}`;
+  };
 
   const handleStatusToggle = async () => {
     if (onToggleStatus) {
@@ -67,9 +76,9 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
     setShowMenuModal(true);
   };
 
-  // Get unique categories from menu items
+  // Get unique categories from menu items with real category names
   const menuItems = restaurant.menuItems || [];
-  const categories = [...new Set(menuItems.map(item => `Category ${item.categoryId || 'Unknown'}`))];
+  const uniqueCategoryNames = [...new Set(menuItems.map(item => getCategoryNameById(item.categoryId || 0)))];
   const menuItemCount = menuItems.length;
 
   // Calculate price range
@@ -152,18 +161,18 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
 
         {/* Categories */}
         <Box sx={{ mb: 2 }}>
-          {categories.slice(0, 3).map((category, index) => (
+          {uniqueCategoryNames.slice(0, 3).map((categoryName, index) => (
             <Chip
               key={index}
-              label={category}
+              label={categoryName}
               size="small"
               variant="outlined"
               sx={{ mr: 0.5, mb: 0.5 }}
             />
           ))}
-          {categories.length > 3 && (
+          {uniqueCategoryNames.length > 3 && (
             <Chip
-              label={`+${categories.length - 3} more`}
+              label={`+${uniqueCategoryNames.length - 3} more`}
               size="small"
               variant="outlined"
               sx={{ mr: 0.5, mb: 0.5 }}

@@ -394,6 +394,7 @@ const HomePage: React.FC = () => {
             <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
               <RestaurantCard
                 restaurant={restaurant}
+                categories={categories}
                 onView={(id) => console.log("View restaurant:", id)}
               />
             </Grid>
