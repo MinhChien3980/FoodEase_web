@@ -22,7 +22,9 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
-import { setCustomerSession, getAuthHeaders, autoLoginIfTokenExists } from "../../../utils/sessionManager";
+import { setCustomerSession, setCustomerToken, getAuthHeaders, autoLoginIfTokenExists } from "../../../utils/sessionManager";
+import { authService, LoginRequest, LoginResponse } from "../../../services";
+import { userService } from "../../../services/userService";
 
 interface LoginFormData {
   email: string;
@@ -45,13 +47,11 @@ const CustomerLogin: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Check for existing valid session on component mount
     const checkExistingSession = async () => {
       setCheckingSession(true);
       try {
         const result = await autoLoginIfTokenExists();
         if (result.success) {
-          // User has valid token, redirect to profile
           navigate('/foodease/profile');
           return;
         }
@@ -64,10 +64,8 @@ const CustomerLogin: React.FC = () => {
 
     checkExistingSession();
 
-    // Check for success message from registration
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
-      // Pre-fill email if provided
       if (location.state?.email) {
         setFormData(prev => ({ ...prev, email: location.state.email }));
       }
@@ -89,133 +87,57 @@ const CustomerLogin: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      console.log('Attempting login with:', { email: formData.email });
-      
-      // Call your actual login API
-      const response = await fetch('http://localhost:8080/api/auth/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*'
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      });
+      const response = await authService.login({ email: formData.email, password: formData.password });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      let data;
-      try {
-        // Check if response has content and is JSON
-        const contentType = response.headers.get('content-type');
-        console.log('Content-Type:', contentType);
+      if (response.code === 200 && response.data && response.data.authenticated) {
         
-        if (contentType && contentType.includes('application/json')) {
-          const responseText = await response.text();
-          console.log('Response text:', responseText);
-          
-          if (responseText.trim()) {
-            data = JSON.parse(responseText);
-          } else {
-            data = { authenticated: false, message: 'Empty response from server' };
-          }
-        } else {
-          // Non-JSON response
-          const responseText = await response.text();
-          console.log('Non-JSON response:', responseText);
-          data = { authenticated: false, message: 'Invalid response format from server' };
-        }
-      } catch (parseError) {
-        console.error('JSON parsing error:', parseError);
-        data = { authenticated: false, message: 'Failed to parse server response' };
-      }
-
-      console.log('Parsed login data:', data);
-
-      // Check for the correct response structure based on your API
-      if (response.ok && data.code === 200 && data.data && data.data.authenticated) {
-        console.log('Login successful, fetching profile...');
-        
-        // Fetch user profile data after successful login
         try {
-          const profileResponse = await fetch('http://localhost:8080/api/users/profile', {
-            method: 'GET',
-            headers: {
-              'accept': '*/*',
-              'Authorization': `Bearer ${data.data.token}`
-            }
-          });
-
-          console.log('Profile response status:', profileResponse.status);
-
-          let profileData;
-          try {
-            const profileText = await profileResponse.text();
-            console.log('Profile response text:', profileText);
-            
-            if (profileText.trim()) {
-              profileData = JSON.parse(profileText);
-            } else {
-              profileData = { code: 404, message: 'Empty profile response' };
-            }
-          } catch (profileParseError) {
-            console.error('Profile JSON parsing error:', profileParseError);
-            profileData = { code: 404, message: 'Failed to parse profile response' };
-          }
+          // Set token first so the API client can use it
+          setCustomerToken(response.data.token);
           
-          console.log('Parsed profile data:', profileData);
+          const profileData = await userService.getProfile();
           
-          if (profileResponse.ok && profileData.code === 200) {
-            // Store complete user profile in session
-            setCustomerSession(data.data.token, profileData.data);
-            console.log('Stored user session successfully');
+          if (profileData.code === 200) {
+            setCustomerSession(response.data.token, profileData.data);
           } else {
-            // Fallback user data if profile fetch fails
             const fallbackUser = {
               email: formData.email,
               fullName: formData.email.split('@')[0],
               id: 'customer'
             };
-            setCustomerSession(data.data.token, fallbackUser);
-            console.log('Stored fallback user session');
+            setCustomerSession(response.data.token, fallbackUser);
           }
         } catch (profileError) {
           console.error('Failed to fetch profile:', profileError);
-          // Fallback user data
           const fallbackUser = {
             email: formData.email,
             fullName: formData.email.split('@')[0],
             id: 'customer'
           };
-          setCustomerSession(data.data.token, fallbackUser);
-          console.log('Stored fallback user session after error');
+          setCustomerSession(response.data.token, fallbackUser);
         }
         
-        // Redirect to customer profile or previous page
         const returnPath = location.state?.from || '/foodease/profile';
-        console.log('Redirecting to:', returnPath);
         navigate(returnPath);
       } else {
-        console.log('Login failed:', { status: response.status, data });
-        setError(data.message || `Login failed. Status: ${response.status}`);
+        setError(response.message || 'Login failed. Please check your credentials.');
       }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('Network error. Please check your connection and try again.');
+    } catch (err: any) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('Network error. Please check your connection and try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // Implement social login here
-    console.log(`Login with ${provider}`);
   };
 
-  // Show loading while checking existing session
   if (checkingSession) {
     return (
       <Box

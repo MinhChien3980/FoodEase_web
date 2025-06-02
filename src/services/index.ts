@@ -5,6 +5,8 @@ export { handleApiError, handleApiResponse } from './apiClient';
 // Export Services
 export { restaurantService } from './restaurantService';
 export { categoryService } from './categoryService';
+export { authService } from './authService';
+export { userService } from './userService';
 
 // Export Types
 export type { 
@@ -21,5 +23,19 @@ export type {
   SingleCategoryResponse
 } from './categoryService';
 
-// Export API Configuration
-export { API_CONFIG, API_ENDPOINTS } from '../config/api'; 
+export type {
+  City,
+  CityResponse
+} from './cityService';
+
+export type {
+  LoginRequest,
+  RegisterRequest,
+  LoginResponse,
+  RegisterResponse,
+} from './authService';
+
+export type {
+  ProfileResponse
+} from './userService';
+

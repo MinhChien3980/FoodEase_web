@@ -5,7 +5,7 @@ import CustomerLayout from "../layouts/CustomerLayout";
 import HomePage from "../pages/customer/views/HomePage";
 import RestaurantsPage from "../pages/customer/views/RestaurantsPage";
 import OffersPage from "../pages/customer/views/OffersPage";
-import CartPage from "../pages/customer/cart/CartPage";
+import CartPage from "../pages/customer/views/CartPage";
 import ProfilePage from "../pages/customer/views/ProfilePage";
 import CustomerLogin from "../pages/customer/auth/CustomerLogin";
 import CustomerRegister from "../pages/customer/auth/CustomerRegister";

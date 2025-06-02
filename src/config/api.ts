@@ -33,4 +33,14 @@ export const API_ENDPOINTS = {
     GET_ALL: '/categories/all',
     GET_BY_ID: (id: number) => `/categories/${id}`,
   },
+  CITIES: {
+    GET_ALL: '/cities/all',
+  },
+  AUTH: {
+    LOGIN: '/auth/token',
+    REGISTER: '/auth/register',
+  },
+  USERS: {
+    PROFILE: '/users/profile',
+  },
 }; 

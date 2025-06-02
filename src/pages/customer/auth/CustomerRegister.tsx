@@ -32,6 +32,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
+import { cityService } from "../../../services/cityService";
 
 interface RegisterFormData {
   fullName: string;
@@ -74,34 +75,8 @@ const CustomerRegister: React.FC = () => {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cities/all', {
-          method: 'GET',
-          headers: {
-            'accept': '*/*'
-          }
-        });
-
-        const data = await response.json();
-        
-        if (response.ok && data.code === 200) {
-          setCities(data.data || []);
-        } else {
-          console.error('Failed to fetch cities:', data.message);
-          // Fallback cities for demo
-          setCities([
-            { id: 1, name: "Hà Nội" },
-            { id: 2, name: "Hồ Chí Minh" },
-            { id: 3, name: "Đà Nẵng" },
-          ]);
-        }
-      } catch (error) {
-        console.error('Error fetching cities:', error);
-        // Fallback cities for demo
-        setCities([
-          { id: 1, name: "Hà Nội" },
-          { id: 2, name: "Hồ Chí Minh" },
-          { id: 3, name: "Đà Nẵng" },
-        ]);
+        const cities = await cityService.getAllCities();
+        setCities(cities);
       } finally {
         setLoadingCities(false);
       }
