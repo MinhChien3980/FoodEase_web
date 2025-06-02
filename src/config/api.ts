@@ -43,4 +43,8 @@ export const API_ENDPOINTS = {
   USERS: {
     PROFILE: '/users/profile',
   },
+  CART: {
+    GET_BY_USER: (userId: number) => `/cart?userId=${userId}`,
+    CREATE: (userId: number) => `/cart/${userId}`,
+  },
 }; 

@@ -22,7 +22,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
-import { setCustomerSession, setCustomerToken, getAuthHeaders, autoLoginIfTokenExists } from "../../../utils/sessionManager";
+import { setCustomerSession, setCustomerToken, getAuthHeaders, autoLoginIfTokenExists, ensureUserCart } from "../../../utils/sessionManager";
 import { authService } from "../../../services";
 import { userService } from "../../../services/userService";
 
@@ -98,6 +98,9 @@ const CustomerLogin: React.FC = () => {
           
           if (profileData.code === 200) {
             setCustomerSession(response.data.token, profileData.data);
+            
+            // Kiểm tra và tạo cart nếu cần thiết
+            await ensureUserCart(profileData.data.id);
           } else {
             const fallbackUser = {
               email: formData.email,

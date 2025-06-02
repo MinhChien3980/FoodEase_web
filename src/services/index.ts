@@ -7,6 +7,7 @@ export { restaurantService } from './restaurantService';
 export { categoryService } from './categoryService';
 export { authService } from './authService';
 export { userService } from './userService';
+export { cartService } from './cartService';
 
 // Export Types
 export type { 
@@ -38,4 +39,11 @@ export type {
 export type {
   ProfileResponse
 } from './userService';
+
+export type {
+  Cart,
+  CartItem,
+  CartResponse,
+  CreateCartResponse
+} from './cartService';
 

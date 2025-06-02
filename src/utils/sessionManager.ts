@@ -76,6 +76,7 @@ export const getCustomerSession = (): CustomerSession | null => {
 export const clearCustomerSession = (): void => {
   sessionStorage.removeItem('customer_token');
   sessionStorage.removeItem('customer_user');
+  sessionStorage.removeItem('customer_cart_id');
 };
 
 /**
@@ -87,6 +88,21 @@ export const updateCustomerUser = (updatedUser: any): void => {
     const mergedUser = { ...currentUser, ...updatedUser };
     setCustomerUser(mergedUser);
   }
+};
+
+/**
+ * Get customer cart ID from session
+ */
+export const getCustomerCartId = (): number | null => {
+  const cartId = sessionStorage.getItem('customer_cart_id');
+  return cartId ? parseInt(cartId, 10) : null;
+};
+
+/**
+ * Set customer cart ID in session
+ */
+export const setCustomerCartId = (cartId: number): void => {
+  sessionStorage.setItem('customer_cart_id', cartId.toString());
 };
 
 /**
@@ -186,6 +202,26 @@ export const validateStoredToken = async (): Promise<boolean> => {
 };
 
 /**
+ * Helper function to check/create cart for user
+ */
+export const ensureUserCart = async (userId: number): Promise<void> => {
+  try {
+    // Dynamic import to avoid circular dependency
+    const { cartService } = await import('../services/cartService');
+    
+    console.log('Checking/creating cart for user:', userId);
+    const cart = await cartService.getOrCreateCart(userId);
+    console.log('Cart ready:', cart);
+    
+    // Lưu cart info vào sessionStorage
+    setCustomerCartId(cart.id);
+  } catch (error) {
+    console.error('Cart operation failed:', error);
+    // Không throw error để không block login process
+  }
+};
+
+/**
  * Auto-login if valid token exists
  */
 export const autoLoginIfTokenExists = async (): Promise<{ success: boolean; user?: any }> => {
@@ -200,7 +236,12 @@ export const autoLoginIfTokenExists = async (): Promise<{ success: boolean; user
   if (user) {
     const isValid = await validateStoredToken();
     if (isValid) {
-      return { success: true, user: getCustomerUser() };
+      const updatedUser = getCustomerUser();
+      // Ensure cart exists for user
+      if (updatedUser && updatedUser.id) {
+        await ensureUserCart(updatedUser.id);
+      }
+      return { success: true, user: updatedUser };
     }
   }
 
@@ -221,6 +262,8 @@ export const autoLoginIfTokenExists = async (): Promise<{ success: boolean; user
           const data = JSON.parse(responseText);
           if (data.code === 200) {
             setCustomerUser(data.data);
+            // Ensure cart exists for user
+            await ensureUserCart(data.data.id);
             return { success: true, user: data.data };
           }
         }
