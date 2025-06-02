@@ -13,8 +13,8 @@ apiClient.interceptors.request.use(
   (config) => {
     console.log(`🚀 Making request to: ${config.baseURL}${config.url}`);
     
-    // Tự động thêm token nếu có
-    const token = localStorage.getItem('authToken');
+    // Tự động thêm token nếu có - sử dụng customer_token từ sessionStorage
+    const token = sessionStorage.getItem('customer_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -45,10 +45,11 @@ apiClient.interceptors.response.use(
       // Handle specific status codes globally
       switch (error.response.status) {
         case 401:
-          // Unauthorized - redirect to login
-          console.warn('Unauthorized access - clearing auth token');
-          localStorage.removeItem('authToken');
-          // window.location.href = '/login'; // Uncomment if needed
+          // Unauthorized - clear customer session
+          console.warn('Unauthorized access - clearing customer session');
+          sessionStorage.removeItem('customer_token');
+          sessionStorage.removeItem('customer_user');
+          // window.location.href = '/foodease/login'; // Uncomment if needed
           break;
         case 403:
           console.warn('Forbidden access');

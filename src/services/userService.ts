@@ -24,14 +24,10 @@ export interface UpdateProfileRequest {
 
 export const userService = {
     getProfile: async (): Promise<ProfileResponse> => {
-        const response: AxiosResponse<ProfileResponse> = await apiClient.get('/api/users/profile');
+        const response: AxiosResponse<ProfileResponse> = await apiClient.get(API_ENDPOINTS.USERS.PROFILE);
         return response.data;
     },
     
-    updateProfile: async (request: UpdateProfileRequest): Promise<ProfileResponse> => {
-        const response: AxiosResponse<ProfileResponse> = await apiClient.put('/api/users/profile', request);
-        return response.data;
-    },
 };  
 
 

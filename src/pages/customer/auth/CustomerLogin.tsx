@@ -23,7 +23,7 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import { setCustomerSession, setCustomerToken, getAuthHeaders, autoLoginIfTokenExists } from "../../../utils/sessionManager";
-import { authService, LoginRequest, LoginResponse } from "../../../services";
+import { authService } from "../../../services";
 import { userService } from "../../../services/userService";
 
 interface LoginFormData {
@@ -92,7 +92,6 @@ const CustomerLogin: React.FC = () => {
       if (response.code === 200 && response.data && response.data.authenticated) {
         
         try {
-          // Set token first so the API client can use it
           setCustomerToken(response.data.token);
           
           const profileData = await userService.getProfile();
