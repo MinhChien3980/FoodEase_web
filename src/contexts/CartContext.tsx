@@ -1,13 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { ICart, ICartItem, ICartContext } from '../interfaces';
-import { isCustomerAuthenticated, getCustomerUser } from '../utils/sessionManager';
+import { isCustomerAuthenticated, getCustomerUser, getCustomerCartId, setCustomerCartId } from '../utils/sessionManager';
+import { cartService } from '../services/cartService';
 
 // Cart actions
 type CartAction =
   | { type: 'ADD_TO_CART'; payload: Omit<ICartItem, 'quantity'> }
-  | { type: 'REMOVE_FROM_CART'; payload: number }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: number; quantity: number } }
-  | { type: 'CLEAR_CART' }
   | { type: 'LOAD_CART'; payload: ICartItem[] }
   | { type: 'RESET_CART' }; // For when user logs out
 
@@ -50,63 +48,43 @@ const cartReducer = (state: ICart, action: CartAction): ICart => {
       };
     }
 
-    case 'REMOVE_FROM_CART': {
-      const newItems = state.items.filter(item => item.id !== action.payload);
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      const totalAmount = newItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    case 'LOAD_CART': {
+      // Deduplicate items in case of any data inconsistency
+      const deduplicatedItems = action.payload.reduce((acc, item) => {
+        const existingIndex = acc.findIndex(existing => 
+          existing.id === item.id && existing.restaurantId === item.restaurantId
+        );
+        
+        if (existingIndex > -1) {
+          // Item already exists, combine quantities
+          acc[existingIndex].quantity += item.quantity;
+          console.log(`🔄 Merged duplicate item in LOAD_CART: ${item.name}`);
+        } else {
+          // New item, add to result
+          acc.push(item);
+        }
+        
+        return acc;
+      }, [] as ICartItem[]);
+
+      const totalItems = deduplicatedItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalAmount = deduplicatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      console.log(`📥 Loading ${deduplicatedItems.length} items into cart state`);
 
       return {
-        items: newItems,
+        items: deduplicatedItems,
         totalItems,
         totalAmount,
       };
     }
 
-    case 'UPDATE_QUANTITY': {
-      const { id, quantity } = action.payload;
-
-      if (quantity <= 0) {
-        // Remove item if quantity is 0 or less
-        return cartReducer(state, { type: 'REMOVE_FROM_CART', payload: id });
-      }
-
-      const newItems = state.items.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      );
-
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      const totalAmount = newItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-      return {
-        items: newItems,
-        totalItems,
-        totalAmount,
-      };
-    }
-
-    case 'CLEAR_CART':
     case 'RESET_CART':
       return initialCartState;
-
-    case 'LOAD_CART': {
-      const totalItems = action.payload.reduce((sum, item) => sum + item.quantity, 0);
-      const totalAmount = action.payload.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-      return {
-        items: action.payload,
-        totalItems,
-        totalAmount,
-      };
-    }
 
     default:
       return state;
   }
-};
-
-// Helper function to get cart storage key for specific user
-const getCartStorageKey = (userId?: string): string => {
-  return userId ? `foodease-cart-${userId}` : 'foodease-cart-guest';
 };
 
 // Create context
@@ -116,51 +94,134 @@ const CartContext = createContext<ICartContext | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, dispatch] = useReducer(cartReducer, initialCartState);
   const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+  const [isLoadingServerCart, setIsLoadingServerCart] = React.useState(false);
 
-  // Check authentication and load appropriate cart
-  useEffect(() => {
-    const checkAuthAndLoadCart = () => {
-      if (isCustomerAuthenticated()) {
-        const user = getCustomerUser();
-        const userId = user?.id?.toString();
-        
-        if (userId && userId !== currentUserId) {
-          setCurrentUserId(userId);
-          
-          // Load cart for this specific user
-          const savedCart = localStorage.getItem(getCartStorageKey(userId));
-          if (savedCart) {
-            try {
-              const parsedCart = JSON.parse(savedCart);
-              dispatch({ type: 'LOAD_CART', payload: parsedCart });
-            } catch (error) {
-              console.error('Error loading user cart from localStorage:', error);
-              localStorage.removeItem(getCartStorageKey(userId));
-            }
-          } else {
-            // No saved cart for this user, start fresh
-            dispatch({ type: 'RESET_CART' });
-          }
+  // Load cart from server based on userId
+  const loadServerCartForUser = async (userId: number) => {
+    try {
+      setIsLoadingServerCart(true);
+      console.log(`🛒 Loading cart for user ${userId}...`);
+      
+      // Always get or create cart for this user from server
+      const userCart = await cartService.getOrCreateCart(userId);
+      console.log(`📦 Cart ID for user ${userId}: ${userCart.id}`);
+      
+      // Store cartId in session for future API calls
+      setCustomerCartId(userCart.id);
+      
+      // Load cart items for this cart from server
+      const serverCartItems = await cartService.loadCartItemsWithDetails(userCart.id);
+      
+      // Only update state if we still have the same user (prevent race conditions)
+      const currentUser = isCustomerAuthenticated() ? getCustomerUser() : null;
+      const currentUserIdCheck = currentUser?.id?.toString();
+      
+      if (currentUserIdCheck === userId.toString()) {
+        if (serverCartItems.length > 0) {
+          console.log(`✅ Loaded ${serverCartItems.length} items from server cart`);
+          dispatch({ type: 'LOAD_CART', payload: serverCartItems });
+        } else {
+          console.log('📭 Server cart is empty');
+          dispatch({ type: 'RESET_CART' });
         }
       } else {
-        // User logged out
-        if (currentUserId) {
+        console.log(`⚠️ User changed during cart load, skipping state update for user ${userId}`);
+      }
+    } catch (error) {
+      console.error('❌ Error loading cart from server:', error);
+      
+      // Only update state if we're still dealing with the same user
+      const currentUser = isCustomerAuthenticated() ? getCustomerUser() : null;
+      const currentUserIdCheck = currentUser?.id?.toString();
+      
+      if (currentUserIdCheck === userId.toString()) {
+        // Instead of fallback to localStorage, just reset cart
+        // Cart should always be server-based for authenticated users
+        dispatch({ type: 'RESET_CART' });
+        console.warn('Failed to load cart from server. Cart reset to empty state.');
+      }
+    } finally {
+      setIsLoadingServerCart(false);
+    }
+  };
+
+  // Initial authentication check on component mount
+  useEffect(() => {
+    let isMounted = true;
+
+    const initialAuthCheck = async () => {
+      try {
+        const isAuth = isCustomerAuthenticated();
+        const user = isAuth ? getCustomerUser() : null;
+        const userId = user?.id?.toString() || null;
+
+        if (!isMounted) return; // Component unmounted
+
+        if (userId) {
+          console.log(`🚀 Initial load: loading cart for user ${userId}`);
+          setCurrentUserId(userId);
+          await loadServerCartForUser(parseInt(userId));
+        } else {
+          console.log('🚀 Initial load: no authenticated user found');
+          setCurrentUserId(null);
+          dispatch({ type: 'RESET_CART' });
+        }
+      } catch (error) {
+        console.error('Error in initial auth check:', error);
+        if (isMounted) {
           setCurrentUserId(null);
           dispatch({ type: 'RESET_CART' });
         }
       }
     };
 
-    checkAuthAndLoadCart();
-  }, [currentUserId]);
+    initialAuthCheck();
 
-  // Save cart to localStorage whenever cart changes (only if user is logged in)
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Run only once on mount
+
+  // Check authentication state periodically to catch login/logout events
   useEffect(() => {
-    if (currentUserId) {
-      localStorage.setItem(getCartStorageKey(currentUserId), JSON.stringify(cart.items));
-    }
-  }, [cart.items, currentUserId]);
+    let interval: NodeJS.Timeout | null = null;
 
+    // Start immediate polling without delay
+    const startPolling = () => {
+      interval = setInterval(async () => {
+        try {
+          const isAuth = isCustomerAuthenticated();
+          const user = isAuth ? getCustomerUser() : null;
+          const userId = user?.id?.toString() || null;
+
+          // If authentication state changed
+          if (userId !== currentUserId) {
+            if (userId) {
+              console.log(`🔄 User changed detected: ${currentUserId} -> ${userId}`);
+              setCurrentUserId(userId);
+              await loadServerCartForUser(parseInt(userId));
+            } else {
+              console.log('🚪 Logout detected: clearing cart');
+              setCurrentUserId(null);
+              dispatch({ type: 'RESET_CART' });
+            }
+          }
+        } catch (error) {
+          console.error('Error in auth polling:', error);
+        }
+      }, 500); // Check every 0.5 seconds for fastest response
+    };
+
+    // Start polling immediately, no delay
+    startPolling();
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [currentUserId]);
+  
   const addToCart = (item: Omit<ICartItem, 'quantity'>, onUnauthenticated?: () => void) => {
     // Check if user is authenticated before adding to cart
     if (!isCustomerAuthenticated()) {
@@ -170,33 +231,54 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    // Check if item already exists to determine the new quantity
+    const existingItem = cart.items.find(cartItem => cartItem.id === item.id && cartItem.restaurantId === item.restaurantId);
+    const newQuantity = existingItem ? existingItem.quantity + 1 : 1;
+
+    // Add to local cart first for immediate UI feedback
     dispatch({ type: 'ADD_TO_CART', payload: item });
+
+    // Sync with server in background with the correct new quantity
+    syncAddToCartWithServer(item, newQuantity);
   };
 
-  const removeFromCart = (itemId: number) => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: itemId });
-  };
+  // Sync add to cart with server
+  const syncAddToCartWithServer = async (item: Omit<ICartItem, 'quantity'>, quantity: number) => {
+    try {
+      const cartId = getCustomerCartId();
+      
+      if (!cartId) {
+        console.warn('No cartId found, cannot sync with server');
+        return;
+      }
 
-  const updateQuantity = (itemId: number, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id: itemId, quantity } });
-  };
+      // Check if this menu item already exists in the server cart
+      const existingCartItemId = await cartService.findCartItemIdByMenuItemId(cartId, item.id);
 
-  const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART' });
-  };
-
-  const getItemQuantity = (itemId: number): number => {
-    const item = cart.items.find(item => item.id === itemId);
-    return item ? item.quantity : 0;
+      if (existingCartItemId) {
+        // Item exists, update quantity on server
+        await cartService.updateCartItem(existingCartItemId, { quantity });
+        console.log(`✅ Successfully updated cart item quantity on server: ${item.name} (quantity: ${quantity})`);
+      } else {
+        // Item doesn't exist, add new item to server
+        await cartService.addCartItem({
+          cartId: cartId,
+          menuItemId: item.id,
+          quantity: quantity
+        });
+        console.log(`✅ Successfully added new cart item to server: ${item.name} (quantity: ${quantity})`);
+      }
+    } catch (error) {
+      console.error('Failed to sync cart with server:', error);
+      // Note: We don't revert the local change to maintain good UX
+      // The next cart reload will sync with server state
+    }
   };
 
   const contextValue: ICartContext = {
     cart,
     addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    getItemQuantity,
+    isLoadingServerCart,
   };
 
   return (

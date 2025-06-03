@@ -8,20 +8,15 @@ import {
   CardMedia,
   Grid,
   Button,
-  IconButton,
   Divider,
   Paper,
   Alert,
   Chip,
   TextField,
   InputAdornment,
-  Fab,
   CircularProgress,
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  Remove as RemoveIcon,
-  Delete as DeleteIcon,
   ShoppingCart as ShoppingCartIcon,
   Restaurant as RestaurantIcon,
   LocalOffer as LocalOfferIcon,
@@ -38,7 +33,7 @@ const CartPage: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { navigateToRestaurants, navigateToLogin } = useCustomerNavigation();
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { cart } = useCart(); // Only get cart data, no update functions
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [customerUser, setCustomerUser] = useState<any>(null);
@@ -65,16 +60,6 @@ const CartPage: React.FC = () => {
       style: 'currency',
       currency: 'VND'
     }).format(price);
-  };
-
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
-    if (newQuantity >= 1) {
-      updateQuantity(itemId, newQuantity);
-    }
-  };
-
-  const handleRemoveItem = (itemId: number) => {
-    removeFromCart(itemId);
   };
 
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -247,117 +232,64 @@ const CartPage: React.FC = () => {
               </Box>
 
               <Box sx={{ p: 2 }}>
-                {items.map((item, index) => (
-                  <Box key={item.id}>
-                    <Card elevation={0} sx={{ display: 'flex', p: 2, backgroundColor: 'transparent' }}>
-                      <CardMedia
-                        component="img"
-                        sx={{
-                          width: 100,
-                          height: 100,
-                          borderRadius: 2,
-                          objectFit: 'cover',
-                          mr: 2,
-                        }}
-                        image={item.imageUrl || '/placeholder-food.jpg'}
-                        alt={item.name}
-                        onError={handleImageError}
-                      />
+                {items.map((item, index) => {
+                  // Create a truly unique key for each cart item
+                  const uniqueKey = `cart-item-${restaurantId}-${item.id}-${item.quantity}-${index}`;
+                  
+                  return (
+                    <Box key={uniqueKey}>
+                      <Card elevation={0} sx={{ display: 'flex', p: 2, backgroundColor: 'transparent' }}>
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            borderRadius: 2,
+                            objectFit: 'cover',
+                            mr: 2,
+                          }}
+                          image={item.imageUrl || '/placeholder-food.jpg'}
+                          alt={item.name}
+                          onError={handleImageError}
+                        />
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <CardContent sx={{ flex: 1, p: 0 }}>
-                          <Typography variant="h6" fontWeight="bold" gutterBottom>
-                            {item.name}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              mb: 2,
-                            }}
-                          >
-                            {item.description}
-                          </Typography>
-                          <Typography variant="h6" color="primary" fontWeight="bold">
-                            {formatPrice(item.price)}
-                          </Typography>
-                        </CardContent>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
-                          {/* Quantity Controls */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <CardContent sx={{ flex: 1, p: 0 }}>
+                            <Typography variant="h6" fontWeight="bold" gutterBottom>
+                              {item.name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
                               sx={{
-                                backgroundColor: theme.palette.action.hover,
-                                '&:hover': {
-                                  backgroundColor: theme.palette.action.selected,
-                                },
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                mb: 2,
                               }}
                             >
-                              <RemoveIcon fontSize="small" />
-                            </IconButton>
-
-                            <TextField
-                              size="small"
-                              value={item.quantity}
-                              onChange={(e) => {
-                                const newQuantity = parseInt(e.target.value);
-                                if (!isNaN(newQuantity) && newQuantity > 0) {
-                                  handleQuantityChange(item.id, newQuantity);
-                                }
-                              }}
-                              sx={{
-                                width: 60,
-                                '& .MuiOutlinedInput-root': {
-                                  textAlign: 'center',
-                                },
-                              }}
-                              inputProps={{
-                                style: { textAlign: 'center' },
-                                min: 1,
-                              }}
-                            />
-
-                            <IconButton
-                              size="small"
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                              sx={{
-                                backgroundColor: theme.palette.action.hover,
-                                '&:hover': {
-                                  backgroundColor: theme.palette.action.selected,
-                                },
-                              }}
-                            >
-                              <AddIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-
-                          {/* Remove Button */}
-                          <IconButton
-                            color="error"
-                            onClick={() => handleRemoveItem(item.id)}
-                            sx={{
-                              '&:hover': {
-                                backgroundColor: theme.palette.error.light + '20',
-                              },
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                              {item.description}
+                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="h6" color="primary" fontWeight="bold">
+                                {formatPrice(item.price)}
+                              </Typography>
+                              <Chip 
+                                label={`Số lượng: ${item.quantity}`}
+                                color="primary"
+                                variant="outlined"
+                                size="small"
+                              />
+                            </Box>
+                          </CardContent>
                         </Box>
-                      </Box>
-                    </Card>
+                      </Card>
 
-                    {index < items.length - 1 && <Divider sx={{ my: 2 }} />}
-                  </Box>
-                ))}
+                      {index < items.length - 1 && <Divider sx={{ my: 2 }} />}
+                    </Box>
+                  );
+                })}
               </Box>
             </Paper>
           ))}
@@ -365,21 +297,13 @@ const CartPage: React.FC = () => {
           {/* Action Buttons */}
           <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
             <Button
-              variant="outlined"
+              variant="contained"
               startIcon={<RestaurantIcon />}
               onClick={handleContinueShopping}
-              sx={{ flex: 1 }}
+              fullWidth
+              sx={{ py: 1.5 }}
             >
               Tiếp tục mua sắm
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<DeleteIcon />}
-              onClick={clearCart}
-              sx={{ flex: 1 }}
-            >
-              Xóa tất cả
             </Button>
           </Box>
         </Grid>

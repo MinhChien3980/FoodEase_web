@@ -190,10 +190,7 @@ export interface ICart {
 export interface ICartContext {
   cart: ICart;
   addToCart: (item: Omit<ICartItem, 'quantity'>, onUnauthenticated?: () => void) => void;
-  removeFromCart: (itemId: number) => void;
-  updateQuantity: (itemId: number, quantity: number) => void;
-  clearCart: () => void;
-  getItemQuantity: (itemId: number) => number;
+  isLoadingServerCart: boolean;
 }
 
 export type Nullable<T> = {

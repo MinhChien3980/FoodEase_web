@@ -15,7 +15,8 @@ export type {
   MenuItem, 
   RestaurantResponse,
   SingleRestaurantResponse,
-  MenuItemsResponse
+  MenuItemsResponse,
+  MenuItemResponse
 } from './restaurantService';
 
 export type {
@@ -44,6 +45,13 @@ export type {
   Cart,
   CartItem,
   CartResponse,
-  CreateCartResponse
+  CreateCartResponse,
+  ApiCartItem,
+  CartItemsApiResponse,
+  AddCartItemRequest,
+  AddCartItemResponse,
+  UpdateCartItemRequest,
+  UpdateCartItemResponse,
+  DeleteCartItemResponse
 } from './cartService';
 

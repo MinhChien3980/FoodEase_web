@@ -46,5 +46,9 @@ export const API_ENDPOINTS = {
   CART: {
     GET_BY_USER: (userId: number) => `/cart?userId=${userId}`,
     CREATE: (userId: number) => `/cart/${userId}`,
+    GET_ITEMS: (cartId: number) => `/cart-items?cartId=${cartId}`,
+    ADD_ITEM: '/cart-items',
+    UPDATE_ITEM: (cartItemId: number) => `/cart-items/${cartItemId}`,
+    DELETE_ITEM: (cartItemId: number) => `/cart-items/${cartItemId}`,
   },
 }; 

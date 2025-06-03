@@ -35,6 +35,13 @@ export interface MenuItemsResponse {
   data: MenuItem[];
 }
 
+// Single menu item response interface
+export interface MenuItemResponse {
+  code: number;
+  data: MenuItem;
+  message?: string;
+}
+
 export const restaurantService = {
   async getAllRestaurants(): Promise<Restaurant[]> {
     try {
@@ -68,66 +75,21 @@ export const restaurantService = {
     }
   },
 
-//   async getRestaurantById(id: number): Promise<Restaurant> {
-//     try {
-//       const response: AxiosResponse<SingleRestaurantResponse> = await apiClient.get(API_ENDPOINTS.RESTAURANTS.GET_BY_ID(id));
+  // Lấy thông tin chi tiết menu item theo ID
+  async getMenuItemById(menuItemId: number): Promise<MenuItem> {
+    try {
+      const response: AxiosResponse<MenuItemResponse> = await apiClient.get(API_ENDPOINTS.MENU_ITEMS.GET_BY_ID(menuItemId));
       
-//       if (response.data.code === 200) {
-//         console.log(`🏪 Fetched restaurant: ${response.data.data.name}`);
-//         return response.data.data;
-//       } else {
-//         throw new Error(`API error! code: ${response.data.code}`);
-//       }
-//     } catch (error) {
-//       console.error(`Error fetching restaurant with ID ${id}:`, error);
-//       throw new Error(handleApiError(error));
-//     }
-//   },
+      if (response.data.code === 200) {
+        console.log(`🍽️ Fetched menu item ${menuItemId}:`, response.data.data.name);
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error(`Error fetching menu item ${menuItemId}:`, error);
+      throw new Error(handleApiError(error));
+    }
+  },
 
-//   async createRestaurant(restaurant: Omit<Restaurant, 'id'>): Promise<Restaurant> {
-//     try {
-//       const response: AxiosResponse<SingleRestaurantResponse> = await apiClient.post(API_ENDPOINTS.RESTAURANTS.CREATE, restaurant);
-      
-//       if (response.data.code === 200 || response.data.code === 201) {
-//         console.log(`🏪 Created restaurant: ${response.data.data.name}`);
-//         return response.data.data;
-//       } else {
-//         throw new Error(`API error! code: ${response.data.code}`);
-//       }
-//     } catch (error) {
-//       console.error('Error creating restaurant:', error);
-//       throw new Error(handleApiError(error));
-//     }
-//   },
-
-//   async updateRestaurant(id: number, restaurant: Partial<Restaurant>): Promise<Restaurant> {
-//     try {
-//       const response: AxiosResponse<SingleRestaurantResponse> = await apiClient.put(API_ENDPOINTS.RESTAURANTS.UPDATE(id), restaurant);
-      
-//       if (response.data.code === 200) {
-//         console.log(`🏪 Updated restaurant: ${response.data.data.name}`);
-//         return response.data.data;
-//       } else {
-//         throw new Error(`API error! code: ${response.data.code}`);
-//       }
-//     } catch (error) {
-//       console.error(`Error updating restaurant with ID ${id}:`, error);
-//       throw new Error(handleApiError(error));
-//     }
-//   },
-
-//   async deleteRestaurant(id: number): Promise<void> {
-//     try {
-//       const response: AxiosResponse<{ code: number; message: string }> = await apiClient.delete(API_ENDPOINTS.RESTAURANTS.DELETE(id));
-      
-//       if (response.data.code === 200) {
-//         console.log(`🗑️ Deleted restaurant with ID: ${id}`);
-//       } else {
-//         throw new Error(`API error! code: ${response.data.code}`);
-//       }
-//     } catch (error) {
-//       console.error(`Error deleting restaurant with ID ${id}:`, error);
-//       throw new Error(handleApiError(error));
-//     }
-//   }
 }; 
