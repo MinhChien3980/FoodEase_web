@@ -48,6 +48,8 @@ export interface AddCartItemResponse {
 
 // Interface for updating cart item request
 export interface UpdateCartItemRequest {
+    cartId: number;
+    menuItemId: number;
     quantity: number;
 }
 
@@ -172,14 +174,38 @@ export const cartService = {
                 API_ENDPOINTS.CART.DELETE_ITEM(cartItemId)
             );
             
-            if (response.data.code === 200) {
-                console.log(`✅ Successfully deleted cart item ${cartItemId}`);
-                return response.data;
+            console.log(`🔍 Delete response status:`, response.status);
+            console.log(`🔍 Delete response data:`, response.data);
+            console.log(`🔍 Delete response headers:`, response.headers);
+            
+            // Many DELETE APIs just return HTTP status without body
+            if (response.status >= 200 && response.status < 300) {
+                console.log(`✅ Successfully deleted cart item ${cartItemId} (HTTP ${response.status})`);
+                
+                // If server returns structured response with code
+                if (response.data && typeof response.data === 'object' && 'code' in response.data) {
+                    return response.data;
+                } else {
+                    // Return a synthetic response based on HTTP status
+                    return { 
+                        code: response.status, 
+                        message: (response.data as any)?.message || 'Successfully deleted' 
+                    };
+                }
             } else {
-                throw new Error(`API error! code: ${response.data.code}`);
+                console.error(`❌ Delete failed with HTTP status:`, response.status);
+                throw new Error(`Delete failed! HTTP status: ${response.status}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error deleting cart item ${cartItemId}:`, error);
+            
+            // If it's an axios error, check status
+            if (error.response) {
+                console.error('Error response status:', error.response.status);
+                console.error('Error response data:', error.response.data);
+                throw new Error(`Delete failed! HTTP status: ${error.response.status}`);
+            }
+            
             throw new Error(handleApiError(error));
         }
     },

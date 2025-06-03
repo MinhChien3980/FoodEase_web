@@ -6,6 +6,8 @@ import { cartService } from '../services/cartService';
 // Cart actions
 type CartAction =
   | { type: 'ADD_TO_CART'; payload: Omit<ICartItem, 'quantity'> }
+  | { type: 'UPDATE_QUANTITY'; payload: { itemId: number; restaurantId: number; quantity: number } }
+  | { type: 'REMOVE_ITEM'; payload: { itemId: number; restaurantId: number } }
   | { type: 'LOAD_CART'; payload: ICartItem[] }
   | { type: 'RESET_CART' }; // For when user logs out
 
@@ -37,6 +39,57 @@ const cartReducer = (state: ICart, action: CartAction): ICart => {
         // New item, add to cart
         newItems = [...state.items, { ...action.payload, quantity: 1 }];
       }
+
+      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalAmount = newItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      return {
+        items: newItems,
+        totalItems,
+        totalAmount,
+      };
+    }
+
+    case 'UPDATE_QUANTITY': {
+      const { itemId, restaurantId, quantity } = action.payload;
+      
+      if (quantity <= 0) {
+        // If quantity is 0 or less, remove the item
+        const newItems = state.items.filter(
+          item => !(item.id === itemId && item.restaurantId === restaurantId)
+        );
+        
+        const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+        const totalAmount = newItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        return {
+          items: newItems,
+          totalItems,
+          totalAmount,
+        };
+      }
+
+      const newItems = state.items.map(item =>
+        item.id === itemId && item.restaurantId === restaurantId
+          ? { ...item, quantity }
+          : item
+      );
+
+      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalAmount = newItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      return {
+        items: newItems,
+        totalItems,
+        totalAmount,
+      };
+    }
+
+    case 'REMOVE_ITEM': {
+      const { itemId, restaurantId } = action.payload;
+      const newItems = state.items.filter(
+        item => !(item.id === itemId && item.restaurantId === restaurantId)
+      );
 
       const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
       const totalAmount = newItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -256,8 +309,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const existingCartItemId = await cartService.findCartItemIdByMenuItemId(cartId, item.id);
 
       if (existingCartItemId) {
-        // Item exists, update quantity on server
-        await cartService.updateCartItem(existingCartItemId, { quantity });
+        // Item exists, update quantity on server with full data
+        await cartService.updateCartItem(existingCartItemId, { 
+          cartId: cartId,
+          menuItemId: item.id,
+          quantity: quantity 
+        });
         console.log(`✅ Successfully updated cart item quantity on server: ${item.name} (quantity: ${quantity})`);
       } else {
         // Item doesn't exist, add new item to server
@@ -281,9 +338,98 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return item ? item.quantity : 0;
   };
 
+  // Update quantity of a specific item in cart
+  const updateQuantity = (itemId: number, restaurantId: number, quantity: number) => {
+    // Update local cart first for immediate UI feedback
+    dispatch({ 
+      type: 'UPDATE_QUANTITY', 
+      payload: { itemId, restaurantId, quantity } 
+    });
+
+    // Sync with server in background
+    syncUpdateQuantityWithServer(itemId, restaurantId, quantity);
+  };
+
+  // Remove item from cart
+  const removeItem = (itemId: number, restaurantId: number) => {
+    // Remove from local cart first for immediate UI feedback
+    dispatch({ 
+      type: 'REMOVE_ITEM', 
+      payload: { itemId, restaurantId } 
+    });
+
+    // Sync with server in background
+    syncRemoveItemWithServer(itemId, restaurantId);
+  };
+
+  // Sync update quantity with server
+  const syncUpdateQuantityWithServer = async (itemId: number, restaurantId: number, quantity: number) => {
+    try {
+      const cartId = getCustomerCartId();
+      
+      if (!cartId) {
+        console.warn('No cartId found, cannot sync update with server');
+        return;
+      }
+
+      // Find the cart item ID by menu item ID
+      const cartItemId = await cartService.findCartItemIdByMenuItemId(cartId, itemId);
+
+      if (cartItemId) {
+        if (quantity <= 0) {
+          // If quantity is 0 or less, delete the item
+          await cartService.deleteCartItem(cartItemId);
+          console.log(`✅ Successfully deleted cart item from server: itemId ${itemId}`);
+        } else {
+          // Update quantity on server with full data
+          await cartService.updateCartItem(cartItemId, { 
+            cartId: cartId,
+            menuItemId: itemId,
+            quantity: quantity 
+          });
+          console.log(`✅ Successfully updated cart item quantity on server: itemId ${itemId} (quantity: ${quantity})`);
+        }
+      } else {
+        console.warn(`Cart item not found on server for itemId ${itemId}`);
+      }
+    } catch (error) {
+      console.error('Failed to sync quantity update with server:', error);
+      // Note: We don't revert the local change to maintain good UX
+      // The next cart reload will sync with server state
+    }
+  };
+
+  // Sync remove item with server
+  const syncRemoveItemWithServer = async (itemId: number, restaurantId: number) => {
+    try {
+      const cartId = getCustomerCartId();
+      
+      if (!cartId) {
+        console.warn('No cartId found, cannot sync removal with server');
+        return;
+      }
+
+      // Find the cart item ID by menu item ID
+      const cartItemId = await cartService.findCartItemIdByMenuItemId(cartId, itemId);
+
+      if (cartItemId) {
+        await cartService.deleteCartItem(cartItemId);
+        console.log(`✅ Successfully removed cart item from server: itemId ${itemId}`);
+      } else {
+        console.warn(`Cart item not found on server for itemId ${itemId}`);
+      }
+    } catch (error) {
+      console.error('Failed to sync item removal with server:', error);
+      // Note: We don't revert the local change to maintain good UX
+      // The next cart reload will sync with server state
+    }
+  };
+
   const contextValue: ICartContext = {
     cart,
     addToCart,
+    updateQuantity,
+    removeItem,
     getItemQuantity,
     isLoadingServerCart,
   };

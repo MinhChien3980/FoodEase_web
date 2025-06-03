@@ -15,6 +15,7 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -22,6 +23,9 @@ import {
   LocalOffer as LocalOfferIcon,
   Payment as PaymentIcon,
   Login as LoginIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +37,7 @@ const CartPage: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { navigateToRestaurants, navigateToLogin } = useCustomerNavigation();
-  const { cart } = useCart(); // Only get cart data, no update functions
+  const { cart, updateQuantity, removeItem } = useCart(); // Only get cart data, no update functions
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [customerUser, setCustomerUser] = useState<any>(null);
@@ -43,12 +47,12 @@ const CartPage: React.FC = () => {
     const checkAuth = () => {
       const authenticated = isCustomerAuthenticated();
       setIsAuthenticated(authenticated);
-      
+
       if (authenticated) {
         const user = getCustomerUser();
         setCustomerUser(user);
       }
-      
+
       setIsLoading(false);
     };
 
@@ -235,7 +239,7 @@ const CartPage: React.FC = () => {
                 {items.map((item, index) => {
                   // Create a truly unique key for each cart item
                   const uniqueKey = `cart-item-${restaurantId}-${item.id}-${item.quantity}-${index}`;
-                  
+
                   return (
                     <Box key={uniqueKey}>
                       <Card elevation={0} sx={{ display: 'flex', p: 2, backgroundColor: 'transparent' }}>
@@ -275,7 +279,72 @@ const CartPage: React.FC = () => {
                               <Typography variant="h6" color="primary" fontWeight="bold">
                                 {formatPrice(item.price)}
                               </Typography>
-                              <Chip 
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+                                {/* Quantity Controls */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => updateQuantity(item.id, item.restaurantId, item.quantity - 1)}
+                                    disabled={item.quantity <= 1}
+                                    sx={{
+                                      backgroundColor: theme.palette.action.hover,
+                                      '&:hover': {
+                                        backgroundColor: theme.palette.action.selected,
+                                      },
+                                    }}
+                                  >
+                                    <RemoveIcon fontSize="small" />
+                                  </IconButton>
+
+                                  <TextField
+                                    size="small"
+                                    value={item.quantity}
+                                    onChange={(e) => {
+                                      const newQuantity = parseInt(e.target.value);
+                                      if (!isNaN(newQuantity) && newQuantity > 0) {
+                                        updateQuantity(item.id, item.restaurantId, newQuantity);
+                                      }
+                                    }}
+                                    sx={{
+                                      width: 60,
+                                      '& .MuiOutlinedInput-root': {
+                                        textAlign: 'center',
+                                      },
+                                    }}
+                                    inputProps={{
+                                      style: { textAlign: 'center' },
+                                      min: 1,
+                                    }}
+                                  />
+
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => updateQuantity(item.id, item.restaurantId, item.quantity + 1)}
+                                    sx={{
+                                      backgroundColor: theme.palette.action.hover,
+                                      '&:hover': {
+                                        backgroundColor: theme.palette.action.selected,
+                                      },
+                                    }}
+                                  >
+                                    <AddIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+
+                                {/* Remove Button */}
+                                <IconButton
+                                  color="error"
+                                  onClick={() => removeItem(item.id, item.restaurantId)}
+                                  sx={{
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.error.light + '20',
+                                    },
+                                  }}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Box>
+                              <Chip
                                 label={`Số lượng: ${item.quantity}`}
                                 color="primary"
                                 variant="outlined"
