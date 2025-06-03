@@ -190,6 +190,7 @@ export interface ICart {
 export interface ICartContext {
   cart: ICart;
   addToCart: (item: Omit<ICartItem, 'quantity'>, onUnauthenticated?: () => void) => void;
+  getItemQuantity: (itemId: number) => number;
   isLoadingServerCart: boolean;
 }
 

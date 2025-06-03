@@ -275,9 +275,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Get quantity of a specific item in cart
+  const getItemQuantity = (itemId: number): number => {
+    const item = cart.items.find(cartItem => cartItem.id === itemId);
+    return item ? item.quantity : 0;
+  };
+
   const contextValue: ICartContext = {
     cart,
     addToCart,
+    getItemQuantity,
     isLoadingServerCart,
   };
 
