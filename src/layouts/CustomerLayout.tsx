@@ -16,6 +16,11 @@ import {
   Chip,
   ListItemIcon,
   ListItemText,
+  Fade,
+  Slide,
+  Grow,
+  Paper,
+  alpha,
 } from "@mui/material";
 import { Link, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -28,6 +33,8 @@ import {
   Person as PersonIcon,
   Logout as LogoutIcon,
   Language as LanguageIcon,
+  Notifications as NotificationsIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -51,10 +58,22 @@ const CustomerLayout: React.FC = () => {
   const { cart } = useCart();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isScrolled, setIsScrolled] = React.useState(false);
   
   // Check if customer is logged in
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [customerUser, setCustomerUser] = React.useState<any>(null);
+
+  // Handle scroll effect
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   React.useEffect(() => {
     const checkAuthState = async () => {
@@ -100,6 +119,14 @@ const CustomerLayout: React.FC = () => {
     setLanguageAnchorEl(null);
   };
 
+  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMobileMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchorEl(null);
+  };
+
   const handleLanguageChange = (language: string) => {
     i18n.changeLanguage(language);
     handleLanguageMenuClose();
@@ -141,76 +168,138 @@ const CustomerLayout: React.FC = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      {/* Navigation Header */}
+      {/* Enhanced Navigation Header */}
       <AppBar 
         position="sticky" 
+        elevation={0}
         sx={{ 
-          backgroundColor: "white",
-          color: theme.palette.text.primary,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          background: isScrolled 
+            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.95)}, ${alpha(theme.palette.secondary.main, 0.95)})`
+            : `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          backdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha('#fff', 0.1)}`,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: isScrolled 
+            ? '0 8px 32px rgba(0, 0, 0, 0.12)' 
+            : '0 4px 20px rgba(0, 0, 0, 0.08)',
+          zIndex: theme.zIndex.appBar,
         }}
       >
         <Container maxWidth="lg">
-          <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
-            {/* Logo */}
+          <Toolbar sx={{ justifyContent: "space-between", py: 0.5, minHeight: { xs: 48, md: 56 } }}>
+            {/* Enhanced Logo */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <Typography
                 variant="h5"
                 component={Link}
                 to="/foodease"
                 sx={{
-                  fontWeight: "bold",
+                  fontWeight: 800,
                   textDecoration: "none",
-                  color: theme.palette.primary.main,
-                  mr: 4,
+                  color: "white",
+                  mr: { xs: 1.5, md: 4 },
+                  fontSize: { xs: '1.25rem', md: '1.5rem' },
+                  background: 'linear-gradient(45deg, #ffffff, #f0f0f0)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    filter: 'brightness(1.1)'
+                  }
                 }}
               >
                 🍕 FoodEase
               </Typography>
 
-              {/* Navigation Links - Desktop */}
-              <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1 }}>
-                {navigation.map((item) => (
-                  <Button
-                    key={item.name}
-                    component={Link}
-                    to={item.href}
-                    startIcon={item.icon}
-                    sx={{
-                      color: isActivePath(item.href) 
-                        ? theme.palette.primary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: isActivePath(item.href) ? 600 : 400,
-                      "&:hover": {
-                        backgroundColor: theme.palette.primary.light + "20",
-                      },
-                    }}
-                  >
-                    {item.name}
-                  </Button>
+              {/* Enhanced Navigation Links - Desktop */}
+              <Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5 }}>
+                {navigation.map((item, index) => (
+                  <Grow in timeout={800 + index * 100} key={item.name}>
+                    <Button
+                      component={Link}
+                      to={item.href}
+                      startIcon={item.icon}
+                      sx={{
+                        color: "white",
+                        fontWeight: isActivePath(item.href) ? 700 : 500,
+                        fontSize: '0.875rem',
+                        px: 2,
+                        py: 1,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        position: 'relative',
+                        background: isActivePath(item.href) 
+                          ? 'rgba(255, 255, 255, 0.2)' 
+                          : 'transparent',
+                        backdropFilter: isActivePath(item.href) ? 'blur(10px)' : 'none',
+                        border: isActivePath(item.href) 
+                          ? '1px solid rgba(255, 255, 255, 0.3)' 
+                          : '1px solid transparent',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        "&:hover": {
+                          background: 'rgba(255, 255, 255, 0.25)',
+                          backdropFilter: 'blur(15px)',
+                          border: '1px solid rgba(255, 255, 255, 0.4)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        },
+                        "&::before": {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: -2,
+                          left: '50%',
+                          width: isActivePath(item.href) ? '100%' : '0%',
+                          height: 3,
+                          background: 'linear-gradient(90deg, #ffffff, #f0f0f0)',
+                          borderRadius: '2px 2px 0 0',
+                          transform: 'translateX(-50%)',
+                          transition: 'width 0.3s ease'
+                        },
+                        "&:hover::before": {
+                          width: '100%'
+                        }
+                      }}
+                    >
+                      {item.name}
+                    </Button>
+                  </Grow>
                 ))}
               </Box>
             </Box>
 
-            {/* Right Side Actions */}
+            {/* Enhanced Right Side Actions */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              {/* Language Switcher */}
-              <Chip
-                icon={<LanguageIcon />}
-                label={currentLanguage.flag + " " + currentLanguage.code.toUpperCase()}
-                size="small"
-                variant="outlined"
-                onClick={handleLanguageMenuOpen}
-                sx={{ 
-                  display: { xs: "none", sm: "flex" },
-                  borderColor: theme.palette.primary.main,
-                  color: theme.palette.primary.main,
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: theme.palette.primary.light + "20",
-                  }
-                }}
-              />
+              {/* Enhanced Language Switcher */}
+              <Fade in timeout={1000}>
+                <Chip
+                  icon={<LanguageIcon />}
+                  label={currentLanguage.flag + " " + currentLanguage.code.toUpperCase()}
+                  size="small"
+                  variant="filled"
+                  onClick={handleLanguageMenuOpen}
+                  sx={{ 
+                    display: { xs: "none", sm: "flex" },
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: "white",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: 'all 0.3s ease',
+                    "&:hover": {
+                      background: 'rgba(255, 255, 255, 0.3)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    },
+                    "& .MuiChip-icon": {
+                      color: "white"
+                    }
+                  }}
+                />
+              </Fade>
 
               <Menu
                 anchorEl={languageAnchorEl}
@@ -218,12 +307,33 @@ const CustomerLayout: React.FC = () => {
                 onClose={handleLanguageMenuClose}
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                PaperProps={{
+                  sx: {
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: 3,
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                    mt: 1
+                  }
+                }}
               >
                 {languages.map((language) => (
                   <MenuItem 
                     key={language.code} 
                     onClick={() => handleLanguageChange(language.code)}
                     selected={language.code === i18n.language}
+                    sx={{
+                      borderRadius: 2,
+                      mx: 1,
+                      my: 0.5,
+                      '&:hover': {
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.secondary.main}15)`
+                      },
+                      '&.Mui-selected': {
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main}25, ${theme.palette.secondary.main}25)`
+                      }
+                    }}
                   >
                     <ListItemIcon>
                       <span style={{ fontSize: "1.2em" }}>{language.flag}</span>
@@ -233,137 +343,269 @@ const CustomerLayout: React.FC = () => {
                 ))}
               </Menu>
 
-              {/* Cart */}
-              <IconButton 
-                color="inherit"
-                onClick={handleCartClick}
-                sx={{
-                  "&:hover": {
-                    backgroundColor: theme.palette.primary.light + "20",
-                  }
-                }}
-              >
-                <Badge badgeContent={isLoggedIn ? cart.totalItems : 0} color="primary" max={99}>
-                  <ShoppingCartIcon />
-                </Badge>
-              </IconButton>
+              {/* Enhanced Cart */}
+              <Fade in timeout={1200}>
+                <IconButton 
+                  onClick={handleCartClick}
+                  size="small"
+                  sx={{
+                    color: "white",
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    transition: 'all 0.3s ease',
+                    "&:hover": {
+                      background: 'rgba(255, 255, 255, 0.3)',
+                      transform: 'translateY(-2px) scale(1.05)',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    }
+                  }}
+                >
+                  <Badge 
+                    badgeContent={isLoggedIn ? cart.totalItems : 0} 
+                    color="error" 
+                    max={99}
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        background: 'linear-gradient(45deg, #ff6b6b, #ff8e53)',
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        animation: cart.totalItems > 0 ? 'pulse 2s infinite' : 'none',
+                        '@keyframes pulse': {
+                          '0%': { transform: 'scale(1)' },
+                          '50%': { transform: 'scale(1.1)' },
+                          '100%': { transform: 'scale(1)' }
+                        }
+                      }
+                    }}
+                  >
+                    <ShoppingCartIcon />
+                  </Badge>
+                </IconButton>
+              </Fade>
 
-              {/* User Menu */}
+              {/* Enhanced User Menu */}
               {isLoggedIn ? (
-                <>
-                  <IconButton onClick={handleMenuOpen} color="inherit">
-                    <Avatar sx={{ width: 32, height: 32, backgroundColor: theme.palette.primary.main }}>
-                      {customerUser?.imageUrl ? (
-                        <img src={customerUser.imageUrl} alt={customerUser.fullName} style={{ width: "100%", height: "100%" }} />
-                      ) : (
-                        customerUser?.fullName?.charAt(0).toUpperCase() || <PersonIcon />
-                      )}
-                    </Avatar>
-                  </IconButton>
-
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                    transformOrigin={{ horizontal: "right", vertical: "top" }}
-                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                    sx={{ mt: 1 }}
-                  >
-                    <MenuItem 
-                      component={Link} 
-                      to="/foodease/profile" 
-                      onClick={handleMenuClose}
+                <Fade in timeout={1400}>
+                  <Box>
+                    <IconButton 
+                      onClick={handleMenuOpen}
+                      size="small"
+                      sx={{
+                        p: 0.25,
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        transition: 'all 0.3s ease',
+                        "&:hover": {
+                          background: 'rgba(255, 255, 255, 0.3)',
+                          transform: 'translateY(-2px) scale(1.05)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        }
+                      }}
                     >
-                      <ListItemIcon>
-                        <PersonIcon />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="Profile" 
-                        secondary={customerUser?.fullName}
-                      />
-                    </MenuItem>
-                    <MenuItem onClick={handleLogout}>
-                      <ListItemIcon>
-                        <LogoutIcon />
-                      </ListItemIcon>
-                      <ListItemText primary="Logout" />
-                    </MenuItem>
-                  </Menu>
-                </>
+                      <Avatar 
+                        sx={{ 
+                          width: 32, 
+                          height: 32, 
+                          background: 'linear-gradient(45deg, #ffffff, #f0f0f0)',
+                          color: theme.palette.primary.main,
+                          fontWeight: 700,
+                          fontSize: '1rem'
+                        }}
+                      >
+                        {customerUser?.imageUrl ? (
+                          <img src={customerUser.imageUrl} alt={customerUser.fullName} style={{ width: "100%", height: "100%" }} />
+                        ) : (
+                          customerUser?.fullName?.charAt(0).toUpperCase() || <PersonIcon />
+                        )}
+                      </Avatar>
+                    </IconButton>
+
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                      transformOrigin={{ horizontal: "right", vertical: "top" }}
+                      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                      PaperProps={{
+                        sx: {
+                          background: 'rgba(255, 255, 255, 0.95)',
+                          backdropFilter: 'blur(20px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: 3,
+                          boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                          mt: 1,
+                          minWidth: 200
+                        }
+                      }}
+                    >
+                      <MenuItem 
+                        component={Link} 
+                        to="/foodease/profile" 
+                        onClick={handleMenuClose}
+                        sx={{
+                          borderRadius: 2,
+                          mx: 1,
+                          my: 0.5,
+                          '&:hover': {
+                            background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.secondary.main}15)`
+                          }
+                        }}
+                      >
+                        <ListItemIcon>
+                          <PersonIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary="Profile" 
+                          secondary={customerUser?.fullName}
+                        />
+                      </MenuItem>
+                      <MenuItem 
+                        onClick={handleLogout}
+                        sx={{
+                          borderRadius: 2,
+                          mx: 1,
+                          my: 0.5,
+                          '&:hover': {
+                            background: `linear-gradient(45deg, ${theme.palette.error.main}15, ${theme.palette.warning.main}15)`
+                          }
+                        }}
+                      >
+                        <ListItemIcon>
+                          <LogoutIcon color="error" />
+                        </ListItemIcon>
+                        <ListItemText primary="Logout" />
+                      </MenuItem>
+                    </Menu>
+                  </Box>
+                </Fade>
               ) : (
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <Button
-                    component={Link}
-                    to="/foodease/login"
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      borderColor: theme.palette.primary.main,
-                      color: theme.palette.primary.main,
-                      "&:hover": {
-                        backgroundColor: theme.palette.primary.light + "20",
-                        borderColor: theme.palette.primary.main,
-                      },
-                    }}
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/foodease/register"
-                    variant="contained"
-                    size="small"
-                    sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      "&:hover": {
-                        backgroundColor: theme.palette.primary.dark,
-                      },
-                    }}
-                  >
-                    Sign Up
-                  </Button>
-                </Box>
+                <Fade in timeout={1400}>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      component={Link}
+                      to="/foodease/login"
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        borderColor: "white",
+                        color: "white",
+                        fontWeight: 600,
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontSize: '0.8rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'all 0.3s ease',
+                        "&:hover": {
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          borderColor: "white",
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        },
+                      }}
+                    >
+                      LOGIN
+                    </Button>
+                    <Button
+                      component={Link}
+                      to="/foodease/register"
+                      variant="contained"
+                      size="small"
+                      sx={{
+                        background: 'linear-gradient(45deg, #ffffff, #f0f0f0)',
+                        color: theme.palette.primary.main,
+                        fontWeight: 700,
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontSize: '0.8rem',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                        transition: 'all 0.3s ease',
+                        "&:hover": {
+                          background: 'linear-gradient(45deg, #f0f0f0, #e0e0e0)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.25)',
+                        },
+                      }}
+                    >
+                      SIGN UP
+                    </Button>
+                  </Box>
+                </Fade>
               )}
 
-              {/* Mobile Menu */}
+              {/* Enhanced Mobile Menu */}
               <IconButton 
-                sx={{ display: { xs: "flex", md: "none" } }}
-                color="inherit"
+                size="small"
+                sx={{ 
+                  display: { xs: "flex", md: "none" },
+                  color: "white",
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  transition: 'all 0.3s ease',
+                  "&:hover": {
+                    background: 'rgba(255, 255, 255, 0.3)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                  }
+                }}
+                onClick={handleMobileMenuOpen}
               >
                 <MenuIcon />
               </IconButton>
-            </Box>
-          </Toolbar>
 
-          {/* Mobile Navigation */}
-          <Box 
-            sx={{ 
-              display: { xs: "flex", md: "none" }, 
-              pb: 1, 
-              gap: 1,
-              overflowX: "auto",
-            }}
-          >
-            {navigation.map((item) => (
-              <Button
-                key={item.name}
-                component={Link}
-                to={item.href}
-                startIcon={item.icon}
-                size="small"
-                sx={{
-                  color: isActivePath(item.href) 
-                    ? theme.palette.primary.main 
-                    : theme.palette.text.primary,
-                  fontWeight: isActivePath(item.href) ? 600 : 400,
-                  minWidth: "auto",
-                  whiteSpace: "nowrap",
+              <Menu
+                anchorEl={mobileMenuAnchorEl}
+                open={Boolean(mobileMenuAnchorEl)}
+                onClose={handleMobileMenuClose}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                PaperProps={{
+                  sx: {
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: 3,
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                    mt: 1,
+                    minWidth: 250
+                  }
                 }}
               >
-                {item.name}
-              </Button>
-            ))}
-          </Box>
+                {navigation.map((item) => (
+                  <MenuItem 
+                    key={item.name}
+                    component={Link}
+                    to={item.href}
+                    onClick={handleMobileMenuClose}
+                    sx={{
+                      borderRadius: 2,
+                      mx: 1,
+                      my: 0.5,
+                      background: isActivePath(item.href) 
+                        ? `linear-gradient(45deg, ${theme.palette.primary.main}25, ${theme.palette.secondary.main}25)`
+                        : 'transparent',
+                      '&:hover': {
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main}15, ${theme.palette.secondary.main}15)`
+                      }
+                    }}
+                  >
+                    <ListItemIcon>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={item.name} />
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
+          </Toolbar>
         </Container>
       </AppBar>
 
@@ -372,80 +614,105 @@ const CustomerLayout: React.FC = () => {
         <Outlet />
       </Box>
 
-      {/* Footer */}
+      {/* Enhanced Footer */}
       <Box 
         sx={{ 
-          backgroundColor: theme.palette.grey[900],
+          background: `linear-gradient(135deg, ${theme.palette.grey[900]}, ${theme.palette.grey[800]})`,
           color: "white",
-          py: 4,
-          mt: 6,
+          py: 6,
+          mt: 8,
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.2)}, transparent)`
+          }
         }}
       >
         <Container maxWidth="lg">
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-            <Box>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 6, mb: 4 }}>
+            <Box sx={{ flex: 1, minWidth: 250 }}>
+              <Typography variant="h5" fontWeight="800" gutterBottom sx={{ 
+                background: 'linear-gradient(45deg, #ffffff, #f0f0f0)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
                 🍕 FoodEase
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                {t("footer.tagline", { defaultValue: "Your favorite food delivery app" })}
+              <Typography variant="body1" sx={{ opacity: 0.8, lineHeight: 1.6, mb: 3 }}>
+                {t("footer.tagline", { defaultValue: "Your favorite food delivery app - bringing delicious meals to your doorstep with just a few clicks." })}
               </Typography>
             </Box>
             
-            <Box>
-              <Typography variant="subtitle2" fontWeight="600" gutterBottom>
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <Typography variant="h6" fontWeight="700" gutterBottom sx={{ color: 'white', mb: 3 }}>
                 {t("footer.quickLinks", { defaultValue: "Quick Links" })}
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                <Typography 
-                  variant="body2" 
-                  component={Link} 
-                  to="/foodease" 
-                  sx={{ color: "inherit", textDecoration: "none", opacity: 0.8 }}
-                >
-                  {t("customer.navigation.home", { defaultValue: "Home" })}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  component={Link} 
-                  to="/foodease/restaurants" 
-                  sx={{ color: "inherit", textDecoration: "none", opacity: 0.8 }}
-                >
-                  {t("customer.navigation.restaurants", { defaultValue: "Restaurants" })}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  component={Link} 
-                  to="/foodease/offers" 
-                  sx={{ color: "inherit", textDecoration: "none", opacity: 0.8 }}
-                >
-                  {t("customer.navigation.offers", { defaultValue: "Offers" })}
-                </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                {navigation.map((item) => (
+                  <Typography 
+                    key={item.name}
+                    variant="body1" 
+                    component={Link} 
+                    to={item.href} 
+                    sx={{ 
+                      color: "inherit", 
+                      textDecoration: "none", 
+                      opacity: 0.8,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        opacity: 1,
+                        transform: 'translateX(8px)',
+                        color: theme.palette.primary.light
+                      }
+                    }}
+                  >
+                    {item.name}
+                  </Typography>
+                ))}
               </Box>
             </Box>
 
-            <Box>
-              <Typography variant="subtitle2" fontWeight="600" gutterBottom>
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <Typography variant="h6" fontWeight="700" gutterBottom sx={{ color: 'white', mb: 3 }}>
                 {t("footer.support", { defaultValue: "Support" })}
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {t("footer.helpCenter", { defaultValue: "Help Center" })}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {t("footer.contactUs", { defaultValue: "Contact Us" })}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {t("footer.privacyPolicy", { defaultValue: "Privacy Policy" })}
-                </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                {[
+                  { label: t("footer.helpCenter", { defaultValue: "Help Center" }) },
+                  { label: t("footer.contactUs", { defaultValue: "Contact Us" }) },
+                  { label: t("footer.privacyPolicy", { defaultValue: "Privacy Policy" }) }
+                ].map((link) => (
+                  <Typography 
+                    key={link.label}
+                    variant="body1" 
+                    sx={{ 
+                      opacity: 0.8, 
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        opacity: 1,
+                        transform: 'translateX(8px)',
+                        color: theme.palette.primary.light
+                      }
+                    }}
+                  >
+                    {link.label}
+                  </Typography>
+                ))}
               </Box>
             </Box>
           </Box>
 
-          <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.2)" }} />
+          <Divider sx={{ my: 4, borderColor: "rgba(255,255,255,0.2)" }} />
           
-          <Typography variant="body2" textAlign="center" sx={{ opacity: 0.6 }}>
-            {t("footer.copyright", { defaultValue: "© 2024 FoodEase. All rights reserved." })}
+          <Typography variant="body1" textAlign="center" sx={{ opacity: 0.7, fontWeight: 500 }}>
+            {t("footer.copyright", { defaultValue: "© 2024 FoodEase. All rights reserved. Made with ❤️ for food lovers." })}
           </Typography>
         </Container>
       </Box>

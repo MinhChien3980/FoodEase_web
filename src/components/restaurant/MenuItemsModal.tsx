@@ -17,6 +17,9 @@ import {
   IconButton,
   CardActions,
   Snackbar,
+  useMediaQuery,
+  Badge,
+  Divider,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
@@ -25,6 +28,7 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LoginIcon from "@mui/icons-material/Login";
+import StarIcon from "@mui/icons-material/Star";
 import { restaurantService, MenuItem } from "../../services";
 import { ICartItem } from "../../interfaces";
 import { useCart } from "../../contexts/CartContext";
@@ -45,7 +49,8 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
   restaurantName,
 }) => {
   const theme = useTheme();
-  const { navigateToLogin } = useCustomerNavigation();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { navigateToLogin, navigateToCart } = useCustomerNavigation();
   const { addToCart, getItemQuantity } = useCart();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -108,7 +113,7 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
 
   const handleAddToCart = (item: MenuItem) => {
     if (!isAuthenticated) {
-      // Show a more friendly message and redirect to login
+      showSnackbar('Vui lòng đăng nhập để thêm vào giỏ hàng', 'warning');
       setTimeout(() => {
         navigateToLogin();
       }, 1500);
@@ -127,11 +132,9 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
     };
 
     addToCart(cartItem, () => {
-      // This callback shouldn't be called since we already checked auth above
       navigateToLogin();
     });
     
-    // Show success message
     const currentQuantity = getItemQuantity(item.id);
     showSnackbar(`Đã thêm "${item.name}" vào giỏ hàng! (Số lượng: ${currentQuantity + 1})`, 'success');
   };
@@ -143,29 +146,39 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
         onClose={onClose}
         maxWidth="lg"
         fullWidth
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
-            borderRadius: 2,
-            maxHeight: '90vh',
+            borderRadius: isMobile ? 0 : 2,
+            maxHeight: isMobile ? '100vh' : '90vh',
           },
         }}
       >
+        {/* Simple Header */}
         <DialogTitle
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            py: 2,
+            px: 3,
             borderBottom: `1px solid ${theme.palette.divider}`,
-            pb: 2,
+            backgroundColor: theme.palette.background.paper,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <RestaurantMenuIcon color="primary" />
-            <Typography variant="h5" component="h2" fontWeight={600}>
-              Menu - {restaurantName}
-            </Typography>
+            <Box>
+              <Typography variant="h6" component="h2" fontWeight={600}>
+                Menu - {restaurantName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {menuItems.length} món ăn
+              </Typography>
+            </Box>
           </Box>
-          <IconButton onClick={onClose} edge="end">
+          
+          <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -173,28 +186,28 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
         <DialogContent sx={{ p: 3 }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={50} />
+              <CircularProgress size={40} />
             </Box>
           ) : error ? (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
               <Button onClick={fetchMenuItems} sx={{ ml: 2 }}>
-                Retry
+                Thử lại
               </Button>
             </Alert>
           ) : menuItems.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <RestaurantMenuIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" color="text.secondary" gutterBottom>
-                No menu items available
+                Chưa có món ăn nào
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                This restaurant hasn't added any menu items yet.
+                Nhà hàng này chưa thêm món ăn nào vào thực đơn.
               </Typography>
             </Box>
           ) : (
-            <Grid container spacing={3}>
-              {menuItems.map((item) => {
+            <Grid container spacing={2}>
+              {menuItems.map((item, index) => {
                 const currentQuantity = isAuthenticated ? getItemQuantity(item.id) : 0;
                 
                 return (
@@ -204,26 +217,45 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        "&:hover": {
-                          boxShadow: theme.shadows[4],
-                          transform: "translateY(-2px)",
-                        },
-                        transition: "all 0.3s ease-in-out",
                         position: 'relative',
+                        "&:hover": {
+                          boxShadow: 2,
+                        },
+                        transition: "box-shadow 0.2s ease",
                       }}
                     >
-                      {/* Quantity Badge - Only show if authenticated and has items */}
+                      {/* Quantity Badge */}
                       {isAuthenticated && currentQuantity > 0 && (
-                        <Chip
-                          label={`${currentQuantity} trong giỏ`}
+                        <Badge
+                          badgeContent={currentQuantity}
                           color="primary"
-                          size="small"
                           sx={{
                             position: 'absolute',
                             top: 8,
                             right: 8,
                             zIndex: 1,
-                            backgroundColor: theme.palette.primary.main,
+                          }}
+                        >
+                          <Chip
+                            label="Đã chọn"
+                            size="small"
+                            color="primary"
+                            variant="filled"
+                          />
+                        </Badge>
+                      )}
+
+                      {/* Popular Badge */}
+                      {index < 3 && (
+                        <Chip
+                          label="Phổ biến"
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            left: 8,
+                            zIndex: 1,
+                            backgroundColor: '#ff6b6b',
                             color: 'white',
                           }}
                         />
@@ -231,15 +263,13 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
 
                       <CardMedia
                         component="img"
-                        height="200"
+                        height="180"
                         image={item.imageUrl || '/placeholder-food.jpg'}
                         alt={item.name}
                         onError={handleImageError}
-                        sx={{
-                          objectFit: "cover",
-                          backgroundColor: theme.palette.grey[200],
-                        }}
+                        sx={{ objectFit: "cover" }}
                       />
+                      
                       <CardContent sx={{ flexGrow: 1, p: 2 }}>
                         <Typography
                           variant="h6"
@@ -261,16 +291,21 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
                           sx={{
                             mb: 2,
                             display: "-webkit-box",
-                            WebkitLineClamp: 3,
+                            WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
-                            minHeight: 60,
+                            minHeight: 40,
                           }}
                         >
                           {item.description}
                         </Typography>
 
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: "auto" }}>
+                        <Box sx={{ 
+                          display: "flex", 
+                          justifyContent: "space-between", 
+                          alignItems: "center",
+                          mb: 1
+                        }}>
                           <Typography
                             variant="h6"
                             color="primary"
@@ -278,19 +313,34 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
                           >
                             {formatPrice(item.price)}
                           </Typography>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {[...Array(5)].map((_, i) => (
+                              <StarIcon 
+                                key={i}
+                                sx={{ 
+                                  fontSize: 16, 
+                                  color: i < 4 ? '#FFD700' : theme.palette.grey[300] 
+                                }} 
+                              />
+                            ))}
+                          </Box>
                         </Box>
                       </CardContent>
 
-                      {/* Action Buttons */}
                       <CardActions sx={{ p: 2, pt: 0 }}>
                         <Button
-                           startIcon={isAuthenticated ? <ShoppingCartIcon /> : <LoginIcon />}
-                           onClick={() => handleAddToCart(item)}
-                           variant="contained"
-                           size="small"
-                           sx={{ flex: 1 }}
+                          startIcon={isAuthenticated ? <AddShoppingCartIcon /> : <LoginIcon />}
+                          onClick={() => handleAddToCart(item)}
+                          variant="contained"
+                          size="medium"
+                          fullWidth
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 600,
+                          }}
                         >
-                          {isAuthenticated ? 'Thêm giỏ hàng' : 'Đăng nhập để mua'}
+                          {isAuthenticated ? 'Thêm vào giỏ hàng' : 'Đăng nhập để mua'}
                         </Button>
                       </CardActions>
                     </Card>
@@ -301,14 +351,38 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
           )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button onClick={onClose} variant="contained" color="primary">
-            Close
+        {/* Simple Footer */}
+        <DialogActions 
+          sx={{ 
+            p: 2,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            gap: 1,
+          }}
+        >
+          <Button 
+            onClick={onClose} 
+            variant="outlined"
+            startIcon={<CloseIcon />}
+          >
+            Đóng
           </Button>
+          
+          {isAuthenticated && (
+            <Button 
+              onClick={() => {
+                onClose();
+                navigateToCart();
+              }}
+              variant="contained"
+              startIcon={<ShoppingCartIcon />}
+            >
+              Xem giỏ hàng
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 
-      {/* Toast Notification */}
+      {/* Simple Toast Notification */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
