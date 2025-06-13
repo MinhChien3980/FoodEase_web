@@ -28,6 +28,10 @@ export const userService = {
         return response.data;
     },
     
+    updateProfile: async (userId: number, data: UpdateProfileRequest): Promise<ProfileResponse> => {
+        const response: AxiosResponse<ProfileResponse> = await apiClient.put(API_ENDPOINTS.USERS.UPDATE(userId), data);
+        return response.data;
+    }
 };  
 
 

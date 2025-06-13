@@ -42,6 +42,7 @@ import { formatPrice } from "../../../utils/foodHelpers";
 import apiClient, { handleApiError } from "../../../services/apiClient";
 import { API_ENDPOINTS } from "../../../config/api";
 import { orderService, Order } from "../../../services/orderService";
+import { userService } from "../../../services/userService";
 
 interface CustomerUser {
   id: number;
@@ -178,18 +179,29 @@ const ProfilePage: React.FC = () => {
     if (editMode) {
       // Save changes
       const token = sessionStorage.getItem('customer_token');
-      if (!token) return;
+      if (!token || !user) return;
 
       try {
-        // Here you would call your update profile API
-        // For now, we'll just update sessionStorage
-        const updatedUser = { ...user, ...editedUser } as CustomerUser;
-        setUser(updatedUser);
-        sessionStorage.setItem('customer_user', JSON.stringify(updatedUser));
-        setUpdateMessage(t('profileUpdatedSuccessfully'));
-        setTimeout(() => setUpdateMessage(null), 3000);
+        const updateData = {
+          fullName: editedUser.fullName || '',
+          phone: editedUser.phone || '',
+          cityId: editedUser.cityId || 0,
+          langKey: editedUser.langKey || 'en'
+        };
+
+        const response = await userService.updateProfile(user.id, updateData);
+        
+        if (response.code === 200) {
+          const updatedUser = { ...user, ...response.data } as CustomerUser;
+          setUser(updatedUser);
+          sessionStorage.setItem('customer_user', JSON.stringify(updatedUser));
+          setUpdateMessage(t('profileUpdatedSuccessfully'));
+          setTimeout(() => setUpdateMessage(null), 3000);
+        } else {
+          throw new Error(response.message || t('failedToUpdateProfile'));
+        }
       } catch (error) {
-        setError(t('failedToUpdateProfile'));
+        setError(handleApiError(error));
       }
     }
     setEditMode(!editMode);
