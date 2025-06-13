@@ -59,6 +59,6 @@ export const API_ENDPOINTS = {
     CREATE: '/orders',
     GET_ALL: '/orders',
     GET_BY_ID: (id: number) => `/orders/${id}`,
-    GET_BY_USER: (userId: number) => `/orders/user/${userId}`,
+    GET_BY_USER: (userId: number) => `/orders/${userId}`,
   },
 }; 

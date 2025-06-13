@@ -27,6 +27,21 @@ export interface OrderResponse {
   };
 }
 
+export interface Order {
+  id: number;
+  userId: number;
+  activeStatus: string;
+  totalPrice: number;
+  createdAt: string;
+  items: OrderItem[];
+}
+
+export interface OrdersResponse {
+  code: number;
+  data: Order[];
+  message?: string;
+}
+
 export const orderService = {
   createOrder: async (request: CreateOrderRequest): Promise<OrderResponse> => {
     try {
@@ -40,4 +55,19 @@ export const orderService = {
     }
   },
 
+  getOrdersByUserId: async (userId: number): Promise<Order[]> => {
+    try {
+      const response: AxiosResponse<OrdersResponse> = await apiClient.get(
+        API_ENDPOINTS.ORDERS.GET_BY_USER(userId)
+      );
+      
+      if (response.data.code === 200) {
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  }
 }; 

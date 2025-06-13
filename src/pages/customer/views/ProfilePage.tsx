@@ -39,6 +39,9 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import LanguageIcon from "@mui/icons-material/Language";
 import OrderStatusChip from "../../../components/order/OrderStatusChip";
 import { formatPrice } from "../../../utils/foodHelpers";
+import apiClient, { handleApiError } from "../../../services/apiClient";
+import { API_ENDPOINTS } from "../../../config/api";
+import { orderService, Order } from "../../../services/orderService";
 
 interface CustomerUser {
   id: number;
@@ -63,42 +66,6 @@ interface City {
   name: string;
 }
 
-interface Order {
-  id: string;
-  date: string;
-  status: string;
-  restaurant: string;
-  items: number;
-  total: number;
-}
-
-const mockOrders: Order[] = [
-  {
-    id: "ORD-2024-001",
-    date: "2024-01-30",
-    status: "delivered",
-    restaurant: "Pizza Palace",
-    items: 3,
-    total: 28.99
-  },
-  {
-    id: "ORD-2024-002", 
-    date: "2024-01-28",
-    status: "delivered",
-    restaurant: "Sushi Express",
-    items: 2,
-    total: 45.50
-  },
-  {
-    id: "ORD-2024-003",
-    date: "2024-01-25",
-    status: "cancelled",
-    restaurant: "Burger King",
-    items: 1,
-    total: 12.99
-  }
-];
-
 const ProfilePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -110,6 +77,8 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -124,36 +93,23 @@ const ProfilePage: React.FC = () => {
     fetchCities();
   }, [navigate]);
 
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserOrders(user.id);
+    }
+  }, [user?.id]);
+
   const fetchCities = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/cities/all', {
-        method: 'GET',
-        headers: {
-          'accept': '*/*'
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.code === 200) {
-        setCities(data.data || []);
+      const response = await apiClient.get(API_ENDPOINTS.CITIES.GET_ALL);
+      
+      if (response.data.code === 200) {
+        setCities(response.data.data);
       } else {
-        console.error('Failed to fetch cities:', data);
-        // Fallback cities
-        setCities([
-          { id: 1, name: 'Hà Nội' },
-          { id: 2, name: 'Hồ Chí Minh' },
-          { id: 3, name: 'Đà Nẵng' }
-        ]);
+        throw new Error(`API error! code: ${response.data.code}`);
       }
     } catch (error) {
       console.error('Error fetching cities:', error);
-      // Fallback cities
-      setCities([
-        { id: 1, name: 'Hà Nội' },
-        { id: 2, name: 'Hồ Chí Minh' },
-        { id: 3, name: 'Đà Nẵng' }
-      ]);
     }
   };
 
@@ -167,40 +123,18 @@ const ProfilePage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('http://localhost:8080/api/users/profile', {
-        method: 'GET',
-        headers: {
-          'accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.code === 200) {
-        setUser(data.data);
-        setEditedUser(data.data);
+      const response = await apiClient.get(API_ENDPOINTS.USERS.PROFILE);
+      
+      if (response.data.code === 200) {
+        setUser(response.data.data);
+        setEditedUser(response.data.data);
         // Update sessionStorage with fresh data
-        sessionStorage.setItem('customer_user', JSON.stringify(data.data));
+        sessionStorage.setItem('customer_user', JSON.stringify(response.data.data));
       } else {
-        setError('Failed to load profile data');
-        // Try to get user from sessionStorage as fallback
-        const cachedUser = sessionStorage.getItem('customer_user');
-        if (cachedUser) {
-          try {
-            const parsedUser = JSON.parse(cachedUser);
-            setUser(parsedUser as CustomerUser);
-            setEditedUser(parsedUser);
-          } catch (parseError) {
-            navigate('/foodease/login');
-          }
-        } else {
-          navigate('/foodease/login');
-        }
+        throw new Error(`API error! code: ${response.data.code}`);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      setError('Network error. Unable to load profile.');
+      setError(handleApiError(error));
       
       // Try to get user from sessionStorage as fallback
       const cachedUser = sessionStorage.getItem('customer_user');
@@ -217,6 +151,19 @@ const ProfilePage: React.FC = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserOrders = async (userId: number) => {
+    try {
+      setLoadingOrders(true);
+      const userOrders = await orderService.getOrdersByUserId(userId);
+      console.log("userOrders: ", userOrders);
+      setOrders(userOrders);
+    } catch (error) {
+      setError(t('failedToLoadOrders'));
+    } finally {
+      setLoadingOrders(false);
     }
   };
 
@@ -241,7 +188,6 @@ const ProfilePage: React.FC = () => {
         setUpdateMessage(t('profileUpdatedSuccessfully'));
         setTimeout(() => setUpdateMessage(null), 3000);
       } catch (error) {
-        console.error('Error updating profile:', error);
         setError(t('failedToUpdateProfile'));
       }
     }
@@ -370,27 +316,6 @@ const ProfilePage: React.FC = () => {
                     {user.phone}
                   </Typography>
                   
-                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', my: 2 }}>
-                    <Chip
-                      label={`${t('memberSince')} ${formatJoinDate(user.createdAt)}`}
-                      color="primary"
-                      variant="outlined"
-                      size="small"
-                    />
-                    <Chip
-                      label={user.activated ? t('verified') : t('unverified')}
-                      color={user.activated ? "success" : "warning"}
-                      variant="outlined"
-                      size="small"
-                    />
-                    <Chip
-                      icon={<LanguageIcon />}
-                      label={user.langKey?.toUpperCase() || 'EN'}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </Box>
-
                   {user.referralCode && (
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                       {t('referralCode')}: <strong>{user.referralCode}</strong>
@@ -416,37 +341,6 @@ const ProfilePage: React.FC = () => {
                   {t('quickActions')}
                 </Typography>
                 <List dense>
-                  <ListItemButton>
-                    <ListItemIcon>
-                      <FavoriteIcon color="error" />
-                    </ListItemIcon>
-                    <ListItemText primary={t('myFavorites')} />
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemIcon>
-                      <PaymentIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={t('paymentMethods')} />
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemIcon>
-                      <LocationOnIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary={t('deliveryAddresses')} />
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemIcon>
-                      <NotificationsIcon color="warning" />
-                    </ListItemIcon>
-                    <ListItemText primary={t('notifications')} />
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemIcon>
-                      <SecurityIcon color="info" />
-                    </ListItemIcon>
-                    <ListItemText primary={t('privacySecurity')} />
-                  </ListItemButton>
-                  <Divider sx={{ my: 1 }} />
                   <ListItemButton onClick={handleLogout} sx={{ color: 'error.main' }}>
                     <ListItemIcon>
                       <LogoutIcon color="error" />
@@ -515,9 +409,13 @@ const ProfilePage: React.FC = () => {
                   </Button>
                 </Box>
 
-                {mockOrders.length > 0 ? (
+                {loadingOrders ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : orders.length > 0 ? (
                   <Grid container spacing={2}>
-                    {mockOrders.map((order) => (
+                    {orders.map((order) => (
                       <Grid item xs={12} key={order.id}>
                         <Paper
                           sx={{
@@ -532,23 +430,36 @@ const ProfilePage: React.FC = () => {
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <ShoppingBagIcon color="primary" />
                             <Box>
-                              <Typography variant="subtitle1" fontWeight="600">
-                                {order.restaurant}
+                              <Typography variant="body2" color="text.secondary">
+                                {t('order')} #{order.id} • {order.items?.length || 0} {t('items')}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                {t('order')} #{order.id} • {order.items} {t('items')}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(order.date).toLocaleDateString()}
+                                {new Date(order.createdAt).toLocaleDateString()}
                               </Typography>
                             </Box>
                           </Box>
                           <Box sx={{ textAlign: 'right' }}>
                             <Typography variant="h6" fontWeight="bold">
-                              {formatPrice(order.total)}
+                              {formatPrice(order.totalPrice)}
                             </Typography>
                             <OrderStatusChip 
-                              status={order.status as any}
+                              status={(() => {
+                                const status = order.activeStatus?.toLowerCase();
+                                switch(status) {
+                                  case 'cancel':
+                                    return 'cancelled';
+                                  case 'complete':
+                                    return 'delivered';
+                                  case 'pending':
+                                    return 'pending';
+                                  case 'confirmed':
+                                    return 'confirmed';
+                                  case 'preparing':
+                                    return 'preparing';
+                                  default:
+                                    return status;
+                                }
+                              })() as any}
                               size="small"
                             />
                           </Box>
@@ -572,52 +483,6 @@ const ProfilePage: React.FC = () => {
                 )}
               </CardContent>
             </Card>
-
-            {/* Account Stats */}
-            <Grid container spacing={3}>
-              <Grid item xs={6} md={3}>
-                <Paper sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight="bold" color="primary.main">
-                    {mockOrders.filter(o => o.status === 'delivered').length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('ordersCompleted')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Paper sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight="bold" color="success.main">
-                    {formatPrice(mockOrders.reduce((sum, order) => 
-                      order.status === 'delivered' ? sum + order.total : sum, 0
-                    ))}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('totalSpent')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Paper sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight="bold" color="warning.main">
-                    0
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('favoriteRestaurants')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Paper sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight="bold" color="info.main">
-                    {user.activated ? '✓' : '✗'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('accountStatus')}
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
           </Grid>
         </Grid>
       </Container>
