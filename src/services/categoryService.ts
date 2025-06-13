@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import apiClient, { handleApiError, publicApiClient } from './apiClient';
+import apiClient, { handleApiError } from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
 // Category API service
@@ -22,7 +22,7 @@ export interface SingleCategoryResponse {
 export const categoryService = {
   async getAllCategories(): Promise<Category[]> {
     try {
-      const response: AxiosResponse<CategoryResponse> = await publicApiClient.get(API_ENDPOINTS.CATEGORIES.GET_ALL);
+      const response: AxiosResponse<CategoryResponse> = await apiClient.get(API_ENDPOINTS.CATEGORIES.GET_ALL);
       
       if (response.data.code === 200) {
         console.log(`📂 Fetched ${response.data.data.length} categories successfully`);

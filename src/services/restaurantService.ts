@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import apiClient, { handleApiError, publicApiClient } from './apiClient';
+import apiClient, { handleApiError } from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
 // Restaurant API service
@@ -14,7 +14,6 @@ export interface MenuItem {
 }
 
 export interface Restaurant {
-  [x: string]: string;
   id: number;
   name: string;
   address: string;
@@ -46,7 +45,7 @@ export interface MenuItemResponse {
 export const restaurantService = {
   async getAllRestaurants(): Promise<Restaurant[]> {
     try {
-      const response: AxiosResponse<RestaurantResponse> = await publicApiClient.get(API_ENDPOINTS.RESTAURANTS.GET_ALL);
+      const response: AxiosResponse<RestaurantResponse> = await apiClient.get(API_ENDPOINTS.RESTAURANTS.GET_ALL);
       
       if (response.data.code === 200) {
         console.log(`📊 Fetched ${response.data.data.length} restaurants successfully`);

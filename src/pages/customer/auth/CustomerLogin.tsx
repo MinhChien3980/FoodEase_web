@@ -12,8 +12,6 @@ import {
   IconButton,
   Divider,
   useTheme,
-  useMediaQuery,
-  Stack,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -35,7 +33,6 @@ interface LoginFormData {
 
 const CustomerLogin: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState<LoginFormData>({
@@ -171,7 +168,7 @@ const CustomerLogin: React.FC = () => {
             }} 
           />
           <Typography variant="h6" gutterBottom>
-            {t('checkingSession', 'Checking session...')}
+            {t('checkingSession')}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <div style={{ 
@@ -225,10 +222,10 @@ const CustomerLogin: React.FC = () => {
               }} 
             />
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {t('welcomeBack', 'Welcome Back!')}
+              {t('welcomeBack')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {t('signInToYourFoodEaseAccount', 'Sign in to your FoodEase account')}
+              {t('signInToYourFoodEaseAccount')}
             </Typography>
           </Box>
 
@@ -250,7 +247,7 @@ const CustomerLogin: React.FC = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label={t('email', 'Email')}
+              label={t('email')}
               name="email"
               type="email"
               value={formData.email}
@@ -268,7 +265,7 @@ const CustomerLogin: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('password', 'Password')}
+              label={t('password')}
               name="password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
@@ -308,7 +305,7 @@ const CustomerLogin: React.FC = () => {
                 fontSize: "1.1rem"
               }}
             >
-              {loading ? t('signingIn', 'Signing In...') : t('signIn', 'Sign In')}
+              {loading ? t('signingIn') : t('signIn')}
             </Button>
           </Box>
 
@@ -323,14 +320,14 @@ const CustomerLogin: React.FC = () => {
                 "&:hover": { textDecoration: "underline" }
               }}
             >
-              {t('forgotYourPassword', 'Forgot your password?')}
+              {t('forgotYourPassword')}
             </Link>
           </Box>
 
           {/* Divider */}
           <Divider sx={{ my: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              {t('orContinueWith', 'or continue with')}
+              {t('orContinueWith')}
             </Typography>
           </Divider>
 
@@ -359,7 +356,7 @@ const CustomerLogin: React.FC = () => {
           {/* Sign Up Link */}
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="body2" color="text.secondary">
-              {t('dontHaveAnAccount', "Don't have an account?")}
+              {t('dontHaveAnAccount')}
               {" "}
               <Link
                 component={RouterLink}
@@ -371,7 +368,7 @@ const CustomerLogin: React.FC = () => {
                   "&:hover": { textDecoration: "underline" }
                 }}
               >
-                {t('signUpHere', 'Sign up here')}
+                {t('signUpHere')}
               </Link>
             </Typography>
           </Box>
@@ -388,7 +385,7 @@ const CustomerLogin: React.FC = () => {
                 "&:hover": { textDecoration: "underline" }
               }}
             >
-              {t('continueBrowsingWithoutSigningIn', '← Continue browsing without signing in')}
+              {t('continueBrowsingWithoutSigningIn')}
             </Link>
           </Box>
         </Paper>

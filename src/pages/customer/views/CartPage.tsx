@@ -16,8 +16,6 @@ import {
   InputAdornment,
   CircularProgress,
   IconButton,
-  useMediaQuery,
-  Stack,
 } from '@mui/material';
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -38,7 +36,6 @@ import { useCustomerNavigation } from '../../../hooks/useCustomerNavigation';
 const CartPage: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { navigateToRestaurants, navigateToLogin } = useCustomerNavigation();
   const { cart, updateQuantity, removeItem } = useCart(); // Only get cart data, no update functions
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);

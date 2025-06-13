@@ -19,9 +19,6 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  useMediaQuery,
-  Stack,
-  Grid,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -55,7 +52,6 @@ interface City {
 
 const CustomerRegister: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -200,10 +196,10 @@ const CustomerRegister: React.FC = () => {
               }} 
             />
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {t('joinFoodEase', 'Join FoodEase')}
+              {t('joinFoodEase')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {t('createYourAccountToStartOrdering', 'Create your account to start ordering delicious food')}
+              {t('createYourAccountToStartOrdering')}
             </Typography>
           </Box>
 
@@ -218,7 +214,7 @@ const CustomerRegister: React.FC = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label={t('fullName', 'Full Name')}
+              label={t('fullName')}
               name="fullName"
               value={formData.fullName}
               onChange={handleInputChange}
@@ -235,7 +231,7 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('email', 'Email')}
+              label={t('email')}
               name="email"
               type="email"
               value={formData.email}
@@ -253,7 +249,7 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('phoneNumber', 'Phone Number')}
+              label={t('phoneNumber')}
               name="phone"
               type="tel"
               value={formData.phone}
@@ -271,12 +267,12 @@ const CustomerRegister: React.FC = () => {
 
             {/* City Selection */}
             <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>{t('city', 'City')}</InputLabel>
+              <InputLabel>{t('city')}</InputLabel>
               <Select
                 name="cityId"
                 value={formData.cityId}
                 onChange={handleSelectChange}
-                label={t('city', 'City')}
+                label={t('city')}
                 required
                 startAdornment={
                   <InputAdornment position="start">
@@ -287,7 +283,7 @@ const CustomerRegister: React.FC = () => {
                 {loadingCities ? (
                   <MenuItem disabled>
                     <CircularProgress size={20} sx={{ mr: 1 }} />
-                    {t('loadingCities', 'Loading cities...')}
+                    {t('loadingCities')}
                   </MenuItem>
                 ) : (
                   cities.map((city) => (
@@ -301,7 +297,7 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('password', 'Password')}
+              label={t('password')}
               name="password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
@@ -329,7 +325,7 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('confirmPassword', 'Confirm Password')}
+              label={t('confirmPassword')}
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
@@ -368,7 +364,7 @@ const CustomerRegister: React.FC = () => {
                 }
                 label={
                   <Typography variant="body2">
-                    {t('agreeToTerms', 'I agree to the terms and conditions')}
+                    {t('agreeToTerms')}
                   </Typography>
                 }
               />
@@ -383,7 +379,7 @@ const CustomerRegister: React.FC = () => {
                 }
                 label={
                   <Typography variant="body2" color="text.secondary">
-                    {t('subscribeNewsletter', 'Subscribe to newsletter for exclusive offers and updates')}
+                    {t('subscribeNewsletter')}
                   </Typography>
                 }
               />
@@ -403,14 +399,14 @@ const CustomerRegister: React.FC = () => {
                 fontSize: "1.1rem"
               }}
             >
-              {loading ? t('creatingAccount', 'Creating Account...') : t('createAccount', 'Create Account')}
+              {loading ? t('creatingAccount') : t('createAccount')}
             </Button>
           </Box>
 
           {/* Divider */}
           <Divider sx={{ my: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              {t('orSignUpWith', 'or sign up with')}
+              {t('orSignUpWith')}
             </Typography>
           </Divider>
 
@@ -439,8 +435,7 @@ const CustomerRegister: React.FC = () => {
           {/* Sign In Link */}
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="body2" color="text.secondary">
-              {t('alreadyHaveAnAccount', 'Already have an account?')}
-              {" "}
+              {t('alreadyHaveAnAccount')}
               <Link
                 component={RouterLink}
                 to="/foodease/login"
@@ -451,7 +446,7 @@ const CustomerRegister: React.FC = () => {
                   "&:hover": { textDecoration: "underline" }
                 }}
               >
-                {t('signInHere', 'Sign in here')}
+                {t('signInHere')}
               </Link>
             </Typography>
           </Box>
@@ -468,7 +463,7 @@ const CustomerRegister: React.FC = () => {
                 "&:hover": { textDecoration: "underline" }
               }}
             >
-              {t('continueBrowsingWithoutSigningUp', '← Continue browsing without signing up')}
+              {t('continueBrowsingWithoutSigningUp')}
             </Link>
           </Box>
         </Paper>

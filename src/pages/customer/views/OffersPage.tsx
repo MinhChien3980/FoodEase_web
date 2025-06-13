@@ -11,11 +11,8 @@ import {
   Chip,
   Paper,
   LinearProgress,
-  useMediaQuery,
-  useTheme,
-  Stack,
-  Divider,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import StarIcon from "@mui/icons-material/Star";
@@ -105,8 +102,6 @@ const mockOffers = [
 
 const OffersPage: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   const expiringOffers = mockOffers.filter(offer => offer.isExpiring);
   const regularOffers = mockOffers.filter(offer => !offer.isExpiring);
@@ -114,65 +109,35 @@ const OffersPage: React.FC = () => {
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: theme.palette.grey[50] }}>
       {/* Header */}
-      <Box sx={{ 
-        backgroundColor: "white", 
-        borderBottom: 1, 
-        borderColor: "divider", 
-        py: { xs: 3, md: 4 } 
-      }}>
+      <Box sx={{ backgroundColor: "white", borderBottom: 1, borderColor: "divider", py: 3 }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center" }}>
-            <LocalOfferIcon sx={{ 
-              fontSize: { xs: 40, md: 48 }, 
-              color: theme.palette.primary.main, 
-              mb: 2 
-            }} />
-            <Typography 
-              variant={isMobile ? "h4" : "h3"} 
-              fontWeight="bold" 
-              gutterBottom
-            >
+            <LocalOfferIcon sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }} />
+            <Typography variant="h3" fontWeight="bold" gutterBottom>
               Special Offers
             </Typography>
-            <Typography 
-              variant={isMobile ? "body1" : "h6"} 
-              color="text.secondary"
-              sx={{ maxWidth: 600, mx: "auto", px: { xs: 2, md: 0 } }}
-            >
+            <Typography variant="h6" color="text.secondary">
               Save more with our exclusive deals and promotions
             </Typography>
           </Box>
         </Container>
       </Box>
 
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Expiring Soon Section */}
         {expiringOffers.length > 0 && (
-          <Box sx={{ mb: { xs: 4, md: 6 } }}>
-            <Box sx={{ 
-              display: "flex", 
-              alignItems: "center", 
-              mb: 3,
-              px: { xs: 1, md: 0 }
-            }}>
+          <Box sx={{ mb: 6 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
               <AccessTimeIcon sx={{ mr: 1, color: theme.palette.error.main }} />
-              <Typography 
-                variant={isMobile ? "h5" : "h4"} 
-                fontWeight="bold" 
-                color="error.main"
-              >
+              <Typography variant="h4" fontWeight="bold" color="error.main">
                 Expiring Soon!
               </Typography>
             </Box>
-            <Typography 
-              variant="body1" 
-              color="text.secondary" 
-              sx={{ mb: 3, px: { xs: 1, md: 0 } }}
-            >
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               Hurry up! These offers won't last long.
             </Typography>
 
-            <Grid container spacing={{ xs: 2, sm: 3 }}>
+            <Grid container spacing={3}>
               {expiringOffers.map((offer) => (
                 <Grid item xs={12} sm={6} md={4} key={offer.id}>
                   <Card 
@@ -182,11 +147,9 @@ const OffersPage: React.FC = () => {
                       flexDirection: "column",
                       border: `2px solid ${theme.palette.error.main}`,
                       position: "relative",
-                      borderRadius: 2,
                       "&:hover": {
                         transform: "translateY(-4px)",
                         transition: "transform 0.3s ease",
-                        boxShadow: theme.shadows[8],
                       }
                     }}
                   >
@@ -206,105 +169,57 @@ const OffersPage: React.FC = () => {
 
                     <CardMedia
                       component="img"
-                      height={isMobile ? "160" : "180"}
+                      height="180"
                       image={offer.image}
                       alt={offer.title}
                       sx={{ objectFit: "cover" }}
                     />
                     
-                    <CardContent sx={{ flex: 1, p: { xs: 2, md: 2.5 } }}>
-                      <Box sx={{ 
-                        display: "flex", 
-                        alignItems: "flex-start", 
-                        justifyContent: "space-between", 
-                        mb: 1,
-                        gap: 1
-                      }}>
-                        <Typography 
-                          variant={isMobile ? "subtitle1" : "h6"} 
-                          fontWeight="600" 
-                          sx={{ flex: 1, lineHeight: 1.3 }}
-                        >
+                    <CardContent sx={{ flex: 1, p: 2 }}>
+                      <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 1 }}>
+                        <Typography variant="h6" fontWeight="600" sx={{ flex: 1 }}>
                           {offer.title}
                         </Typography>
                         <Chip 
                           label={offer.discount}
                           color="primary"
                           variant="filled"
-                          size="small"
                           sx={{ fontWeight: "bold" }}
                         />
                       </Box>
 
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          mb: 2,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                         {offer.description}
                       </Typography>
 
-                      <Stack spacing={1} sx={{ mb: 2 }}>
+                      <Box sx={{ mb: 2 }}>
                         <Typography variant="caption" color="text.secondary">
                           Restaurant: {offer.restaurantName}
                         </Typography>
+                        <br />
                         <Typography variant="caption" color="text.secondary">
-                          Min Order: {formatPrice(offer.minOrder)}
+                          Min Order: {formatPrice(offer.minOrder)} | Max Discount: {formatPrice(offer.maxDiscount)}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Max Discount: {formatPrice(offer.maxDiscount)}
+                      </Box>
+
+                      {/* Urgency Indicator */}
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="caption" color="error.main" fontWeight="600">
+                          Valid until: {offer.validUntil}
                         </Typography>
-                      </Stack>
-
-                      <Divider sx={{ my: 1.5 }} />
-
-                      <Box sx={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        alignItems: "center",
-                        flexDirection: { xs: "column", sm: "row" },
-                        gap: 1
-                      }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                          <AccessTimeIcon 
-                            sx={{ 
-                              fontSize: "small", 
-                              color: theme.palette.error.main 
-                            }} 
-                          />
-                          <Typography 
-                            variant="caption" 
-                            color="error.main" 
-                            fontWeight="bold"
-                          >
-                            {offer.validUntil}
-                          </Typography>
-                        </Box>
-                        
-                        <Chip 
-                          label={offer.category}
-                          variant="outlined"
-                          size="small"
-                          sx={{ fontSize: "0.7rem" }}
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={25} 
+                          color="error"
+                          sx={{ mt: 0.5, height: 4, borderRadius: 2 }}
                         />
                       </Box>
 
                       <Button
-                        fullWidth
                         variant="contained"
+                        fullWidth
                         color="error"
-                        sx={{ 
-                          mt: 2, 
-                          borderRadius: 2,
-                          textTransform: "none",
-                          fontWeight: "bold"
-                        }}
+                        sx={{ fontWeight: "bold" }}
                       >
                         Claim Offer
                       </Button>
@@ -316,32 +231,16 @@ const OffersPage: React.FC = () => {
           </Box>
         )}
 
-        {/* Regular Offers Section */}
+        {/* Regular Offers */}
         <Box>
-          <Box sx={{ 
-            display: "flex", 
-            alignItems: "center", 
-            mb: 3,
-            px: { xs: 1, md: 0 }
-          }}>
-            <LocalOfferIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
-            <Typography 
-              variant={isMobile ? "h5" : "h4"} 
-              fontWeight="bold" 
-              color="primary.main"
-            >
-              All Offers
-            </Typography>
-          </Box>
-          <Typography 
-            variant="body1" 
-            color="text.secondary" 
-            sx={{ mb: 3, px: { xs: 1, md: 0 } }}
-          >
-            Discover more amazing deals and save on your favorite meals.
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            All Offers
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Browse all available deals and promotions
           </Typography>
 
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid container spacing={3}>
             {regularOffers.map((offer) => (
               <Grid item xs={12} sm={6} md={4} key={offer.id}>
                 <Card 
@@ -349,116 +248,68 @@ const OffersPage: React.FC = () => {
                     height: "100%", 
                     display: "flex", 
                     flexDirection: "column",
-                    borderRadius: 2,
                     "&:hover": {
                       transform: "translateY(-4px)",
                       transition: "transform 0.3s ease",
-                      boxShadow: theme.shadows[6],
+                      boxShadow: theme.shadows[8],
                     }
                   }}
                 >
                   <CardMedia
                     component="img"
-                    height={isMobile ? "160" : "180"}
+                    height="180"
                     image={offer.image}
                     alt={offer.title}
                     sx={{ objectFit: "cover" }}
                   />
                   
-                  <CardContent sx={{ flex: 1, p: { xs: 2, md: 2.5 } }}>
-                    <Box sx={{ 
-                      display: "flex", 
-                      alignItems: "flex-start", 
-                      justifyContent: "space-between", 
-                      mb: 1,
-                      gap: 1
-                    }}>
-                      <Typography 
-                        variant={isMobile ? "subtitle1" : "h6"} 
-                        fontWeight="600" 
-                        sx={{ flex: 1, lineHeight: 1.3 }}
-                      >
+                  <CardContent sx={{ flex: 1, p: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 1 }}>
+                      <Typography variant="h6" fontWeight="600" sx={{ flex: 1 }}>
                         {offer.title}
                       </Typography>
                       <Chip 
                         label={offer.discount}
                         color="primary"
-                        variant="filled"
-                        size="small"
+                        variant="outlined"
                         sx={{ fontWeight: "bold" }}
                       />
                     </Box>
 
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ 
-                        mb: 2,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
+                    <Chip 
+                      label={offer.category}
+                      size="small"
+                      variant="outlined"
+                      sx={{ mb: 1 }}
+                    />
+
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                       {offer.description}
                     </Typography>
 
-                    <Stack spacing={1} sx={{ mb: 2 }}>
+                    <Box sx={{ mb: 2 }}>
                       <Typography variant="caption" color="text.secondary">
                         Restaurant: {offer.restaurantName}
                       </Typography>
+                      <br />
                       <Typography variant="caption" color="text.secondary">
-                        Min Order: {formatPrice(offer.minOrder)}
+                        Min Order: {formatPrice(offer.minOrder)} | Max Discount: {formatPrice(offer.maxDiscount)}
                       </Typography>
+                    </Box>
+
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                      <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5, color: "text.secondary" }} />
                       <Typography variant="caption" color="text.secondary">
-                        Max Discount: {formatPrice(offer.maxDiscount)}
+                        Valid for: {offer.validUntil}
                       </Typography>
-                    </Stack>
-
-                    <Divider sx={{ my: 1.5 }} />
-
-                    <Box sx={{ 
-                      display: "flex", 
-                      justifyContent: "space-between", 
-                      alignItems: "center",
-                      flexDirection: { xs: "column", sm: "row" },
-                      gap: 1
-                    }}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                        <AccessTimeIcon 
-                          sx={{ 
-                            fontSize: "small", 
-                            color: theme.palette.primary.main 
-                          }} 
-                        />
-                        <Typography 
-                          variant="caption" 
-                          color="primary.main" 
-                          fontWeight="bold"
-                        >
-                          {offer.validUntil}
-                        </Typography>
-                      </Box>
-                      
-                      <Chip 
-                        label={offer.category}
-                        variant="outlined"
-                        size="small"
-                        sx={{ fontSize: "0.7rem" }}
-                      />
                     </Box>
 
                     <Button
-                      fullWidth
                       variant="contained"
-                      sx={{ 
-                        mt: 2, 
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: "bold"
-                      }}
+                      fullWidth
+                      sx={{ fontWeight: "bold" }}
                     >
-                      Get Offer
+                      Apply Offer
                     </Button>
                   </CardContent>
                 </Card>

@@ -1,5 +1,5 @@
 // Export API Client
-export { default as apiClient, publicApiClient } from './apiClient';
+export { default as apiClient } from './apiClient';
 export { handleApiError, handleApiResponse } from './apiClient';
 
 // Export Services

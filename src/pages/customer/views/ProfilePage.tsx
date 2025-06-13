@@ -20,11 +20,6 @@ import {
   useTheme,
   CircularProgress,
   Alert,
-  useMediaQuery,
-  Stack,
-  Tabs,
-  Tab,
-  Fab,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -108,9 +103,6 @@ const ProfilePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  
   const [user, setUser] = useState<CustomerUser | null>(null);
   const [cities, setCities] = useState<City[]>([]);
   const [editMode, setEditMode] = useState(false);
@@ -118,7 +110,6 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     // Check if user is logged in
