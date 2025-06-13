@@ -79,6 +79,7 @@ const ProfilePage: React.FC = () => {
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [showAllOrders, setShowAllOrders] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -206,16 +207,6 @@ const ProfilePage: React.FC = () => {
     }));
   };
 
-  const formatJoinDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long'
-      });
-    } catch {
-      return 'Recently';
-    }
-  };
 
   if (loading) {
     return (
@@ -404,8 +395,12 @@ const ProfilePage: React.FC = () => {
                   <Typography variant="h6" fontWeight="bold">
                     {t('recentOrders')}
                   </Typography>
-                  <Button variant="outlined" size="small">
-                    {t('viewAll')}
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    onClick={() => setShowAllOrders(!showAllOrders)}
+                  >
+                    {showAllOrders ? t('showLess') : t('viewAll')}
                   </Button>
                 </Box>
 
@@ -415,7 +410,7 @@ const ProfilePage: React.FC = () => {
                   </Box>
                 ) : orders.length > 0 ? (
                   <Grid container spacing={2}>
-                    {orders.map((order) => (
+                    {(showAllOrders ? orders : orders.slice(0, 3)).map((order) => (
                       <Grid item xs={12} key={order.id}>
                         <Paper
                           sx={{

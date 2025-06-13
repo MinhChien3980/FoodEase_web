@@ -10,10 +10,10 @@ interface CurrencySettings {
 
 // Default currency settings - can be configured per application
 const defaultCurrencySettings: CurrencySettings = {
-  decimalPoints: 2,
-  currencySymbol: "$",
-  currencyFormate: ",",
-  currencySymbolPosition: "start",
+  decimalPoints: 0,
+  currencySymbol: "₫",
+  currencyFormate: ".",
+  currencySymbolPosition: "end",
 };
 
 /**
@@ -25,7 +25,7 @@ export const formatPrice = (
 ): string => {
   const numericPrice = typeof price === "string" ? parseFloat(price) : price;
   
-  if (isNaN(numericPrice)) return "0.00";
+  if (isNaN(numericPrice)) return "0";
 
   // Format the number with the desired number of decimal places
   const formattedPrice = numericPrice.toFixed(currencySettings.decimalPoints);
@@ -45,8 +45,8 @@ export const formatPrice = (
   // Combine the formatted parts with the currency symbol based on position
   const formattedPriceStr =
     currencySettings.currencySymbolPosition === "start"
-      ? `${currencySettings.currencySymbol}${finalIntegerPart}.${decimalPart}`
-      : `${finalIntegerPart}.${decimalPart}${currencySettings.currencySymbol}`;
+      ? `${currencySettings.currencySymbol}${finalIntegerPart}${currencySettings.decimalPoints > 0 ? '.' + decimalPart : ''}`
+      : `${finalIntegerPart}${currencySettings.decimalPoints > 0 ? '.' + decimalPart : ''}${currencySettings.currencySymbol}`;
 
   return formattedPriceStr;
 };

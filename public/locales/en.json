@@ -842,5 +842,6 @@
   "ordersCompleted": "Orders Completed",
   "totalSpent": "Total Spent",
   "favoriteRestaurants": "Favorite Restaurants",
-  "accountStatus": "Account Status"
+  "accountStatus": "Account Status",
+  "showLess": "Show Less"
 }

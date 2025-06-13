@@ -98,6 +98,7 @@ const CartPage: React.FC = () => {
         userId: customerUser.id,
         totalPrice: cart.totalAmount,
         items: orderItems,
+        createdAt: new Date().toISOString(),
         activeStatus: ORDER_STATUS.PENDING,
       };
 
