@@ -672,7 +672,7 @@
       "stats": {
         "ordersCompleted": "Orders Completed",
         "totalSpent": "Total Spent",
-        "favoriteRestaurants": "Favorite Restaurants",
+        "favoriteRestaurants": "Favorite",
         "accountStatus": "Account Status"
       },
       "memberSince": "Member since {{date}}",

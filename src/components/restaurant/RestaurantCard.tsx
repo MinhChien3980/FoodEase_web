@@ -33,6 +33,18 @@ interface RestaurantCardProps {
   onToggleStatus?: (id: number, status: boolean) => void;
 }
 
+// Default images for different restaurant types
+const getDefaultImage = (restaurant: Restaurant) => {
+  const defaultImages = [
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1552566874-6ca15c0f7e8d?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&h=300&fit=crop'
+  ];
+  return defaultImages[restaurant.id % defaultImages.length];
+};
+
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
   restaurant,
   categories = [],
@@ -132,7 +144,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
       <CardMedia
         component="img"
         height="200"
-        image="/placeholder-restaurant.jpg"
+        image={getDefaultImage(restaurant)}
         alt={restaurant.name}
         sx={{
           objectFit: "cover",

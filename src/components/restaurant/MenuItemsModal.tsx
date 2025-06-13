@@ -95,7 +95,7 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
   };
 
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    event.currentTarget.src = '/placeholder-food.jpg';
+    event.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
   };
 
   const showSnackbar = (message: string, severity: 'success' | 'info' | 'warning' | 'error' = 'success') => {
@@ -232,7 +232,7 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
                       <CardMedia
                         component="img"
                         height="200"
-                        image={item.imageUrl || '/placeholder-food.jpg'}
+                        image={item.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}
                         alt={item.name}
                         onError={handleImageError}
                         sx={{
@@ -301,11 +301,11 @@ const MenuItemsModal: React.FC<MenuItemsModalProps> = ({
           )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 3, pt: 0 }}>
+        {/* <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button onClick={onClose} variant="contained" color="primary">
             Close
           </Button>
-        </DialogActions>
+        </DialogActions> */}
       </Dialog>
 
       {/* Toast Notification */}
