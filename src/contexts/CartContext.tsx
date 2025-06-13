@@ -425,6 +425,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Clear cart
+  const clearCart = async () => {
+    try {
+      const cartId = getCustomerCartId();
+      
+      if (!cartId) {
+        return;
+      }
+
+      // Clear cart on server
+      await cartService.clearCart(cartId);
+
+      // Reset local cart state
+      dispatch({ type: 'RESET_CART' });
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+    }
+  };
+
   const contextValue: ICartContext = {
     cart,
     addToCart,
@@ -432,6 +451,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     removeItem,
     getItemQuantity,
     isLoadingServerCart,
+    clearCart,
   };
 
   return (

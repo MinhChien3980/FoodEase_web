@@ -53,5 +53,12 @@ export const API_ENDPOINTS = {
     ADD_ITEM: '/cart-items',
     UPDATE_ITEM: (cartItemId: number) => `/cart-items/${cartItemId}`,
     DELETE_ITEM: (cartItemId: number) => `/cart-items/${cartItemId}`,
+    CLEAR_CART: (cartId: number) => `/cart-items/by-cart/${cartId}`,
+  },
+  ORDERS: {
+    CREATE: '/orders',
+    GET_ALL: '/orders',
+    GET_BY_ID: (id: number) => `/orders/${id}`,
+    GET_BY_USER: (userId: number) => `/orders/user/${userId}`,
   },
 }; 

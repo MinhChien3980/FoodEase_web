@@ -16,6 +16,7 @@ import {
   InputAdornment,
   CircularProgress,
   IconButton,
+  Snackbar,
 } from '@mui/material';
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -32,15 +33,27 @@ import { useTranslation } from 'react-i18next';
 import { useCart } from '../../../contexts/CartContext';
 import { isCustomerAuthenticated, getCustomerUser } from '../../../utils/sessionManager';
 import { useCustomerNavigation } from '../../../hooks/useCustomerNavigation';
+import { orderService } from '../../../services/orderService';
+import { ORDER_STATUS } from '../../../constants';
 
 const CartPage: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { navigateToRestaurants, navigateToLogin } = useCustomerNavigation();
-  const { cart, updateQuantity, removeItem } = useCart(); // Only get cart data, no update functions
+  const { cart, updateQuantity, removeItem, clearCart } = useCart(); 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [customerUser, setCustomerUser] = useState<any>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   // Check authentication on component mount
   useEffect(() => {
@@ -70,9 +83,47 @@ const CartPage: React.FC = () => {
     event.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
   };
 
-  const handleCheckout = () => {
-    // TODO: Implement checkout logic
-    alert('Chức năng thanh toán sẽ được triển khai sau!');
+  const handleCheckout = async () => {
+    try {
+      setIsCheckingOut(true);
+      
+      // Prepare order items from cart
+      const orderItems = cart.items.map(item => ({
+        menuItemId: item.id,
+        quantity: item.quantity
+      }));
+
+      // Create order request
+      const orderRequest = {
+        userId: customerUser.id,
+        totalPrice: cart.totalAmount,
+        items: orderItems,
+        activeStatus: ORDER_STATUS.PENDING,
+      };
+
+      // Call order service to create order
+      const response = await orderService.createOrder(orderRequest);
+
+      if (response.code === 200 || response.code === 201) {
+        setSnackbar({
+          open: true,
+          message: 'Đặt hàng thành công!',
+          severity: 'success',
+        });
+        // Clear cart after successful order
+        await clearCart();
+      } else {
+        throw new Error(response.message || 'Đặt hàng thất bại');
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error instanceof Error ? error.message : 'Đặt hàng thất bại',
+        severity: 'error'
+      });
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const handleContinueShopping = () => {
@@ -435,12 +486,30 @@ const CartPage: React.FC = () => {
               sx={{ mb: 2 }}
             />
 
+            {/* Add Snackbar for notifications */}
+            <Snackbar
+              open={snackbar.open}
+              autoHideDuration={6000}
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+              <Alert
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                severity={snackbar.severity}
+                sx={{ width: '100%' }}
+              >
+                {snackbar.message}
+              </Alert>
+            </Snackbar>
+
+            {/* Update the checkout button to show loading state */}
             <Button
               fullWidth
               variant="contained"
               size="large"
-              startIcon={<PaymentIcon />}
+              startIcon={isCheckingOut ? <CircularProgress size={20} color="inherit" /> : <PaymentIcon />}
               onClick={handleCheckout}
+              disabled={isCheckingOut}
               sx={{
                 py: 1.5,
                 borderRadius: 2,
@@ -448,7 +517,7 @@ const CartPage: React.FC = () => {
                 textTransform: 'none',
               }}
             >
-              Thanh toán
+              {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
             </Button>
 
             <Alert severity="info" sx={{ mt: 2 }}>

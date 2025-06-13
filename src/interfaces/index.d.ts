@@ -194,6 +194,7 @@ export interface ICartContext {
   removeItem: (itemId: number, restaurantId: number) => void;
   getItemQuantity: (itemId: number) => number;
   isLoadingServerCart: boolean;
+  clearCart: () => Promise<void>;
 }
 
 export type Nullable<T> = {

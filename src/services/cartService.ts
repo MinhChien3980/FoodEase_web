@@ -347,4 +347,35 @@ export const cartService = {
             return null;
         }
     },
+
+    // Clear all items from cart
+    clearCart: async (cartId: number): Promise<DeleteCartItemResponse> => {
+        try {
+            console.log(`🗑️ Clearing all items from cart ${cartId}`);
+            const response: AxiosResponse<DeleteCartItemResponse> = await apiClient.delete(
+                API_ENDPOINTS.CART.CLEAR_CART(cartId)
+            );
+            
+            if (response.status >= 200 && response.status < 300) {
+                console.log(`✅ Successfully cleared cart ${cartId}`);
+                return { 
+                    code: response.status, 
+                    message: (response.data as any)?.message || 'Successfully cleared cart' 
+                };
+            } else {
+                throw new Error(`Clear cart failed! HTTP status: ${response.status}`);
+            }
+        } catch (error: any) {
+            console.error('Error clearing cart:', error);
+            
+            // If it's an axios error, check status
+            if (error.response) {
+                console.error('Error response status:', error.response.status);
+                console.error('Error response data:', error.response.data);
+                throw new Error(`Clear cart failed! HTTP status: ${error.response.status}`);
+            }
+            
+            throw new Error(handleApiError(error));
+        }
+    },
 }; 
