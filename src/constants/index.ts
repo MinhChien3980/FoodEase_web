@@ -9,3 +9,7 @@ export const ORDER_STATUS = {
   CANCELLED: 'CANCELLED'
 } as const;
 
+export const ORDER_PAYMENT_METHOD = {
+  CASH: 'CASH',
+  CREDIT_CARD: 'CREDIT_CARD',
+} as const;
