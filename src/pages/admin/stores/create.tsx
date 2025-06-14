@@ -3,7 +3,7 @@ import { ListButton } from "@refinedev/mui";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid2";
-import { StoreForm, StoreMap, useStoreForm } from "../../components";
+import { StoreForm, StoreMap, useStoreForm } from "../../../components";
 
 export const StoreCreate = () => {
   const { list } = useNavigation();

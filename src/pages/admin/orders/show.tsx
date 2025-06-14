@@ -16,9 +16,9 @@ import {
   OrderDetails,
   OrderProducts,
   Card,
-} from "../../components";
-import { RefineListView } from "../../components";
-import type { IOrder } from "../../interfaces";
+} from "../../../components";
+import { RefineListView } from "../../../components";
+import type { IOrder } from "../../../interfaces";
 
 export const OrderShow = () => {
   const t = useTranslate();

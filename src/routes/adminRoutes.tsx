@@ -6,13 +6,13 @@ import Box from "@mui/material/Box";
 
 // Admin Components
 import { Header, Title } from "../components";
-import { DashboardPage } from "../pages/dashboard";
-import { OrderList, OrderShow } from "../pages/orders";
-import { CustomerShow, CustomerList } from "../pages/customers";
-import { CourierList, CourierCreate, CourierEdit } from "../pages/couriers";
-import { StoreList, StoreEdit, StoreCreate } from "../pages/stores";
-import { ProductEdit, ProductList, ProductCreate } from "../pages/products";
-import { CategoryList } from "../pages/categories";
+import { DashboardPage } from "../pages/admin/dashboard";
+import { OrderList, OrderShow } from "../pages/admin/orders";
+import { CustomerShow, CustomerList } from "../pages/admin/customers";
+import { CourierList, CourierCreate, CourierEdit } from "../pages/admin/couriers";
+import { StoreList, StoreEdit, StoreCreate } from "../pages/admin/stores";
+import { ProductEdit, ProductList, ProductCreate } from "../pages/admin/products";
+import { CategoryList } from "../pages/admin/categories";
 
 // Admin Layout Wrapper Component
 const AdminLayoutWrapper = () => (

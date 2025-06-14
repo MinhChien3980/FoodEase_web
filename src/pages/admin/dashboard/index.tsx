@@ -20,10 +20,10 @@ import {
   OrderTimeline,
   RecentOrders,
   TrendingMenu,
-} from "../../components/dashboard";
-import { TrendIcon } from "../../components/icons";
-import { Card, RefineListView } from "../../components";
-import type { IOrderChart, ISalesChart } from "../../interfaces";
+} from "../../../components/dashboard";
+import { TrendIcon } from "../../../components/icons";
+import { Card, RefineListView } from "../../../components";
+import type { IOrderChart, ISalesChart } from "../../../interfaces";
 
 type DateFilter = "lastWeek" | "lastMonth";
 

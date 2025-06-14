@@ -13,9 +13,9 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import VisibilityOutlined from "@mui/icons-material/VisibilityOutlined";
 import IconButton from "@mui/material/IconButton";
-import type { IUser, IUserFilterVariables } from "../../interfaces";
-import { CustomTooltip, RefineListView } from "../../components";
-import { CustomerStatus } from "../../components/customer";
+import type { IUser, IUserFilterVariables } from "../../../interfaces";
+import { CustomTooltip, RefineListView } from "../../../components";
+import { CustomerStatus } from "../../../components/customer";
 
 export const CustomerList = ({ children }: PropsWithChildren) => {
   const go = useGo();

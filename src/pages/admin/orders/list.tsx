@@ -20,9 +20,9 @@ import {
 import Typography from "@mui/material/Typography";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { OrderStatus, OrderTableColumnProducts } from "../../components/order";
-import type { IOrder, IOrderFilterVariables } from "../../interfaces";
-import { RefineListView } from "../../components";
+import { OrderStatus, OrderTableColumnProducts } from "../../../components/order";
+import type { IOrder, IOrderFilterVariables } from "../../../interfaces";
+import { RefineListView } from "../../../components";
 
 export const OrderList = () => {
   const t = useTranslate();

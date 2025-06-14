@@ -30,9 +30,9 @@ import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import type { TextFieldProps } from "@mui/material/TextField";
-import type { ICourier, IFile, IStore, Nullable } from "../../interfaces";
-import { CourierImageUpload } from "../../components";
-import { useImageUpload } from "../../utils";
+import type { ICourier, IFile, IStore, Nullable } from "../../../interfaces";
+import { CourierImageUpload } from "../../../components";
+import { useImageUpload } from "../../../utils";
 import Divider from "@mui/material/Divider";
 
 export const CourierCreate = () => {

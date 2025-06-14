@@ -5,8 +5,8 @@ import { useLocation } from "react-router";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
-import { CourierRating, CourierStatus, RefineListView } from "../../components";
-import type { ICourier } from "../../interfaces";
+import { CourierRating, CourierStatus, RefineListView } from "../../../components";
+import type { ICourier } from "../../../interfaces";
 
 export const CourierList = ({ children }: PropsWithChildren) => {
   const go = useGo();

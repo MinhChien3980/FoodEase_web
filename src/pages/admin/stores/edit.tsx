@@ -15,7 +15,7 @@ import {
   StoreMap,
   useStoreForm,
   StoreInfoCard,
-} from "../../components";
+} from "../../../components";
 import { Button, Stack } from "@mui/material";
 
 export const StoreEdit = () => {

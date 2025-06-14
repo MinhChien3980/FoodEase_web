@@ -10,8 +10,8 @@ import {
   ProductListTable,
   ProductListCard,
   RefineListView,
-} from "../../components";
-import type { ICategory, IProduct } from "../../interfaces";
+} from "../../../components";
+import type { ICategory, IProduct } from "../../../interfaces";
 
 type View = "table" | "card";
 

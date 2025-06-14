@@ -6,7 +6,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import Box from "@mui/material/Box";
 import ListOutlinedIcon from "@mui/icons-material/ListOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import { RefineListView, StoreTable, AllStoresMap } from "../../components";
+import { RefineListView, StoreTable, AllStoresMap } from "../../../components";
 
 type View = "table" | "map";
 

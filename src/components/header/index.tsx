@@ -284,7 +284,6 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = () => {
           >
             <Select
               size="small"
-              disableUnderline
               defaultValue={currentLocale}
               slotProps={{
                 input: {

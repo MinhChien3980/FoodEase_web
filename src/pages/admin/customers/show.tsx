@@ -18,14 +18,14 @@ import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import ArrowCircleRightOutlinedIcon from "@mui/icons-material/ArrowCircleRightOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import type { IOrder, IOrderFilterVariables, IUser } from "../../interfaces";
+import type { IOrder, IOrderFilterVariables, IUser } from "../../../interfaces";
 import {
   OrderStatus,
   CustomerStatus,
   Drawer,
   DrawerHeader,
   OrderTableColumnProducts,
-} from "../../components";
+} from "../../../components";
 
 export const CustomerShow = () => {
   const getToPath = useGetToPath();

@@ -22,9 +22,9 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import { useTheme } from "@mui/material/styles";
-import type { ICourier, IFile, IStore, Nullable } from "../../interfaces";
-import { CourierImageUpload, CourierTableReviews } from "../../components";
-import { useImageUpload } from "../../utils";
+import type { ICourier, IFile, IStore, Nullable } from "../../../interfaces";
+import { CourierImageUpload, CourierTableReviews } from "../../../components";
+import { useImageUpload } from "../../../utils";
 
 export const CourierEdit = () => {
   const { list } = useNavigation();

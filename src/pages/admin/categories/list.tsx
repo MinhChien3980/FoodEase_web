@@ -10,8 +10,8 @@ import {
   RefineListView,
   CategoryStatus,
   CustomTooltip,
-} from "../../components";
-import type { ICategory, IProduct } from "../../interfaces";
+} from "../../../components";
+import type { ICategory, IProduct } from "../../../interfaces";
 
 export const CategoryList = () => {
   const t = useTranslate();
