@@ -262,8 +262,7 @@ const ProfilePage: React.FC = () => {
       };
 
       const response = await addressService.createAddress(addressData);
-      
-      if (response.code === 200) {
+      if (response.code === 200 || response.code === 201) {
         // Immediately update UI with new address
         setAddresses(prevAddresses => [...prevAddresses, response.data]);
         
@@ -491,7 +490,7 @@ const ProfilePage: React.FC = () => {
 
             {/* Quick Actions */}
             <Card sx={{ mt: 3 }}>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent sx={{ p: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   {t('quickActions')}
                 </Typography>
@@ -573,62 +572,83 @@ const ProfilePage: React.FC = () => {
                     <CircularProgress size={24} />
                   </Box>
                 ) : orders.length > 0 ? (
-                  <Grid container spacing={2}>
-                    {orders
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                      .slice(0, showAllOrders ? undefined : 3)
-                      .map((order) => (
-                      <Grid item xs={12} key={order.id}>
-                        <Paper
-                          sx={{
-                            p: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                            '&:hover': { backgroundColor: theme.palette.grey[50] }
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <ShoppingBagIcon color="primary" />
-                            <Box>
-                              <Typography variant="body2" color="text.secondary">
-                                {t('order')} #{order.id} • {order.items?.length || 0} {t('items')}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </Typography>
+                  <Box 
+                    sx={{ 
+                      maxHeight: showAllOrders ? '600px' : 'auto',
+                      overflowY: showAllOrders ? 'auto' : 'visible',
+                      '&::-webkit-scrollbar': {
+                        width: '8px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: theme.palette.grey[100],
+                        borderRadius: '4px',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: theme.palette.grey[400],
+                        borderRadius: '4px',
+                        '&:hover': {
+                          background: theme.palette.grey[500],
+                        },
+                      },
+                    }}
+                  >
+                    <Grid container spacing={2}>
+                      {orders
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .slice(0, showAllOrders ? undefined : 3)
+                        .map((order) => (
+                        <Grid item xs={12} key={order.id}>
+                          <Paper
+                            sx={{
+                              p: 2,
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              cursor: 'pointer',
+                              '&:hover': { backgroundColor: theme.palette.grey[50] }
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <ShoppingBagIcon color="primary" />
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  {t('order')} #{order.id} • {order.items?.length || 0} {t('items')}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {new Date(order.createdAt).toLocaleDateString()}
+                                </Typography>
+                              </Box>
                             </Box>
-                          </Box>
-                          <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="h6" fontWeight="bold">
-                              {formatPrice(order.totalPrice)}
-                            </Typography>
-                            <OrderStatusChip 
-                              status={(() => {
-                                const status = order.activeStatus?.toLowerCase();
-                                switch(status) {
-                                  case 'cancel':
-                                    return 'cancelled';
-                                  case 'complete':
-                                    return 'delivered';
-                                  case 'pending':
-                                    return 'pending';
-                                  case 'confirmed':
-                                    return 'confirmed';
-                                  case 'preparing':
-                                    return 'preparing';
-                                  default:
-                                    return status;
-                                }
-                              })() as any}
-                              size="small"
-                            />
-                          </Box>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography variant="h6" fontWeight="bold">
+                                {formatPrice(order.totalPrice)}
+                              </Typography>
+                              <OrderStatusChip 
+                                status={(() => {
+                                  const status = order.activeStatus?.toLowerCase();
+                                  switch(status) {
+                                    case 'cancel':
+                                      return 'cancelled';
+                                    case 'complete':
+                                      return 'delivered';
+                                    case 'pending':
+                                      return 'pending';
+                                    case 'confirmed':
+                                      return 'confirmed';
+                                    case 'preparing':
+                                      return 'preparing';
+                                    default:
+                                      return status;
+                                  }
+                                })() as any}
+                                size="small"
+                              />
+                            </Box>
+                          </Paper>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Box>
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
                     <ShoppingBagIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
