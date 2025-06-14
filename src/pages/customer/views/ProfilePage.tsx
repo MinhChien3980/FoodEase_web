@@ -20,6 +20,7 @@ import {
   useTheme,
   CircularProgress,
   Alert,
+  MenuItem,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -43,6 +44,8 @@ import apiClient, { handleApiError } from "../../../services/apiClient";
 import { API_ENDPOINTS } from "../../../config/api";
 import { orderService, Order } from "../../../services/orderService";
 import { userService } from "../../../services/userService";
+import { addressService, Address } from "../../../services/addressService";
+import { City } from "../../../services/cityService";
 
 interface CustomerUser {
   id: number;
@@ -60,11 +63,7 @@ interface CustomerUser {
   cityId: number;
   latitude?: number;
   longitude?: number;
-}
-
-interface City {
-  id: number;
-  name: string;
+  addresses?: Address[];
 }
 
 const ProfilePage: React.FC = () => {
@@ -74,13 +73,24 @@ const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<CustomerUser | null>(null);
   const [cities, setCities] = useState<City[]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [editedUser, setEditedUser] = useState<Partial<CustomerUser>>({});
+  const [editedUser, setEditedUser] = useState<Partial<CustomerUser>>({
+    fullName: '',
+    phone: '',
+    cityId: undefined,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [showAllOrders, setShowAllOrders] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [newAddress, setNewAddress] = useState<Partial<Address>>({
+    addressLine: '',
+    area: '',
+    cityId: undefined,
+  });
 
   useEffect(() => {
     // Check if user is logged in
@@ -98,6 +108,7 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     if (user?.id) {
       fetchUserOrders(user.id);
+      fetchUserAddresses(user.id);
     }
   }, [user?.id]);
 
@@ -160,12 +171,27 @@ const ProfilePage: React.FC = () => {
     try {
       setLoadingOrders(true);
       const userOrders = await orderService.getOrdersByUserId(userId);
-      console.log("userOrders: ", userOrders);
       setOrders(userOrders);
     } catch (error) {
       setError(t('failedToLoadOrders'));
     } finally {
       setLoadingOrders(false);
+    }
+  };
+
+  const fetchUserAddresses = async (userId: number) => {
+    try {
+      setLoadingAddresses(true);
+      const response = await addressService.getAddressesByUser(userId);
+      if (response.code === 200) {
+        setAddresses(response.data);
+      } else {
+        setError(response.message || t('failedToLoadAddresses'));
+      }
+    } catch (error) {
+      setError(handleApiError(error));
+    } finally {
+      setLoadingAddresses(false);
     }
   };
 
@@ -212,13 +238,46 @@ const ProfilePage: React.FC = () => {
     setEditMode(false);
   };
 
-  const handleInputChange = (field: keyof CustomerUser, value: string) => {
+  const handleInputChange = (field: keyof CustomerUser, value: string | number) => {
     setEditedUser(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
+  const handleAddressSubmit = async () => {
+    if (!user) return;
+
+    // Validate form data
+    if (!newAddress.addressLine || !newAddress.area || !newAddress.cityId) {
+      return;
+    }
+
+    try {
+      const addressData = {
+        userId: user.id,
+        addressLine: newAddress.addressLine,
+        area: newAddress.area,
+        cityId: newAddress.cityId
+      };
+
+      const response = await addressService.createAddress(addressData);
+      
+      if (response.code === 200) {
+        // Immediately update UI with new address
+        setAddresses(prevAddresses => [...prevAddresses, response.data]);
+        
+        // Clear form
+        setNewAddress({
+          addressLine: '',
+          area: '',
+          cityId: undefined
+        });
+      }
+    } catch (error) {
+      setError(handleApiError(error));
+    }
+  };
 
   if (loading) {
     return (
@@ -298,6 +357,21 @@ const ProfilePage: React.FC = () => {
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     sx={{ mb: 2 }}
                   />
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('city')}
+                    value={editedUser.cityId || ''}
+                    onChange={(e) => handleInputChange('cityId', Number(e.target.value))}
+                    sx={{ mb: 2 }}
+                  >
+                    {cities.map((city) => (
+                      <MenuItem key={city.id} value={city.id}>
+                        {city.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
                   <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                     <IconButton color="primary" onClick={handleEditToggle}>
                       <CheckIcon />
@@ -335,6 +409,84 @@ const ProfilePage: React.FC = () => {
                   </Button>
                 </>
               )}
+            </Card>
+
+            {/* Address Card */}
+            <Card sx={{ mt: 3 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {t('addresses')}
+                </Typography>
+                
+                {/* Address List */}
+                {loadingAddresses ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : addresses.length > 0 ? (
+                  <Box sx={{ mb: 3 }}>
+                    {addresses.map((address) => (
+                      <Paper key={address.id} sx={{ p: 2, mb: 2 }}>
+                        <Typography variant="body1">
+                          {address.addressLine}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {address.area}, {getCityName(address.cityId)}
+                        </Typography>
+                      </Paper>
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      {t('noAddressesYet')}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Add New Address Form */}
+                <Box component="form" sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label={t('addressLine')}
+                    value={newAddress.addressLine}
+                    onChange={(e) => setNewAddress(prev => ({ ...prev, addressLine: e.target.value }))}
+                    sx={{ mb: 2 }}
+                    required
+                  />
+                  <TextField
+                    fullWidth
+                    label={t('addressArea')}
+                    value={newAddress.area}
+                    onChange={(e) => setNewAddress(prev => ({ ...prev, area: e.target.value }))}
+                    sx={{ mb: 2 }}
+                    required
+                  />
+                  <TextField
+                    select
+                    fullWidth
+                    label={t('addressCity')}
+                    value={newAddress.cityId || ''}
+                    onChange={(e) => setNewAddress(prev => ({ ...prev, cityId: Number(e.target.value) }))}
+                    sx={{ mb: 2 }}
+                    required
+                  >
+                    {cities.map((city) => (
+                      <MenuItem key={city.id} value={city.id}>
+                        {city.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <Button
+                    variant="contained"
+                    onClick={handleAddressSubmit}
+                    fullWidth
+                    disabled={!newAddress.addressLine || !newAddress.area || !newAddress.cityId}
+                  >
+                    {t('addAddress')}
+                  </Button>
+                </Box>
+              </CardContent>
             </Card>
 
             {/* Quick Actions */}

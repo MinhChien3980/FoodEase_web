@@ -8,6 +8,7 @@ export { categoryService } from './categoryService';
 export { authService } from './authService';
 export { userService } from './userService';
 export { cartService } from './cartService';
+export { addressService } from './addressService';
 
 // Export Types
 export type { 
@@ -54,4 +55,6 @@ export type {
   UpdateCartItemResponse,
   DeleteCartItemResponse
 } from './cartService';
+
+export type { Address, AddressResponse, AddressesResponse } from './addressService';
 

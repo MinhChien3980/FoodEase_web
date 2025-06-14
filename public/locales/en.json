@@ -63,6 +63,32 @@
       "404": "Sorry, the page you visited does not exist.",
       "resource404": "Are you sure you have created the {{resource}} resource.",
       "backHome": "Back Home"
+    },
+    "profile": {
+      "title": "My Profile",
+      "subtitle": "Manage your account settings and preferences",
+      "editProfile": "Edit Profile",
+      "accountInformation": "Account Information",
+      "email": "Email",
+      "username": "Username",
+      "phone": "Phone",
+      "city": "City",
+      "memberSince": "Member since {{date}}",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "address": {
+        "title": "Addresses",
+        "addressLine": "Address Line",
+        "area": "Area",
+        "city": "City",
+        "type": "Address Type",
+        "addNew": "Add New Address",
+        "types": {
+          "home": "Home",
+          "work": "Work",
+          "other": "Other"
+        }
+      }
     }
   },
   "actions": {
@@ -677,7 +703,20 @@
       },
       "memberSince": "Member since {{date}}",
       "verified": "Verified",
-      "unverified": "Unverified"
+      "unverified": "Unverified",
+      "address": {
+        "title": "Addresses",
+        "addressLine": "Address Line",
+        "area": "Area",
+        "city": "City",
+        "type": "Address Type",
+        "addNew": "Add New Address",
+        "types": {
+          "home": "Home",
+          "work": "Work",
+          "other": "Other"
+        }
+      }
     },
     "home": {
       "welcome": "Welcome to FoodEase",
@@ -843,5 +882,17 @@
   "totalSpent": "Total Spent",
   "favoriteRestaurants": "Favorite Restaurants",
   "accountStatus": "Account Status",
-  "showLess": "Show Less"
+  "showLess": "Show Less",
+  "addresses": "Addresses",
+  "addressLine": "Address Line",
+  "addressArea": "Area",
+  "addressCity": "City",
+  "addressType": "Address Type",
+  "addAddress": "Add New Address",
+  "addressTypes": {
+    "home": "Home",
+    "work": "Work",
+    "other": "Other"
+  },
+  "noAddressesYet": "No addresses yet"
 }

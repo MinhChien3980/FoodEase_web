@@ -62,4 +62,8 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: number) => `/orders/${id}`,
     GET_BY_USER: (userId: number) => `/orders/${userId}`,
   },
+  ADDRESSES: {
+    CREATE: '/addresses/create',
+    GET_BY_USER: (userId: number) => `/addresses/${userId}`,
+  },
 }; 

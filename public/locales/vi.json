@@ -32,6 +32,32 @@
         "submit": "Đăng ký",
         "haveAccount": "Đã có tài khoản?"
       }
+    },
+    "profile": {
+      "title": "Hồ sơ của tôi",
+      "subtitle": "Quản lý cài đặt và tùy chọn tài khoản",
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "accountInformation": "Thông tin tài khoản",
+      "email": "Email",
+      "username": "Tên người dùng",
+      "phone": "Số điện thoại",
+      "city": "Thành phố",
+      "memberSince": "Thành viên từ {{date}}",
+      "verified": "Đã xác minh",
+      "unverified": "Chưa xác minh",
+      "address": {
+        "title": "Địa chỉ",
+        "addressLine": "Địa chỉ",
+        "area": "Khu vực",
+        "city": "Thành phố",
+        "type": "Loại địa chỉ",
+        "addNew": "Thêm địa chỉ mới",
+        "types": {
+          "home": "Nhà riêng",
+          "work": "Công ty",
+          "other": "Khác"
+        }
+      }
     }
   },
   "customer": {
@@ -74,7 +100,20 @@
       },
       "memberSince": "Thành viên từ {{date}}",
       "verified": "Đã xác minh",
-      "unverified": "Chưa xác minh"
+      "unverified": "Chưa xác minh",
+      "address": {
+        "title": "Địa chỉ",
+        "addressLine": "Địa chỉ",
+        "area": "Khu vực",
+        "city": "Thành phố",
+        "type": "Loại địa chỉ",
+        "addNew": "Thêm địa chỉ mới",
+        "types": {
+          "home": "Nhà riêng",
+          "work": "Công ty",
+          "other": "Khác"
+        }
+      }
     },
     "home": {
       "welcome": "Chào mừng đến với FoodEase",
@@ -224,9 +263,7 @@
   "privacySecurity": "Bảo mật & Riêng tư",
   "logout": "Đăng xuất",
   "accountInformation": "Thông tin tài khoản",
-  "email": "Email",
   "username": "Tên người dùng",
-  "city": "Thành phố",
   "notSet": "Chưa thiết lập",
   "notProvided": "Chưa cung cấp",
   "recentOrders": "Đơn hàng gần đây",
@@ -240,5 +277,17 @@
   "totalSpent": "Tổng chi tiêu",
   "favoriteRestaurants": "Yêu thích",
   "accountStatus": "Trạng thái tài khoản",
-  "showLess": "Ẩn bớt"
+  "showLess": "Ẩn bớt",
+  "addresses": "Địa chỉ",
+  "addressLine": "Địa chỉ",
+  "addressArea": "Khu vực",
+  "addressCity": "Thành phố",
+  "addressType": "Loại địa chỉ",
+  "addAddress": "Thêm địa chỉ mới",
+  "addressTypes": {
+    "home": "Nhà riêng",
+    "work": "Công ty",
+    "other": "Khác"
+  },
+  "noAddressesYet": "Chưa có địa chỉ nào"
 } 
