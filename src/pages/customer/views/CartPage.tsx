@@ -17,6 +17,15 @@ import {
   CircularProgress,
   IconButton,
   Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material';
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -34,7 +43,7 @@ import { useCart } from '../../../contexts/CartContext';
 import { isCustomerAuthenticated, getCustomerUser } from '../../../utils/sessionManager';
 import { useCustomerNavigation } from '../../../hooks/useCustomerNavigation';
 import { orderService } from '../../../services/orderService';
-import { ORDER_STATUS } from '../../../constants';
+import { ORDER_STATUS, ORDER_PAYMENT_METHOD } from '../../../constants';
 
 const CartPage: React.FC = () => {
   const theme = useTheme();
@@ -53,6 +62,10 @@ const CartPage: React.FC = () => {
     open: false,
     message: '',
     severity: 'success',
+  });
+  const [openCheckoutModal, setOpenCheckoutModal] = useState(false);
+  const [checkoutForm, setCheckoutForm] = useState({
+    paymentMethod: ORDER_PAYMENT_METHOD.CASH,
   });
 
   // Check authentication on component mount
@@ -83,6 +96,21 @@ const CartPage: React.FC = () => {
     event.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
   };
 
+  const handleOpenCheckoutModal = () => {
+    setOpenCheckoutModal(true);
+  };
+
+  const handleCloseCheckoutModal = () => {
+    setOpenCheckoutModal(false);
+  };
+
+  const handleCheckoutFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCheckoutForm({
+      ...checkoutForm,
+      [field]: event.target.value,
+    });
+  };
+
   const handleCheckout = async () => {
     try {
       setIsCheckingOut(true);
@@ -96,23 +124,30 @@ const CartPage: React.FC = () => {
       // Create order request
       const orderRequest = {
         userId: customerUser.id,
-        totalPrice: cart.totalAmount,
+        totalPrice: cart.totalAmount + (cart.totalAmount * 0.1), 
         items: orderItems,
         createdAt: new Date().toISOString(),
         activeStatus: ORDER_STATUS.PENDING,
+        paymentMethod: checkoutForm.paymentMethod,
       };
 
       // Call order service to create order
       const response = await orderService.createOrder(orderRequest);
 
       if (response.code === 200 || response.code === 201) {
+        // Show success message first
         setSnackbar({
           open: true,
           message: 'Đặt hàng thành công!',
           severity: 'success',
         });
-        // Clear cart after successful order
+
+        // Wait for 1 second to show the success message
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Then clear cart and close modal
         await clearCart();
+        handleCloseCheckoutModal();
       } else {
         throw new Error(response.message || 'Đặt hàng thất bại');
       }
@@ -448,16 +483,16 @@ const CartPage: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2">Phí vận chuyển:</Typography>
               <Typography variant="body2" fontWeight="bold">
-                {formatPrice(0)}
+                {formatPrice(cart.totalAmount * 0.1)}
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2">Giảm giá:</Typography>
               <Typography variant="body2" fontWeight="bold" color="success.main">
                 -{formatPrice(0)}
               </Typography>
-            </Box>
+            </Box> */}
 
             <Divider sx={{ my: 2 }} />
 
@@ -466,12 +501,12 @@ const CartPage: React.FC = () => {
                 Tổng cộng:
               </Typography>
               <Typography variant="h6" fontWeight="bold" color="primary">
-                {formatPrice(cart.totalAmount)}
+                {formatPrice(cart.totalAmount + (cart.totalAmount * 0.1))}
               </Typography>
             </Box>
 
             {/* Promo Code */}
-            <TextField
+            {/* <TextField
               fullWidth
               placeholder="Mã giảm giá"
               size="small"
@@ -485,7 +520,7 @@ const CartPage: React.FC = () => {
                 ),
               }}
               sx={{ mb: 2 }}
-            />
+            /> */}
 
             {/* Add Snackbar for notifications */}
             <Snackbar
@@ -509,7 +544,7 @@ const CartPage: React.FC = () => {
               variant="contained"
               size="large"
               startIcon={isCheckingOut ? <CircularProgress size={20} color="inherit" /> : <PaymentIcon />}
-              onClick={handleCheckout}
+              onClick={handleOpenCheckoutModal}
               disabled={isCheckingOut}
               sx={{
                 py: 1.5,
@@ -521,14 +556,82 @@ const CartPage: React.FC = () => {
               {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
             </Button>
 
-            <Alert severity="info" sx={{ mt: 2 }}>
+            {/* <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="caption">
                 Miễn phí vận chuyển cho đơn hàng từ 200.000đ
               </Typography>
-            </Alert>
+            </Alert> */}
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Checkout Modal */}
+      <Dialog 
+        open={openCheckoutModal} 
+        onClose={handleCloseCheckoutModal}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography 
+            component="div"
+            sx={{ 
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              color: 'text.primary'
+            }}
+          >
+            Thông tin thanh toán
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <FormControl component="fieldset" sx={{ mb: 3 }}>
+              <FormLabel component="legend">Phương thức thanh toán</FormLabel>
+              <RadioGroup
+                value={checkoutForm.paymentMethod}
+                onChange={handleCheckoutFormChange('paymentMethod')}
+              >
+                <FormControlLabel 
+                  value={ORDER_PAYMENT_METHOD.CASH} 
+                  control={<Radio />} 
+                  label="Tiền mặt khi nhận hàng" 
+                />
+                <FormControlLabel 
+                  value={ORDER_PAYMENT_METHOD.CREDIT_CARD} 
+                  control={<Radio />} 
+                  label="Thẻ Credit" 
+                />
+              </RadioGroup>
+            </FormControl>
+
+            <Box sx={{ mt: 2, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Tổng thanh toán:
+              </Typography>
+              <Typography variant="h6" color="primary" fontWeight="bold">
+                {formatPrice(cart.totalAmount + (cart.totalAmount * 0.1))}
+              </Typography>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            onClick={handleCloseCheckoutModal}
+            sx={{ mr: 1 }}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCheckout}
+            disabled={isCheckingOut}
+            startIcon={isCheckingOut ? <CircularProgress size={20} color="inherit" /> : null}
+          >
+            {isCheckingOut ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
