@@ -422,7 +422,10 @@ const ProfilePage: React.FC = () => {
                   </Box>
                 ) : orders.length > 0 ? (
                   <Grid container spacing={2}>
-                    {(showAllOrders ? orders : orders.slice(0, 3)).map((order) => (
+                    {orders
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .slice(0, showAllOrders ? undefined : 3)
+                      .map((order) => (
                       <Grid item xs={12} key={order.id}>
                         <Paper
                           sx={{
