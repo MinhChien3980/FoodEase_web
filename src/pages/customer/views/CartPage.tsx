@@ -26,6 +26,8 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -43,6 +45,7 @@ import { useCart } from '../../../contexts/CartContext';
 import { isCustomerAuthenticated, getCustomerUser } from '../../../utils/sessionManager';
 import { useCustomerNavigation } from '../../../hooks/useCustomerNavigation';
 import { orderService } from '../../../services/orderService';
+import { addressService, Address } from '../../../services/addressService';
 import { ORDER_STATUS, ORDER_PAYMENT_METHOD } from '../../../constants';
 
 const CartPage: React.FC = () => {
@@ -64,8 +67,11 @@ const CartPage: React.FC = () => {
     severity: 'success',
   });
   const [openCheckoutModal, setOpenCheckoutModal] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState<boolean>(false);
   const [checkoutForm, setCheckoutForm] = useState({
     paymentMethod: ORDER_PAYMENT_METHOD.CASH,
+    addressId: '',
   });
 
   // Check authentication on component mount
@@ -84,6 +90,34 @@ const CartPage: React.FC = () => {
 
     checkAuth();
   }, []);
+
+  // Fetch addresses when component mounts
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (isAuthenticated && customerUser) {
+        try {
+          setLoadingAddresses(true);
+          const response = await addressService.getAddressesByUser(customerUser.id);
+          if (response.code === 200) {
+            setAddresses(response.data);
+            // Set default address if available
+            if (response.data.length > 0) {
+              setCheckoutForm(prev => ({
+                ...prev,
+                addressId: response.data[0].id.toString()
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching addresses:', error);
+        } finally {
+          setLoadingAddresses(false);
+        }
+      }
+    };
+
+    fetchAddresses();
+  }, [isAuthenticated, customerUser]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -115,6 +149,10 @@ const CartPage: React.FC = () => {
     try {
       setIsCheckingOut(true);
       
+      if (!checkoutForm.addressId) {
+        throw new Error('Vui lòng chọn địa chỉ giao hàng');
+      }
+
       // Prepare order items from cart
       const orderItems = cart.items.map(item => ({
         menuItemId: item.id,
@@ -129,6 +167,7 @@ const CartPage: React.FC = () => {
         createdAt: new Date().toISOString(),
         activeStatus: ORDER_STATUS.PENDING,
         paymentMethod: checkoutForm.paymentMethod,
+        addressId: parseInt(checkoutForm.addressId),
       };
 
       // Call order service to create order
@@ -586,6 +625,33 @@ const CartPage: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
+            {/* Address Selection */}
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <FormLabel component="legend">Địa chỉ giao hàng</FormLabel>
+              {loadingAddresses ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : addresses.length > 0 ? (
+                <Select
+                  value={checkoutForm.addressId}
+                  onChange={(e) => setCheckoutForm(prev => ({ ...prev, addressId: e.target.value }))}
+                  displayEmpty
+                  fullWidth
+                >
+                  {addresses.map((address) => (
+                    <MenuItem key={address.id} value={address.id.toString()}>
+                      {address.addressLine}, {address.area}
+                    </MenuItem>
+                  ))}
+                </Select>
+              ) : (
+                <Alert severity="warning" sx={{ mt: 1 }}>
+                  Bạn chưa có địa chỉ giao hàng. Vui lòng thêm địa chỉ trong trang cá nhân.
+                </Alert>
+              )}
+            </FormControl>
+
             <FormControl component="fieldset" sx={{ mb: 3 }}>
               <FormLabel component="legend">Phương thức thanh toán</FormLabel>
               <RadioGroup
@@ -625,7 +691,7 @@ const CartPage: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleCheckout}
-            disabled={isCheckingOut}
+            disabled={isCheckingOut || !checkoutForm.addressId}
             startIcon={isCheckingOut ? <CircularProgress size={20} color="inherit" /> : null}
           >
             {isCheckingOut ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
