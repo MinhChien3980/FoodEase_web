@@ -42,6 +42,11 @@ export const API_ENDPOINTS = {
   USERS: {
     PROFILE: '/users/profile',
     UPDATE: (id: number) => `/users/${id}`,
+    GET_ALL: '/users',
+    GET_BY_ID: (id: number) => `/users/${id}`,
+    CREATE: '/users',
+    DELETE: (id: number) => `/users/${id}`,
+    UPDATE_STATUS: (id: number) => `/users/${id}/status`,
   },
   CART: {
     GET_BY_USER: (userId: number) => `/cart?userId=${userId}`,

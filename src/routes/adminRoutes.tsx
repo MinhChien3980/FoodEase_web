@@ -10,6 +10,7 @@ import { DashboardPage } from "../pages/admin/dashboard";
 import { RestaurantList, RestaurantCreate, RestaurantEdit, RestaurantMenuItems } from "../pages/admin/restaurants";
 import { MenuItemCreate } from "../pages/admin/restaurants/menu-items/create";
 import { MenuItemEdit } from "../pages/admin/restaurants/menu-items/edit";
+import { list as List } from "../pages/admin/customer";
 
 // Admin Layout Wrapper Component
 const AdminLayoutWrapper = () => (
@@ -47,6 +48,9 @@ export const adminRoutes = (
         <Route path=":menuItemId/edit" element={<MenuItemEdit />} />
       </Route>
     </Route>
+
+    {/* Customer Management Route */}
+    <Route path="customers" element={<List />} />
   </Route>
 );
 
@@ -70,5 +74,12 @@ export const adminResources = [
     list: "/admin/restaurants/:id/menu-items",
     create: "/admin/restaurants/:id/menu-items/create",
     edit: "/admin/restaurants/:id/menu-items/:menuItemId/edit",
+  },
+  {
+    name: "customers",
+    list: "/admin/customers",
+    meta: {
+      label: "Customer Management",
+    },
   },
 ]; 
