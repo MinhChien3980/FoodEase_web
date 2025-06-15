@@ -5,7 +5,7 @@ import { CreateButton, EditButton, useDataGrid, DeleteButton } from "@refinedev/
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { RefineListView } from "../../../../components";
 import { restaurantService, Restaurant, MenuItem } from "../../../../services";
-import { Stack, Typography, Box } from "@mui/material";
+import { Stack, Typography, Box, Button } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useTranslate } from "@refinedev/core";
 
@@ -134,10 +134,13 @@ export const RestaurantMenuItems = () => {
       ]}
     >
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <ArrowBackIcon 
+        <Button
+          startIcon={<ArrowBackIcon />}
           onClick={() => go({ to: "/admin/restaurants" })}
-          sx={{ cursor: 'pointer' }}
-        />
+          variant="outlined"
+        >
+          Back
+        </Button>
         <Typography variant="h5">
           {restaurant?.name} - {t("menuItems.titles.list")}
         </Typography>

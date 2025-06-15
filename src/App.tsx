@@ -24,7 +24,6 @@ import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
 import { authProvider } from "./authProvider";
 import { ColorModeContextProvider } from "./contexts";
 import { CartProvider } from "./contexts/CartContext";
-import { useAutoLoginForDemo } from "./hooks";
 
 // Import grouped routes and utilities
 import { 
@@ -39,20 +38,12 @@ import { enhanceResourcesWithIcons } from "./routes/routeUtils";
 const API_URL = "http://localhost:5173/api";
 
 const App: React.FC = () => {
-  // This hook is used to automatically login the user.
-  // We use this hook to skip the login page and demonstrate the application more quickly.
-  const { loading } = useAutoLoginForDemo();
-
   const { t, i18n } = useTranslation();
   const i18nProvider = {
     translate: (key: string, params: object) => t(key, params),
     changeLocale: (lang: string) => i18n.changeLanguage(lang),
     getLocale: () => i18n.language,
   };
-
-  if (loading) {
-    return null;
-  }
 
   // Enhanced admin resources with icons using utility function
   const enhancedAdminResources = enhanceResourcesWithIcons(adminResources);

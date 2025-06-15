@@ -12,14 +12,15 @@ export interface ProfileResponse {
         phone: string;
         cityId: number;
         langKey: string;
+        login: string;
     };
 }
 
 export interface UpdateProfileRequest {
-    fullName: string;
-    phone: string;
-    cityId: number;
-    langKey: string;
+    fullName?: string;
+    phone?: string;
+    cityId?: number;
+    langKey?: string;
 }
 
 export interface User {
@@ -28,8 +29,8 @@ export interface User {
     email: string;
     fullName: string;
     phone: string;
-    role: string;
-    status: string;
+    login: string;
+    activated: boolean;
 }
 
 export interface UserResponse {

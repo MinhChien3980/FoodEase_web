@@ -21,8 +21,8 @@ export const authRoutes = (
           type="login"
           formProps={{
             defaultValues: {
-              email: "demo@refine.dev",
-              password: "demodemo",
+              email: "admin@gmail.com",
+              password: "admin",
             },
           }}
         />
@@ -33,12 +33,6 @@ export const authRoutes = (
       element={
         <AuthPage
           type="register"
-          formProps={{
-            defaultValues: {
-              email: "demo@refine.dev",
-              password: "demodemo",
-            },
-          }}
         />
       }
     />
@@ -47,11 +41,6 @@ export const authRoutes = (
       element={
         <AuthPage
           type="forgotPassword"
-          formProps={{
-            defaultValues: {
-              email: "demo@refine.dev",
-            },
-          }}
         />
       }
     />
@@ -68,24 +57,17 @@ export const authConfig = {
     path: "/login",
     type: "login",
     defaultValues: {
-      email: "demo@refine.dev",
-      password: "demodemo",
+      email: "admin@gmail.com",
+      password: "admin",
     },
   },
   register: {
     path: "/register",
     type: "register",
-    defaultValues: {
-      email: "demo@refine.dev",
-      password: "demodemo",
-    },
   },
   forgotPassword: {
     path: "/forgot-password",
     type: "forgotPassword",
-    defaultValues: {
-      email: "demo@refine.dev",
-    },
   },
   updatePassword: {
     path: "/update-password",

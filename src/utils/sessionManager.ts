@@ -279,4 +279,12 @@ export const autoLoginIfTokenExists = async (): Promise<{ success: boolean; user
     console.error('Auto-login failed:', error);
     return { success: false };
   }
+};
+
+/**
+ * Check if current user has admin role
+ */
+export const isAdmin = (): boolean => {
+  const user = getCustomerUser();
+  return user?.role === 'ADMIN';
 }; 

@@ -3,6 +3,7 @@ import { Authenticated } from "@refinedev/core";
 import { ThemedLayoutV2 } from "@refinedev/mui";
 import { CatchAllNavigate } from "@refinedev/react-router";
 import Box from "@mui/material/Box";
+import { Navigate } from "react-router-dom";
 
 // Admin Components
 import { Header, Title } from "../components";
@@ -11,26 +12,34 @@ import { RestaurantList, RestaurantCreate, RestaurantEdit, RestaurantMenuItems }
 import { MenuItemCreate } from "../pages/admin/restaurants/menu-items/create";
 import { MenuItemEdit } from "../pages/admin/restaurants/menu-items/edit";
 import { list as List } from "../pages/admin/customer";
+import UserOrders from "../pages/admin/customer/orders";
+import { isAdmin } from "../utils/sessionManager";
 
 // Admin Layout Wrapper Component
-const AdminLayoutWrapper = () => (
-  <Authenticated
-    key="authenticated-routes"
-    fallback={<CatchAllNavigate to="/login" />}
-  >
-    <ThemedLayoutV2 Header={Header} Title={Title}>
-      <Box
-        sx={{
-          maxWidth: "1200px",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        <Outlet />
-      </Box>
-    </ThemedLayoutV2>
-  </Authenticated>
-);
+const AdminLayoutWrapper = () => {
+  if (!isAdmin()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <Authenticated
+      key="authenticated-routes"
+      fallback={<CatchAllNavigate to="/login" />}
+    >
+      <ThemedLayoutV2 Header={Header} Title={Title}>
+        <Box
+          sx={{
+            maxWidth: "1200px",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          <Outlet />
+        </Box>
+      </ThemedLayoutV2>
+    </Authenticated>
+  );
+};
 
 // Admin Routes Configuration
 export const adminRoutes = (
@@ -49,8 +58,11 @@ export const adminRoutes = (
       </Route>
     </Route>
 
-    {/* Customer Management Route */}
-    <Route path="customers" element={<List />} />
+    {/* Customer Management Routes */}
+    <Route path="customers">
+      <Route index element={<List />} />
+      <Route path=":userId/orders" element={<UserOrders />} />
+    </Route>
   </Route>
 );
 

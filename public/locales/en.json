@@ -942,5 +942,32 @@
       "edit": "Edit",
       "delete": "Delete"
     }
+  },
+  "admin": {
+    "customer": {
+      "list": {
+        "title": "Customer Management",
+        "fields": {
+          "email": "Email",
+          "fullName": "Full Name",
+          "phone": "Phone",
+          "role": "Role",
+          "status": "Status"
+        }
+      },
+      "orders": {
+        "title": "User Orders",
+        "back": "Back",
+        "noOrders": "No orders found",
+        "table": {
+          "orderId": "Order ID",
+          "date": "Date",
+          "totalPrice": "Total Price",
+          "status": "Status",
+          "items": "Items",
+          "item": "Food"
+        }
+      }
+    }
   }
 }

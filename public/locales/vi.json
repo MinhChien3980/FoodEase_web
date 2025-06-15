@@ -337,5 +337,32 @@
       "edit": "Chỉnh sửa",
       "delete": "Xóa"
     }
+  },
+  "admin": {
+    "customer": {
+      "list": {
+        "title": "Quản lý khách hàng",
+        "fields": {
+          "email": "Email",
+          "fullName": "Họ và tên",
+          "phone": "Số điện thoại",
+          "role": "Vai trò",
+          "status": "Trạng thái"
+        }
+      },
+      "orders": {
+        "title": "Đơn hàng của người dùng",
+        "back": "Quay lại",
+        "noOrders": "Không tìm thấy đơn hàng",
+        "table": {
+          "orderId": "Mã đơn hàng",
+          "date": "Ngày",
+          "totalPrice": "Tổng tiền",
+          "status": "Trạng thái",
+          "items": "Sản phẩm",
+          "item": "Món"
+        }
+      }
+    }
   }
 } 

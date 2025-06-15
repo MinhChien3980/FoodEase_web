@@ -193,7 +193,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = () => {
           >
             <Select
               size="small"
-              defaultValue={currentLocale}
+              value={currentLocale}
               slotProps={{
                 input: {
                   "aria-label": "Without label",
@@ -207,21 +207,28 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = () => {
                 },
               }}
             >
-              {[...(i18n.languages ?? [])].sort().map((lang: string) => (
-                <MenuItem
-                  selected={currentLocale === lang}
-                  key={lang}
-                  defaultValue={lang}
-                  onClick={() => {
-                    changeLanguage(lang);
-                  }}
-                  value={lang}
-                >
-                  <Typography color="text.secondary">
-                    {lang === "en" ? "English" : "German"}
-                  </Typography>
-                </MenuItem>
-              ))}
+              <MenuItem
+                selected={currentLocale === "en"}
+                value="en"
+                onClick={() => {
+                  changeLanguage("en");
+                }}
+              >
+                <Typography color="text.secondary">
+                  English
+                </Typography>
+              </MenuItem>
+              <MenuItem
+                selected={currentLocale === "vi"}
+                value="vi"
+                onClick={() => {
+                  changeLanguage("vi");
+                }}
+              >
+                <Typography color="text.secondary">
+                  Tiếng Việt
+                </Typography>
+              </MenuItem>
             </Select>
 
             <IconButton

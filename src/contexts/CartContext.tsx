@@ -155,6 +155,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoadingServerCart(true);
       console.log(`🛒 Loading cart for user ${userId}...`);
       
+      // Validate userId is a valid number
+      if (isNaN(userId) || userId <= 0) {
+        console.error('Invalid user ID:', userId);
+        return;
+      }
+      
       // Always get or create cart for this user from server
       const userCart = await cartService.getOrCreateCart(userId);
       console.log(`📦 Cart ID for user ${userId}: ${userCart.id}`);
@@ -167,9 +173,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Only update state if we still have the same user (prevent race conditions)
       const currentUser = isCustomerAuthenticated() ? getCustomerUser() : null;
-      const currentUserIdCheck = currentUser?.id?.toString();
+      const currentUserIdCheck = currentUser?.id ? parseInt(currentUser.id) : null;
       
-      if (currentUserIdCheck === userId.toString()) {
+      if (currentUserIdCheck === userId) {
         if (serverCartItems.length > 0) {
           console.log(`✅ Loaded ${serverCartItems.length} items from server cart`);
           dispatch({ type: 'LOAD_CART', payload: serverCartItems });
@@ -185,9 +191,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Only update state if we're still dealing with the same user
       const currentUser = isCustomerAuthenticated() ? getCustomerUser() : null;
-      const currentUserIdCheck = currentUser?.id?.toString();
+      const currentUserIdCheck = currentUser?.id ? parseInt(currentUser.id) : null;
       
-      if (currentUserIdCheck === userId.toString()) {
+      if (currentUserIdCheck === userId) {
         // Instead of fallback to localStorage, just reset cart
         // Cart should always be server-based for authenticated users
         dispatch({ type: 'RESET_CART' });
@@ -206,14 +212,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const isAuth = isCustomerAuthenticated();
         const user = isAuth ? getCustomerUser() : null;
-        const userId = user?.id?.toString() || null;
+        const userId = user?.id ? parseInt(user.id) : null;
 
         if (!isMounted) return; // Component unmounted
 
-        if (userId) {
+        if (userId && !isNaN(userId)) {
           console.log(`🚀 Initial load: loading cart for user ${userId}`);
-          setCurrentUserId(userId);
-          await loadServerCartForUser(parseInt(userId));
+          setCurrentUserId(userId.toString());
+          await loadServerCartForUser(userId);
         } else {
           console.log('🚀 Initial load: no authenticated user found');
           setCurrentUserId(null);
@@ -233,7 +239,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       isMounted = false;
     };
-  }, []); // Run only once on mount
+  }, []);
 
   // Check authentication state periodically to catch login/logout events
   useEffect(() => {
@@ -245,24 +251,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const isAuth = isCustomerAuthenticated();
           const user = isAuth ? getCustomerUser() : null;
-          const userId = user?.id?.toString() || null;
+          const userId = user?.id ? parseInt(user.id) : null;
 
-          // If authentication state changed
-          if (userId !== currentUserId) {
-            if (userId) {
-              console.log(`🔄 User changed detected: ${currentUserId} -> ${userId}`);
-              setCurrentUserId(userId);
-              await loadServerCartForUser(parseInt(userId));
-            } else {
+          // Only proceed if there's an actual change in authentication state
+          if (userId?.toString() !== currentUserId) {
+            // Only log and clear cart if we're actually logged out
+            if (!userId && currentUserId) {
               console.log('🚪 Logout detected: clearing cart');
               setCurrentUserId(null);
               dispatch({ type: 'RESET_CART' });
+            } 
+            // Only load cart if we're actually logged in
+            else if (userId && !isNaN(userId)) {
+              console.log(`🔄 User changed detected: ${currentUserId} -> ${userId}`);
+              setCurrentUserId(userId.toString());
+              await loadServerCartForUser(userId);
             }
           }
         } catch (error) {
           console.error('Error in auth polling:', error);
         }
-      }, 500); // Check every 0.5 seconds for fastest response
+      }, 2000); // Increase interval to 2 seconds to reduce unnecessary checks
     };
 
     // Start polling immediately, no delay
