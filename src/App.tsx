@@ -36,7 +36,7 @@ import {
 } from "./routes";
 import { enhanceResourcesWithIcons } from "./routes/routeUtils";
 
-const API_URL = "https://api.finefoods.refine.dev";
+const API_URL = "http://localhost:5173/api";
 
 const App: React.FC = () => {
   // This hook is used to automatically login the user.

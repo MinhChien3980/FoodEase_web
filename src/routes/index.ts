@@ -13,6 +13,7 @@ export const ROUTE_PATHS = {
   ADMIN_STORES: '/admin/stores',
   ADMIN_CATEGORIES: '/admin/categories',
   ADMIN_COURIERS: '/admin/couriers',
+  ADMIN_RESTAURANTS: '/admin/restaurants',
   
   // Customer
   CUSTOMER: '/foodease',

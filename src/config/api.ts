@@ -1,10 +1,6 @@
 // API Configuration
 const getApiBaseUrl = (): string => {
-  if (import.meta.env.DEV) {
-    return '/api'; // This will be proxied by Vite to http://localhost:8080/api
-  }
-  // For production, use the full URL
-    return 'http://localhost:8080/api'; 
+  return 'http://localhost:5173/api';
 };
 
 export const API_CONFIG = {

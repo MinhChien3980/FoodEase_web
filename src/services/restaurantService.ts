@@ -17,6 +17,8 @@ export interface Restaurant {
   id: number;
   name: string;
   address: string;
+  description?: string;
+  phone: string;
   menuItems: MenuItem[];
 }
 
@@ -59,6 +61,69 @@ export const restaurantService = {
     }
   },
 
+  async getRestaurantById(id: number): Promise<Restaurant> {
+    try {
+      const response: AxiosResponse<SingleRestaurantResponse> = await apiClient.get(API_ENDPOINTS.RESTAURANTS.GET_BY_ID(id));
+      
+      if (response.data.code === 200 || response.data.code === 201) {
+        console.log(`📊 Fetched restaurant ${id} successfully`);
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error(`Error fetching restaurant ${id}:`, error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async createRestaurant(data: Partial<Restaurant>): Promise<Restaurant> {
+    try {
+      const response: AxiosResponse<SingleRestaurantResponse> = await apiClient.post(API_ENDPOINTS.RESTAURANTS.CREATE, data);
+      
+      if (response.data.code === 200 || response.data.code === 201) {
+        console.log('📊 Created restaurant successfully');
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error('Error creating restaurant:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async updateRestaurant(id: number, data: Partial<Restaurant>): Promise<Restaurant> {
+    try {
+      const response: AxiosResponse<SingleRestaurantResponse> = await apiClient.put(API_ENDPOINTS.RESTAURANTS.UPDATE(id), data);
+      
+      if (response.data.code === 200) {
+        console.log(`📊 Updated restaurant ${id} successfully`);
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error(`Error updating restaurant ${id}:`, error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async deleteRestaurant(id: number): Promise<void> {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.RESTAURANTS.DELETE(id));
+      
+      if (response.data.code === 200) {
+        console.log(`📊 Deleted restaurant ${id} successfully`);
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error(`Error deleting restaurant ${id}:`, error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
   async getMenuItemsByRestaurantId(restaurantId: number): Promise<MenuItem[]> {
     try {
       const response: AxiosResponse<MenuItemsResponse> = await apiClient.get(API_ENDPOINTS.MENU_ITEMS.GET_BY_RESTAURANT_ID(restaurantId));
@@ -75,7 +140,6 @@ export const restaurantService = {
     }
   },
 
-  // Lấy thông tin chi tiết menu item theo ID
   async getMenuItemById(menuItemId: number): Promise<MenuItem> {
     try {
       const response: AxiosResponse<MenuItemResponse> = await apiClient.get(API_ENDPOINTS.MENU_ITEMS.GET_BY_ID(menuItemId));
@@ -91,5 +155,4 @@ export const restaurantService = {
       throw new Error(handleApiError(error));
     }
   },
-
 }; 

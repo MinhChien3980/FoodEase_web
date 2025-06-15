@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext, type ReactNode } from "react";
+import { useState, useContext, type ReactNode } from "react";
 import {
-  useList,
   useTranslate,
   useGetIdentity,
   useGetLocale,
@@ -27,7 +26,7 @@ import SearchOutlined from "@mui/icons-material/SearchOutlined";
 import BrightnessHighIcon from "@mui/icons-material/BrightnessHigh";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import i18n from "../../i18n";
-import type { IOrder, IStore, ICourier, IIdentity } from "../../interfaces";
+import type { IIdentity } from "../../interfaces";
 import { ColorModeContext } from "../../contexts";
 
 interface IOptions {
@@ -38,105 +37,15 @@ interface IOptions {
 }
 
 export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = () => {
+  const t = useTranslate();
+  const { mode, setMode } = useContext(ColorModeContext);
   const [value, setValue] = useState("");
   const [options, setOptions] = useState<IOptions[]>([]);
-
-  const { mode, setMode } = useContext(ColorModeContext);
 
   const changeLanguage = useSetLocale();
   const locale = useGetLocale();
   const currentLocale = locale();
   const { data: user } = useGetIdentity<IIdentity | null>();
-
-  const t = useTranslate();
-
-  const { refetch: refetchOrders } = useList<IOrder>({
-    resource: "orders",
-    config: {
-      filters: [{ field: "q", operator: "contains", value }],
-    },
-    queryOptions: {
-      enabled: false,
-      onSuccess: (data) => {
-        const orderOptionGroup: IOptions[] = data.data.map((item) => {
-          return {
-            label: `${item.store.title} / #${item.orderNumber}`,
-            link: `/orders/show/${item.id}`,
-            category: t("orders.orders"),
-            avatar: (
-              <Avatar
-                variant="rounded"
-                sx={{
-                  width: "32px",
-                  height: "32px",
-                }}
-                src={item.products?.[0]?.images?.[0]?.url}
-              />
-            ),
-          };
-        });
-        if (orderOptionGroup.length > 0) {
-          setOptions((prevOptions) => [...prevOptions, ...orderOptionGroup]);
-        }
-      },
-    },
-  });
-
-  const { refetch: refetchStores } = useList<IStore>({
-    resource: "stores",
-    config: {
-      filters: [{ field: "q", operator: "contains", value }],
-    },
-    queryOptions: {
-      enabled: false,
-      onSuccess: (data) => {
-        const storeOptionGroup = data.data.map((item) => {
-          return {
-            label: `${item.title} - ${item.address.text}`,
-            link: `/stores/edit/${item.id}`,
-            category: t("stores.stores"),
-          };
-        });
-        setOptions((prevOptions) => [...prevOptions, ...storeOptionGroup]);
-      },
-    },
-  });
-
-  const { refetch: refetchCouriers } = useList<ICourier>({
-    resource: "couriers",
-    config: {
-      filters: [{ field: "q", operator: "contains", value }],
-    },
-    queryOptions: {
-      enabled: false,
-      onSuccess: (data) => {
-        const courierOptionGroup = data.data.map((item) => {
-          return {
-            label: `${item.name}`,
-            avatar: (
-              <Avatar
-                sx={{
-                  width: "32px",
-                  height: "32px",
-                }}
-                src={item.avatar?.[0]?.url}
-              />
-            ),
-            link: `/couriers/edit/${item.id}`,
-            category: t("couriers.couriers"),
-          };
-        });
-        setOptions((prevOptions) => [...prevOptions, ...courierOptionGroup]);
-      },
-    },
-  });
-
-  useEffect(() => {
-    setOptions([]);
-    refetchOrders();
-    refetchCouriers();
-    refetchStores();
-  }, [value, refetchOrders, refetchCouriers, refetchStores]);
 
   return (
     <AppBar

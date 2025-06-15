@@ -7,12 +7,7 @@ import Box from "@mui/material/Box";
 // Admin Components
 import { Header, Title } from "../components";
 import { DashboardPage } from "../pages/admin/dashboard";
-import { OrderList, OrderShow } from "../pages/admin/orders";
-import { CustomerShow, CustomerList } from "../pages/admin/customers";
-import { CourierList, CourierCreate, CourierEdit } from "../pages/admin/couriers";
-import { StoreList, StoreEdit, StoreCreate } from "../pages/admin/stores";
-import { ProductEdit, ProductList, ProductCreate } from "../pages/admin/products";
-import { CategoryList } from "../pages/admin/categories";
+import { RestaurantList, RestaurantCreate, RestaurantEdit } from "../pages/admin/restaurants";
 
 // Admin Layout Wrapper Component
 const AdminLayoutWrapper = () => (
@@ -38,61 +33,12 @@ const AdminLayoutWrapper = () => (
 export const adminRoutes = (
   <Route path="/admin" element={<AdminLayoutWrapper />}>
     <Route index element={<DashboardPage />} />
-    
-    {/* Orders Routes */}
-    <Route path="orders">
-      <Route index element={<OrderList />} />
-      <Route path=":id" element={<OrderShow />} />
-    </Route>
-    
-    {/* Customers Routes */}
-    <Route
-      path="customers"
-      element={
-        <CustomerList>
-          <Outlet />
-        </CustomerList>
-      }
-    >
-      <Route path=":id" element={<CustomerShow />} />
-    </Route>
 
-    {/* Products Routes */}
-    <Route
-      path="products"
-      element={
-        <ProductList>
-          <Outlet />
-        </ProductList>
-      }
-    >
-      <Route path=":id/edit" element={<ProductEdit />} />
-      <Route path="new" element={<ProductCreate />} />
-    </Route>
-
-    {/* Stores Routes */}
-    <Route path="stores">
-      <Route index element={<StoreList />} />
-      <Route path="new" element={<StoreCreate />} />
-      <Route path=":id/edit" element={<StoreEdit />} />
-    </Route>
-
-    {/* Categories Routes */}
-    <Route path="categories" element={<CategoryList />} />
-
-    {/* Couriers Routes */}
-    <Route path="couriers">
-      <Route
-        path=""
-        element={
-          <CourierList>
-            <Outlet />
-          </CourierList>
-        }
-      >
-        <Route path="new" element={<CourierCreate />} />
-      </Route>
-      <Route path=":id/edit" element={<CourierEdit />} />
+    {/* Restaurants Routes */}
+    <Route path="restaurants">
+      <Route index element={<RestaurantList />} />
+      <Route path="new" element={<RestaurantCreate />} />
+      <Route path=":id/edit" element={<RestaurantEdit />} />
     </Route>
   </Route>
 );
@@ -107,36 +53,9 @@ export const adminResources = [
     },
   },
   {
-    name: "orders",
-    list: "/admin/orders",
-    show: "/admin/orders/:id",
-  },
-  {
-    name: "users",
-    list: "/admin/customers",
-    show: "/admin/customers/:id",
-  },
-  {
-    name: "products",
-    list: "/admin/products",
-    create: "/admin/products/new",
-    edit: "/admin/products/:id/edit",
-    show: "/admin/products/:id",
-  },
-  {
-    name: "categories",
-    list: "/admin/categories",
-  },
-  {
-    name: "stores",
-    list: "/admin/stores",
-    create: "/admin/stores/new",
-    edit: "/admin/stores/:id/edit",
-  },
-  {
-    name: "couriers",
-    list: "/admin/couriers",
-    create: "/admin/couriers/new",
-    edit: "/admin/couriers/:id/edit",
+    name: "restaurants",
+    list: "/admin/restaurants",
+    create: "/admin/restaurants/new",
+    edit: "/admin/restaurants/:id/edit",
   },
 ]; 
