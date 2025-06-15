@@ -41,6 +41,8 @@ apiClient.interceptors.response.use(
       // Server responded with error status
       console.error('Error data:', error.response.data);
       console.error('Error status:', error.response.status);
+      console.error('Error headers:', error.response.headers);
+      console.error('Full error response:', error.response);
       
       // Handle specific status codes globally
       switch (error.response.status) {

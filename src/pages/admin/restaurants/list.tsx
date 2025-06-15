@@ -16,6 +16,8 @@ export const RestaurantList = () => {
   const t = useTranslate();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [menuModalOpen, setMenuModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -155,6 +157,20 @@ export const RestaurantList = () => {
         initialState={{
           pagination: {
             paginationModel: { pageSize: 10 },
+          },
+        }}
+        onRowClick={(params) => {
+          go({
+            to: `/admin/restaurants/${params.row.id}/menu-items`,
+            type: "replace",
+          });
+        }}
+        sx={{
+          '& .MuiDataGrid-row': {
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
           },
         }}
       />

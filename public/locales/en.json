@@ -894,5 +894,53 @@
     "work": "Work",
     "other": "Other"
   },
-  "noAddressesYet": "No addresses yet"
+  "noAddressesYet": "No addresses yet",
+  "restaurants": {
+    "titles": {
+      "list": "Restaurants",
+      "create": "Add New Restaurant",
+      "edit": "Edit Restaurant"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Restaurant Name",
+      "description": "Description",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "imageUrl": "Image",
+      "status": {
+        "label": "Status",
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
+    "actions": {
+      "add": "Add Restaurant",
+      "edit": "Edit",
+      "delete": "Delete",
+      "viewMenu": "View Menu"
+    }
+  },
+  "menuItems": {
+    "titles": {
+      "list": "Menu Items",
+      "create": "Add New Menu Item",
+      "edit": "Edit Menu Item"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Item Name",
+      "description": "Description",
+      "price": "Price",
+      "imageUrl": "Image",
+      "categoryId": "Category",
+      "restaurantId": "Restaurant"
+    },
+    "actions": {
+      "add": "Add Menu Item",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  }
 }

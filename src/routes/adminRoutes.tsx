@@ -7,7 +7,9 @@ import Box from "@mui/material/Box";
 // Admin Components
 import { Header, Title } from "../components";
 import { DashboardPage } from "../pages/admin/dashboard";
-import { RestaurantList, RestaurantCreate, RestaurantEdit } from "../pages/admin/restaurants";
+import { RestaurantList, RestaurantCreate, RestaurantEdit, RestaurantMenuItems } from "../pages/admin/restaurants";
+import { MenuItemCreate } from "../pages/admin/restaurants/menu-items/create";
+import { MenuItemEdit } from "../pages/admin/restaurants/menu-items/edit";
 
 // Admin Layout Wrapper Component
 const AdminLayoutWrapper = () => (
@@ -39,6 +41,11 @@ export const adminRoutes = (
       <Route index element={<RestaurantList />} />
       <Route path="new" element={<RestaurantCreate />} />
       <Route path=":id/edit" element={<RestaurantEdit />} />
+      <Route path=":id/menu-items">
+        <Route index element={<RestaurantMenuItems />} />
+        <Route path="create" element={<MenuItemCreate />} />
+        <Route path=":menuItemId/edit" element={<MenuItemEdit />} />
+      </Route>
     </Route>
   </Route>
 );
@@ -57,5 +64,11 @@ export const adminResources = [
     list: "/admin/restaurants",
     create: "/admin/restaurants/new",
     edit: "/admin/restaurants/:id/edit",
+  },
+  {
+    name: "menu-items",
+    list: "/admin/restaurants/:id/menu-items",
+    create: "/admin/restaurants/:id/menu-items/create",
+    edit: "/admin/restaurants/:id/menu-items/:menuItemId/edit",
   },
 ]; 

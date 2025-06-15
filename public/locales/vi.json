@@ -289,5 +289,53 @@
     "work": "Công ty",
     "other": "Khác"
   },
-  "noAddressesYet": "Chưa có địa chỉ nào"
+  "noAddressesYet": "Chưa có địa chỉ nào",
+  "restaurants": {
+    "titles": {
+      "list": "Danh sách nhà hàng",
+      "create": "Thêm nhà hàng mới",
+      "edit": "Chỉnh sửa nhà hàng"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Tên nhà hàng",
+      "description": "Mô tả",
+      "address": "Địa chỉ",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "imageUrl": "Hình ảnh",
+      "status": {
+        "label": "Trạng thái",
+        "active": "Hoạt động",
+        "inactive": "Không hoạt động"
+      }
+    },
+    "actions": {
+      "add": "Thêm nhà hàng",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "viewMenu": "Xem thực đơn"
+    }
+  },
+  "menuItems": {
+    "titles": {
+      "list": "Danh sách món ăn",
+      "create": "Thêm món ăn mới",
+      "edit": "Chỉnh sửa món ăn"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Tên món ăn",
+      "description": "Mô tả",
+      "price": "Giá tiền",
+      "imageUrl": "Hình ảnh",
+      "categoryId": "Danh mục",
+      "restaurantId": "Nhà hàng"
+    },
+    "actions": {
+      "add": "Thêm món ăn",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa"
+    }
+  }
 } 

@@ -155,4 +155,36 @@ export const restaurantService = {
       throw new Error(handleApiError(error));
     }
   },
+
+  async createMenuItem(data: Partial<MenuItem>): Promise<MenuItem> {
+    try {
+      const response: AxiosResponse<MenuItemResponse> = await apiClient.post(API_ENDPOINTS.MENU_ITEMS.CREATE, data);
+      
+      if (response.data.code === 200 || response.data.code === 201) {
+        console.log('🍽️ Created menu item successfully');
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error('Error creating menu item:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async updateMenuItem(id: number, data: Partial<MenuItem>): Promise<MenuItem> {
+    try {
+      const response: AxiosResponse<MenuItemResponse> = await apiClient.put(API_ENDPOINTS.MENU_ITEMS.UPDATE(id), data);
+      
+      if (response.data.code === 200) {
+        console.log(`🍽️ Updated menu item ${id} successfully`);
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      console.error(`Error updating menu item ${id}:`, error);
+      throw new Error(handleApiError(error));
+    }
+  },
 }; 
