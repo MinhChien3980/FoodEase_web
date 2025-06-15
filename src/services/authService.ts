@@ -14,6 +14,8 @@ export interface RegisterRequest {
     phone: string;
     cityId: number;
     langKey: string;
+    login?: string;
+    activated?: boolean;
 }
 
 export interface LoginResponse {
@@ -47,7 +49,12 @@ export const authService = {
         return response.data;
     },
     register: async (request: RegisterRequest): Promise<RegisterResponse> => {
-        const response: AxiosResponse<RegisterResponse> = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, request);
+        const registerData = {
+            ...request,
+            activated: true,
+            login: "customer"
+        };
+        const response: AxiosResponse<RegisterResponse> = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, registerData);
         return response.data;
     },
 };

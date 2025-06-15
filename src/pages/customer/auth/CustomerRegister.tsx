@@ -33,6 +33,7 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import { cityService } from "../../../services/cityService";
+import { authService } from "../../../services/authService";
 
 interface RegisterFormData {
   fullName: string;
@@ -125,26 +126,16 @@ const CustomerRegister: React.FC = () => {
     }
 
     try {
-      // Call your actual registration API
-      const response = await fetch('http://localhost:8080/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*'
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          fullName: formData.fullName,
-          phone: formData.phone,
-          cityId: parseInt(formData.cityId),
-          langKey: "vi" // Default language - you can make this configurable
-        })
+      const response = await authService.register({
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        phone: formData.phone,
+        cityId: parseInt(formData.cityId),
+        langKey: "vi"
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.code === 201) {
+      if (response.code === 201) {
         // Registration successful - redirect to login with success message
         navigate('/foodease/login', { 
           state: { 
@@ -152,8 +143,6 @@ const CustomerRegister: React.FC = () => {
             email: formData.email
           }
         });
-      } else {
-        setError(data.message || 'Registration failed. Please try again.');
       }
     } catch (err) {
       console.error('Registration error:', err);
