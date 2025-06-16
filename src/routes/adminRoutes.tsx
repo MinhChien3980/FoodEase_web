@@ -13,6 +13,7 @@ import { MenuItemCreate } from "../pages/admin/restaurants/menu-items/create";
 import { MenuItemEdit } from "../pages/admin/restaurants/menu-items/edit";
 import { list as List } from "../pages/admin/customer";
 import UserOrders from "../pages/admin/customer/orders";
+import { DeliveryList, DeliveryEdit } from "../pages/admin/delivery";
 import { isAdmin } from "../utils/sessionManager";
 
 // Admin Layout Wrapper Component
@@ -63,6 +64,12 @@ export const adminRoutes = (
       <Route index element={<List />} />
       <Route path=":userId/orders" element={<UserOrders />} />
     </Route>
+
+    {/* Delivery Management Routes */}
+    <Route path="delivery">
+      <Route index element={<DeliveryList />} />
+      <Route path=":id/edit" element={<DeliveryEdit />} />
+    </Route>
   </Route>
 );
 
@@ -92,6 +99,14 @@ export const adminResources = [
     list: "/admin/customers",
     meta: {
       label: "Customer Management",
+    },
+  },
+  {
+    name: "delivery",
+    list: "/admin/delivery",
+    edit: "/admin/delivery/:id/edit",
+    meta: {
+      label: "Delivery Management",
     },
   },
 ]; 

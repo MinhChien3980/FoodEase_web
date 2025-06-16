@@ -24,6 +24,7 @@ export interface OrderResponse {
     totalPrice: number;
     activeStatus: typeof ORDER_STATUS[keyof typeof ORDER_STATUS];
     createdAt: string;
+    items: OrderItem[];
   };
 }
 
@@ -59,6 +60,22 @@ export const orderService = {
     try {
       const response: AxiosResponse<OrdersResponse> = await apiClient.get(
         API_ENDPOINTS.ORDERS.GET_BY_USER(userId)
+      );
+      
+      if (response.data.code === 200) {
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  getOrderById: async (orderId: number): Promise<Order> => {
+    try {
+      const response: AxiosResponse<OrderResponse> = await apiClient.get(
+        API_ENDPOINTS.ORDERS.GET_BY_ID(orderId)
       );
       
       if (response.data.code === 200) {

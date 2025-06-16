@@ -63,8 +63,16 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: number) => `/orders/${id}`,
     GET_BY_USER: (userId: number) => `/orders/${userId}`,
   },
+  ORDER_ITEMS: {
+    GET_BY_ORDER_ID: (orderId: number) => `/order-items/${orderId}`,
+  },
   ADDRESSES: {
     CREATE: '/addresses/create',
     GET_BY_USER: (userId: number) => `/addresses/${userId}`,
+  },
+  DELIVERIES: {
+    GET_ALL: '/deliveries',
+    GET_BY_ID: (id: number) => `/deliveries/${id}`,
+    UPDATE_STATUS: (id: number) => `/deliveries/${id}/status`,
   },
 }; 
