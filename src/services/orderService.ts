@@ -86,5 +86,21 @@ export const orderService = {
     } catch (error) {
       throw new Error(handleApiError(error));
     }
+  },
+
+  getAllOrders: async (): Promise<Order[]> => {
+    try {
+      const response: AxiosResponse<OrdersResponse> = await apiClient.get(
+        API_ENDPOINTS.ORDERS.GET_ALL
+      );
+      
+      if (response.data.code === 200) {
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
   }
 }; 
