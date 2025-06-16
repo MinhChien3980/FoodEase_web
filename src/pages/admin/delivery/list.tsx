@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useGo } from "@refinedev/core";
+import { useGo, useNavigation, useTranslate } from "@refinedev/core";
+import { CreateButton, EditButton, useDataGrid, DeleteButton } from "@refinedev/mui";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Chip,
   Stack,
   useTheme,
@@ -24,6 +17,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { orange, cyan, blue, green, red } from '@mui/material/colors';
+import { RefineListView } from "../../../components";
 
 const DeliveryStatusChip = ({ status }: { status: string }) => {
   const { palette } = useTheme();
@@ -77,6 +71,8 @@ const DeliveryStatusChip = ({ status }: { status: string }) => {
 
 export const DeliveryList = () => {
   const go = useGo();
+  const { createUrl } = useNavigation();
+  const t = useTranslate();
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -95,50 +91,126 @@ export const DeliveryList = () => {
     fetchDeliveries();
   }, []);
 
-  if (loading) {
-    return <Typography>Loading...</Typography>;
-  }
+  const columns: GridColDef<Delivery>[] = [
+    {
+      field: "id",
+      headerName: "ID",
+      width: 70,
+      align: "center",
+      headerAlign: "center",
+      renderCell: function render({ row }) {
+        return (
+          <Typography sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            width: '100%'
+          }}>
+            #{row.id}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "orderId",
+      headerName: "Order ID",
+      width: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: function render({ row }) {
+        return (
+          <Typography sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            width: '100%'
+          }}>
+            #{row.orderId}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 150,
+      align: "center",
+      headerAlign: "center",
+      renderCell: function render({ row }) {
+        return <DeliveryStatusChip status={row.status} />;
+      },
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      width: 200,
+      align: "center",
+      headerAlign: "center",
+      renderCell: function render({ row }) {
+        return (
+          <Typography sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            width: '100%'
+          }}>
+            {new Date(row.createdAt).toLocaleString()}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: t("table.actions"),
+      type: "actions",
+      align: "center",
+      headerAlign: "center",
+      renderCell: function render({ row }) {
+        return (
+          <Stack direction="row" spacing={1}>
+            <EditButton
+              hideText
+              recordItemId={row.id}
+              svgIconProps={{
+                color: "action",
+              }}
+            />
+          </Stack>
+        );
+      },
+    },
+  ];
 
   return (
-    <Box>
-      <Card>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Delivery Management
-          </Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Created At</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {deliveries.map((delivery) => (
-                  <TableRow
-                    key={delivery.id}
-                    hover
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => go({ to: `/admin/delivery/${delivery.id}/edit` })}
-                  >
-                    <TableCell>{delivery.id}</TableCell>
-                    <TableCell>#{delivery.orderId}</TableCell>
-                    <TableCell>
-                      <DeliveryStatusChip status={delivery.status} />
-                    </TableCell>
-                    <TableCell>
-                      {new Date(delivery.createdAt).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
+    <RefineListView>
+      <DataGrid
+        rows={deliveries}
+        columns={columns}
+        loading={loading}
+        pageSizeOptions={[10, 20, 50, 100]}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 10 },
+          },
+        }}
+        onRowClick={(params) => {
+          go({
+            to: `/admin/delivery/${params.row.id}/edit`,
+            type: "replace",
+          });
+        }}
+        sx={{
+          '& .MuiDataGrid-row': {
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+          },
+        }}
+      />
+    </RefineListView>
   );
 }; 

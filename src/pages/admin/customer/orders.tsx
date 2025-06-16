@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Typography,
-  Chip,
   Button,
+  Stack,
+  Chip,
 } from '@mui/material';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { orderService, Order } from '../../../services/orderService';
+import { restaurantService, MenuItem } from '../../../services/restaurantService';
 import { ORDER_STATUS } from '../../../constants';
 import { useTranslation } from 'react-i18next';
+import { RefineListView } from '../../../components';
 
 const UserOrders: React.FC = () => {
   const { t } = useTranslation();
@@ -25,6 +21,7 @@ const UserOrders: React.FC = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState<{ [key: number]: MenuItem }>({});
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -32,6 +29,27 @@ const UserOrders: React.FC = () => {
       try {
         const userOrders = await orderService.getOrdersByUserId(parseInt(userId));
         setOrders(userOrders);
+
+        // Fetch all menu items for the orders
+        const menuItemIds = new Set<number>();
+        userOrders.forEach(order => {
+          order.items.forEach(item => {
+            menuItemIds.add(item.menuItemId);
+          });
+        });
+
+        const menuItemsMap: { [key: number]: MenuItem } = {};
+        await Promise.all(
+          Array.from(menuItemIds).map(async (id) => {
+            try {
+              const menuItem = await restaurantService.getMenuItemById(id);
+              menuItemsMap[id] = menuItem;
+            } catch (error) {
+              console.error(`Error fetching menu item ${id}:`, error);
+            }
+          })
+        );
+        setMenuItems(menuItemsMap);
       } catch (error) {
         console.error('Error fetching orders:', error);
       } finally {
@@ -61,67 +79,105 @@ const UserOrders: React.FC = () => {
     }
   };
 
+  const columns: GridColDef<Order>[] = [
+    {
+      field: 'id',
+      headerName: t('admin.customer.orders.table.orderId'),
+      width: 100,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return `#${row.id}`;
+      },
+    },
+    {
+      field: 'createdAt',
+      headerName: t('admin.customer.orders.table.date'),
+      minWidth: 200,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return new Date(row.createdAt).toLocaleString();
+      },
+    },
+    {
+      field: 'totalPrice',
+      headerName: t('admin.customer.orders.table.totalPrice'),
+      minWidth: 150,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND'
+        }).format(row.totalPrice);
+      },
+    },
+    {
+      field: 'activeStatus',
+      headerName: t('admin.customer.orders.table.status'),
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return (
+          <Stack direction="row" spacing={1} justifyContent="center">
+            <Chip 
+              label={row.activeStatus} 
+              color={getStatusColor(row.activeStatus) as any}
+              size="small"
+            />
+          </Stack>
+        );
+      },
+    },
+    {
+      field: 'items',
+      headerName: t('admin.customer.orders.table.items'),
+      minWidth: 300,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return (
+          <Stack spacing={0.5}>
+            {row.items.map((item, index) => (
+              <Typography key={index} variant="body2">
+                {menuItems[item.menuItemId]?.name || `Item ${item.menuItemId}`} x {item.quantity}
+              </Typography>
+            ))}
+          </Stack>
+        );
+      },
+    },
+  ];
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate(-1)}
-            variant="outlined"
-          >
-            {t('admin.customer.orders.back')}
-          </Button>
-          <Typography variant="h4" component="h1">
-            {t('admin.customer.orders.title')}
-          </Typography>
-        </Box>
+    <RefineListView>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+          variant="outlined"
+        >
+          {t('admin.customer.orders.back')}
+        </Button>
+        <Typography variant="h5">
+          {t('admin.customer.orders.title')}
+        </Typography>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('admin.customer.orders.table.orderId')}</TableCell>
-              <TableCell>{t('admin.customer.orders.table.date')}</TableCell>
-              <TableCell>{t('admin.customer.orders.table.totalPrice')}</TableCell>
-              <TableCell>{t('admin.customer.orders.table.status')}</TableCell>
-              <TableCell>{t('admin.customer.orders.table.items')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>#{order.id}</TableCell>
-                <TableCell>{new Date(order.createdAt).toLocaleString()}</TableCell>
-                <TableCell>{order.totalPrice.toLocaleString('vi-VN')} ₫</TableCell>
-                <TableCell>
-                  <Chip 
-                    label={order.activeStatus} 
-                    color={getStatusColor(order.activeStatus) as any}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  {order.items.map((item, index) => (
-                    <Typography key={index} variant="body2">
-                      {t('admin.customer.orders.table.item')} {item.menuItemId} x {item.quantity}
-                    </Typography>
-                  ))}
-                </TableCell>
-              </TableRow>
-            ))}
-            {orders.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  {t('admin.customer.orders.noOrders')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Container>
+      <DataGrid
+        rows={orders}
+        columns={columns}
+        loading={loading}
+        pageSizeOptions={[10, 20, 50, 100]}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 10 },
+          },
+        }}
+      />
+    </RefineListView>
   );
 };
 

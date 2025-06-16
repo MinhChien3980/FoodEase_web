@@ -1,33 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material';
-import { CheckCircle as CheckCircleIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { userService, User, ProfileResponse } from '../../../services/userService';
 import { useTranslation } from 'react-i18next';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { CheckCircle as CheckCircleIcon, Cancel as CancelIcon } from '@mui/icons-material';
+import { Container, Typography, Box, Stack } from '@mui/material';
+import { userService, User } from '../../../services/userService';
+import { RefineListView } from '../../../components';
 
 const List: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const fetchUsers = async () => {
     try {
       const response = await userService.getAllUsers();
-      console.log("11: ",response);
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,58 +28,100 @@ const List: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const handleRowClick = (userId: number) => {
-    navigate(`/admin/customers/${userId}/orders`);
-  };
+  const columns: GridColDef<User>[] = [
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 70,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return (
+          <Typography sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            width: '100%'
+          }}>
+            #{row.id}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: 'email',
+      headerName: t('admin.customer.list.fields.email'),
+      minWidth: 200,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'fullName',
+      headerName: t('admin.customer.list.fields.fullName'),
+      minWidth: 200,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'phone',
+      headerName: t('admin.customer.list.fields.phone'),
+      minWidth: 150,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'login',
+      headerName: t('admin.customer.list.fields.role'),
+      width: 120,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'activated',
+      headerName: t('admin.customer.list.fields.status'),
+      width: 120,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: function render({ row }) {
+        return (
+          <Stack direction="row" spacing={1} justifyContent="center">
+            {row.activated ? (
+              <CheckCircleIcon color="success" />
+            ) : (
+              <CancelIcon color="error" />
+            )}
+          </Stack>
+        );
+      },
+    },
+  ];
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          {t('admin.customer.list.title')}
-        </Typography>
-      </Box>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('admin.customer.list.fields.email')}</TableCell>
-              <TableCell>{t('admin.customer.list.fields.fullName')}</TableCell>
-              <TableCell>{t('admin.customer.list.fields.phone')}</TableCell>
-              <TableCell>{t('admin.customer.list.fields.role')}</TableCell>
-              <TableCell>{t('admin.customer.list.fields.status')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow 
-                key={user.id}
-                onClick={() => handleRowClick(user.id)}
-                sx={{ 
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                  }
-                }}
-              >
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.fullName}</TableCell>
-                <TableCell>{user.phone}</TableCell>
-                <TableCell>{user.login}</TableCell>
-                <TableCell>
-                  {user.activated ? (
-                    <CheckCircleIcon color="success" />
-                  ) : (
-                    <CancelIcon color="error" />
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Container>
+    <RefineListView>
+      <DataGrid
+        rows={users}
+        columns={columns}
+        loading={loading}
+        pageSizeOptions={[10, 20, 50, 100]}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 10 },
+          },
+        }}
+        onRowClick={(params) => {
+          navigate(`/admin/customers/${params.row.id}/orders`);
+        }}
+        sx={{
+          '& .MuiDataGrid-row': {
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+          },
+        }}
+      />
+    </RefineListView>
   );
 };
 
