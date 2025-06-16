@@ -74,5 +74,6 @@ export const API_ENDPOINTS = {
     GET_ALL: '/deliveries',
     GET_BY_ID: (id: number) => `/deliveries/${id}`,
     UPDATE_STATUS: (id: number) => `/deliveries/${id}/status`,
+    CREATE: '/deliveries',
   },
 }; 

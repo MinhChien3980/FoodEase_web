@@ -46,6 +46,7 @@ import { isCustomerAuthenticated, getCustomerUser } from '../../../utils/session
 import { useCustomerNavigation } from '../../../hooks/useCustomerNavigation';
 import { orderService } from '../../../services/orderService';
 import { addressService, Address } from '../../../services/addressService';
+import { deliveryService } from '../../../services/deliveryService';
 import { ORDER_STATUS, ORDER_PAYMENT_METHOD } from '../../../constants';
 
 const CartPage: React.FC = () => {
@@ -174,6 +175,18 @@ const CartPage: React.FC = () => {
       const response = await orderService.createOrder(orderRequest);
 
       if (response.code === 200 || response.code === 201) {
+        const deliveryTime = new Date(Date.now() + 30 * 60000).toISOString();
+
+        // Create delivery request
+        const deliveryRequest = {
+          orderId: response.data.id,
+          status: ORDER_STATUS.PENDING,
+          deliveryTime: deliveryTime
+        };
+
+        // Create delivery
+        await deliveryService.createDelivery(deliveryRequest);
+
         // Show success message first
         setSnackbar({
           open: true,
@@ -488,19 +501,6 @@ const CartPage: React.FC = () => {
               </Box>
             </Paper>
           ))}
-
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-            <Button
-              variant="contained"
-              startIcon={<RestaurantIcon />}
-              onClick={handleContinueShopping}
-              fullWidth
-              sx={{ py: 1.5 }}
-            >
-              Tiếp tục mua sắm
-            </Button>
-          </Box>
         </Grid>
 
         {/* Order Summary */}
@@ -526,13 +526,6 @@ const CartPage: React.FC = () => {
               </Typography>
             </Box>
 
-            {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2">Giảm giá:</Typography>
-              <Typography variant="body2" fontWeight="bold" color="success.main">
-                -{formatPrice(0)}
-              </Typography>
-            </Box> */}
-
             <Divider sx={{ my: 2 }} />
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -543,23 +536,6 @@ const CartPage: React.FC = () => {
                 {formatPrice(cart.totalAmount + (cart.totalAmount * 0.1))}
               </Typography>
             </Box>
-
-            {/* Promo Code */}
-            {/* <TextField
-              fullWidth
-              placeholder="Mã giảm giá"
-              size="small"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Button size="small" variant="text">
-                      Áp dụng
-                    </Button>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 2 }}
-            /> */}
 
             {/* Add Snackbar for notifications */}
             <Snackbar
@@ -594,12 +570,6 @@ const CartPage: React.FC = () => {
             >
               {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
             </Button>
-
-            {/* <Alert severity="info" sx={{ mt: 2 }}>
-              <Typography variant="caption">
-                Miễn phí vận chuyển cho đơn hàng từ 200.000đ
-              </Typography>
-            </Alert> */}
           </Paper>
         </Grid>
       </Grid>
@@ -702,4 +672,4 @@ const CartPage: React.FC = () => {
   );
 };
 
-export default CartPage; 
+export default CartPage;

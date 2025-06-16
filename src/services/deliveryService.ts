@@ -24,6 +24,12 @@ export interface SingleDeliveryResponse {
   message?: string;
 }
 
+export interface CreateDeliveryRequest {
+  orderId: number;
+  status: string;
+  deliveryTime: string;
+}
+
 export const deliveryService = {
   async getAllDeliveries(): Promise<Delivery[]> {
     try {
@@ -60,6 +66,23 @@ export const deliveryService = {
       );
       if (response.data.code === 200) {
         console.log(`🚚 Updated delivery ${id} status to ${status} successfully`);
+        return response.data.data;
+      } else {
+        throw new Error(`API error! code: ${response.data.code}`);
+      }
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async createDelivery(deliveryRequest: CreateDeliveryRequest): Promise<Delivery> {
+    try {
+      const response: AxiosResponse<SingleDeliveryResponse> = await apiClient.post(
+        API_ENDPOINTS.DELIVERIES.CREATE,
+        deliveryRequest
+      );
+      if (response.data.code === 200 || response.data.code === 201) {
+        console.log(`🚚 Created delivery for order ${deliveryRequest.orderId} successfully`);
         return response.data.data;
       } else {
         throw new Error(`API error! code: ${response.data.code}`);
