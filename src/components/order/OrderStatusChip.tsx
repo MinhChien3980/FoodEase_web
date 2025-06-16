@@ -18,7 +18,9 @@ export type OrderStatus =
   | "picked_up"
   | "delivered"
   | "cancelled"
-  | "refunded";
+  | "refunded"
+  | "delivering"
+  | "completed";
 
 interface OrderStatusChipProps extends Omit<ChipProps, 'color'> {
   status: OrderStatus;
@@ -80,6 +82,18 @@ const OrderStatusChip: React.FC<OrderStatusChipProps> = ({
           color: "default" as const,
           icon: showIcon ? <PaymentOutlined /> : undefined,
         };
+      case "delivering":
+        return {
+          label: "Delivering",
+          color: "info" as const,
+          icon: showIcon ? <LocalShippingOutlined /> : undefined,
+        };
+      case "completed":
+        return {
+          label: "Completed",
+          color: "success" as const,
+          icon: showIcon ? <CheckCircleOutlined /> : undefined,
+        };
       default:
         return {
           label: "Unknown",
@@ -115,6 +129,8 @@ export const getAllOrderStatuses = (): OrderStatus[] => [
   "delivered",
   "cancelled",
   "refunded",
+  "delivering",
+  "completed",
 ];
 
 // Helper function to get status progression
@@ -123,7 +139,7 @@ export const getOrderStatusProgression = (currentStatus: OrderStatus): OrderStat
   const currentIndex = allStatuses.indexOf(currentStatus);
   
   // Return statuses up to current (excluding cancelled and refunded)
-  const normalFlow = ["pending", "confirmed", "preparing", "ready", "picked_up", "delivered"];
+  const normalFlow = ["pending", "confirmed", "preparing", "ready", "picked_up", "delivered", "delivering", "completed"];
   const currentNormalIndex = normalFlow.indexOf(currentStatus);
   
   if (currentNormalIndex !== -1) {
@@ -135,7 +151,7 @@ export const getOrderStatusProgression = (currentStatus: OrderStatus): OrderStat
 
 // Helper function to check if status is final
 export const isFinalStatus = (status: OrderStatus): boolean => {
-  return ["delivered", "cancelled", "refunded"].includes(status);
+  return ["delivered", "cancelled", "refunded", "completed"].includes(status);
 };
 
 // Helper function to get next possible statuses
@@ -150,8 +166,12 @@ export const getNextPossibleStatuses = (currentStatus: OrderStatus): OrderStatus
     case "ready":
       return ["picked_up", "cancelled"];
     case "picked_up":
-      return ["delivered"];
+      return ["delivered", "delivering"];
+    case "delivering":
+      return ["completed"];
     case "delivered":
+      return ["refunded"];
+    case "completed":
       return ["refunded"];
     case "cancelled":
       return ["refunded"];

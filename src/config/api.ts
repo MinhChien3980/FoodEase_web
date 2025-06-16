@@ -64,11 +64,12 @@ export const API_ENDPOINTS = {
     GET_BY_USER: (userId: number) => `/orders/${userId}`,
   },
   ORDER_ITEMS: {
-    GET_BY_ORDER_ID: (orderId: number) => `/order-items/${orderId}`,
+    GET_BY_ORDER_ID: (orderId: number) => `/orders/${orderId}/items`,
   },
   ADDRESSES: {
     CREATE: '/addresses/create',
     GET_BY_USER: (userId: number) => `/addresses/${userId}`,
+    DELETE: (addressId: number) => `/addresses/delete?id=${addressId}`,
   },
   DELIVERIES: {
     GET_ALL: '/deliveries',

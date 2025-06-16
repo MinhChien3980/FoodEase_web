@@ -42,10 +42,12 @@ import OrderStatusChip from "../../../components/order/OrderStatusChip";
 import { formatPrice } from "../../../utils/foodHelpers";
 import apiClient, { handleApiError } from "../../../services/apiClient";
 import { API_ENDPOINTS } from "../../../config/api";
-import { orderService, Order } from "../../../services/orderService";
+import { orderService, Order, OrderItem } from "../../../services/orderService";
 import { userService } from "../../../services/userService";
 import { addressService, Address } from "../../../services/addressService";
 import { City } from "../../../services/cityService";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { orderItemService } from "../../../services/orderItemService";
 
 interface CustomerUser {
   id: number;
@@ -64,6 +66,12 @@ interface CustomerUser {
   latitude?: number;
   longitude?: number;
   addresses?: Address[];
+}
+
+interface OrderItemResponse {
+  code?: number;
+  data?: any[];
+  message?: string;
 }
 
 const ProfilePage: React.FC = () => {
@@ -86,6 +94,9 @@ const ProfilePage: React.FC = () => {
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [loadingOrderItems, setLoadingOrderItems] = useState(false);
   const [newAddress, setNewAddress] = useState<Partial<Address>>({
     addressLine: '',
     area: '',
@@ -278,6 +289,44 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleDeleteAddress = async (addressId: number) => {
+    if (!user) return;
+
+    try {
+      const response = await addressService.deleteAddress(addressId);
+      if (response.code === 200 || response.code === 204) {
+        // Immediately update UI by removing the deleted address
+        setAddresses(prevAddresses => prevAddresses.filter(addr => addr.id !== addressId));
+      }
+    } catch (error) {
+      console.error('Error deleting address:', error);
+    }
+  };
+
+  const handleOrderClick = async (order: Order) => {
+    if (selectedOrder?.id === order.id) {
+      setSelectedOrder(null);
+      setOrderItems([]);
+    } else {
+      setSelectedOrder(order);
+      setLoadingOrderItems(true);
+      try {
+        const response = await orderItemService.getOrderItemsByOrderId(order.id);
+        if (Array.isArray(response)) {
+          setOrderItems(response);
+        } else {
+          console.error('Invalid response format:', response);
+          setOrderItems([]);
+        }
+      } catch (error) {
+        console.error('Error fetching order items:', error);
+        setOrderItems([]);
+      } finally {
+        setLoadingOrderItems(false);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -425,13 +474,22 @@ const ProfilePage: React.FC = () => {
                 ) : addresses.length > 0 ? (
                   <Box sx={{ mb: 3 }}>
                     {addresses.map((address) => (
-                      <Paper key={address.id} sx={{ p: 2, mb: 2 }}>
-                        <Typography variant="body1">
-                          {address.addressLine}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {address.area}, {getCityName(address.cityId)}
-                        </Typography>
+                      <Paper key={address.id} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box>
+                          <Typography variant="body1">
+                            {address.addressLine}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {address.area}, {getCityName(address.cityId)}
+                          </Typography>
+                        </Box>
+                        <IconButton 
+                          color="error" 
+                          onClick={() => handleDeleteAddress(address.id)}
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
                       </Paper>
                     ))}
                   </Box>
@@ -607,6 +665,7 @@ const ProfilePage: React.FC = () => {
                               cursor: 'pointer',
                               '&:hover': { backgroundColor: theme.palette.grey[50] }
                             }}
+                            onClick={() => handleOrderClick(order)}
                           >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <ShoppingBagIcon color="primary" />
@@ -627,24 +686,56 @@ const ProfilePage: React.FC = () => {
                                 status={(() => {
                                   const status = order.activeStatus?.toLowerCase();
                                   switch(status) {
-                                    case 'cancel':
-                                      return 'cancelled';
-                                    case 'complete':
-                                      return 'delivered';
                                     case 'pending':
                                       return 'pending';
                                     case 'confirmed':
                                       return 'confirmed';
-                                    case 'preparing':
-                                      return 'preparing';
+                                    case 'delivering':
+                                      return 'delivering';
+                                    case 'completed':
+                                      return 'completed';
+                                    case 'cancelled':
+                                      return 'cancelled';
                                     default:
-                                      return status;
+                                      return 'pending';
                                   }
                                 })() as any}
                                 size="small"
                               />
                             </Box>
                           </Paper>
+                          {selectedOrder?.id === order.id && (
+                            <Paper sx={{ p: 2, mt: 1, backgroundColor: theme.palette.grey[50] }}>
+                              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                {t('orderItems')}
+                              </Typography>
+                              {loadingOrderItems ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                                  <CircularProgress size={24} />
+                                </Box>
+                              ) : (
+                                <>
+                                  {orderItems.map((item, index) => (
+                                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                      <Typography variant="body2">
+                                        {item.quantity}x {item.menuItemName}
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight="bold">
+                                        {formatPrice((item.price || 0) * item.quantity)}
+                                      </Typography>
+                                    </Box>
+                                  ))}
+                                  <Divider sx={{ my: 1 }} />
+                                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography variant="subtitle2">{t('total')}</Typography>
+                                    <Typography variant="subtitle2" fontWeight="bold">
+                                      {formatPrice(order.totalPrice)}
+                                    </Typography>
+                                  </Box>
+                                </>
+                              )}
+                            </Paper>
+                          )}
                         </Grid>
                       ))}
                     </Grid>

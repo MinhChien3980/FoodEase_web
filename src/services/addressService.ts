@@ -45,4 +45,15 @@ export const addressService = {
       throw handleApiError(error);
     }
   },
+
+  deleteAddress: async (addressId: number): Promise<AddressResponse> => {
+    try {
+      const response: AxiosResponse<AddressResponse> = await apiClient.delete(
+        API_ENDPOINTS.ADDRESSES.DELETE(addressId)
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 }; 

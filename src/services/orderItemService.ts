@@ -13,7 +13,7 @@ export interface OrderItem {
 
 export interface OrderItemResponse {
   code: number;
-  data: OrderItem;
+  data: OrderItem[];
   message?: string;
 }
 
@@ -26,8 +26,7 @@ export const orderItemService = {
       
       if (response.data.code === 200) {
         console.log('Order item response:', response.data);
-        // Convert single item to array
-        return [response.data.data];
+        return response.data.data;
       } else {
         throw new Error(`API error! code: ${response.data.code}`);
       }
