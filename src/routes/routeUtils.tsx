@@ -6,6 +6,7 @@ import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined
 import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 
 // Types for route configuration
 export interface RouteResource {
@@ -37,12 +38,11 @@ export interface RouteGroup {
 export function getResourceIcon(resourceName: string): ReactNode {
   const iconMap: Record<string, ReactNode> = {
     dashboard: <Dashboard />,
-    orders: <ShoppingBagOutlinedIcon />,
-    users: <AccountCircleOutlinedIcon />,
-    products: <FastfoodOutlinedIcon />,
-    categories: <LabelOutlinedIcon />,
-    stores: <StoreOutlinedIcon />,
-    couriers: <MopedOutlined />,
+    restaurants: <StoreOutlinedIcon />,
+    "menu-items": <FastfoodOutlinedIcon />,
+    customers: <AccountCircleOutlinedIcon />,
+    "customer-orders": <ReceiptLongIcon />,
+    delivery: <MopedOutlined />,
   };
   
   return iconMap[resourceName] || <Dashboard />;

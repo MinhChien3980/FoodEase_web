@@ -89,12 +89,6 @@ export const adminResources = [
     edit: "/admin/restaurants/:id/edit",
   },
   {
-    name: "menu-items",
-    list: "/admin/restaurants/:id/menu-items",
-    create: "/admin/restaurants/:id/menu-items/create",
-    edit: "/admin/restaurants/:id/menu-items/:menuItemId/edit",
-  },
-  {
     name: "customers",
     list: "/admin/customers",
     meta: {
