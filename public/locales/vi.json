@@ -364,5 +364,35 @@
         }
       }
     }
+  },
+  "delivery": {
+    "title": "Quản lý giao hàng",
+    "list": {
+      "title": "Danh sách giao hàng",
+      "orderId": "Mã đơn hàng",
+      "status": "Trạng thái",
+      "deliveryTime": "Thời gian giao hàng",
+      "actions": "Thao tác"
+    },
+    "edit": {
+      "title": "Chi tiết giao hàng",
+      "back": "Quay lại",
+      "orderId": "Mã đơn hàng",
+      "createdAt": "Thời gian tạo",
+      "status": "Trạng thái",
+      "orderItems": "Danh sách món ăn",
+      "itemName": "Tên món",
+      "quantity": "Số lượng",
+      "price": "Giá",
+      "noItems": "Không tìm thấy món ăn",
+      "save": "Lưu"
+    },
+    "status": {
+      "pending": "CHỜ XÁC NHẬN",
+      "confirmed": "ĐÃ XÁC NHẬN",
+      "delivering": "ĐANG GIAO",
+      "completed": "HOÀN THÀNH",
+      "cancelled": "ĐÃ HỦY"
+    }
   }
 } 

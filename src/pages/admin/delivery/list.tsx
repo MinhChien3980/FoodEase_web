@@ -21,6 +21,7 @@ import { RefineListView } from "../../../components";
 
 const DeliveryStatusChip = ({ status }: { status: string }) => {
   const { palette } = useTheme();
+  const t = useTranslate();
   const isDarkMode = palette.mode === "dark";
 
   let color = "";
@@ -55,7 +56,7 @@ const DeliveryStatusChip = ({ status }: { status: string }) => {
   return (
     <Chip
       icon={icon}
-      label={status}
+      label={t(`delivery.status.${status.toLowerCase()}`)}
       size="small"
       variant="outlined"
       sx={{
@@ -94,7 +95,7 @@ export const DeliveryList = () => {
   const columns: GridColDef<Delivery>[] = [
     {
       field: "orderId",
-      headerName: "Order ID",
+      headerName: t("delivery.list.orderId"),
       width: 120,
       align: "center",
       headerAlign: "center",
@@ -114,7 +115,7 @@ export const DeliveryList = () => {
     },
     {
       field: "status",
-      headerName: "Status",
+      headerName: t("delivery.list.status"),
       width: 150,
       align: "center",
       headerAlign: "center",
@@ -124,7 +125,7 @@ export const DeliveryList = () => {
     },
     {
       field: "deliveryTime",
-      headerName: "Delivery Time",
+      headerName: t("delivery.list.deliveryTime"),
       width: 200,
       align: "center",
       headerAlign: "center",
@@ -144,7 +145,7 @@ export const DeliveryList = () => {
     },
     {
       field: "actions",
-      headerName: t("table.actions"),
+      headerName: t("delivery.list.actions"),
       type: "actions",
       align: "center",
       headerAlign: "center",

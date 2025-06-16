@@ -74,11 +74,11 @@ export const DeliveryEdit = () => {
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return <Typography>{t("common.loading")}</Typography>;
   }
 
   if (!delivery) {
-    return <Typography>Delivery not found</Typography>;
+    return <Typography>{t("common.error")}</Typography>;
   }
 
   return (
@@ -96,36 +96,36 @@ export const DeliveryEdit = () => {
           startIcon={<ArrowBackIcon />}
           onClick={() => go({ to: "/admin/delivery" })}
         >
-          Back
+          {t("delivery.edit.back")}
         </Button>
       </Box>
       <Card>
         <CardContent>
           <Stack spacing={3}>
-            <Typography variant="h6">Delivery Details</Typography>
+            <Typography variant="h6">{t("delivery.edit.title")}</Typography>
             
             <Box>
               <Typography variant="subtitle2" color="text.secondary">
-                Order ID
+                {t("delivery.edit.orderId")}
               </Typography>
               <Typography variant="body1">#{delivery.orderId}</Typography>
             </Box>
 
             <Box>
               <Typography variant="subtitle2" color="text.secondary">
-                Created At
+                {t("delivery.edit.createdAt")}
               </Typography>
               <Typography variant="body1">
-                {new Date(delivery.createdAt).toLocaleString()}
+                {new Date(delivery.deliveryTime).toLocaleString()}
               </Typography>
             </Box>
 
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+            <FormControl>
+              <InputLabel>{t("delivery.edit.status")}</InputLabel>
               <Select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                label="Status"
+                label={t("delivery.edit.status")}
                 sx={{
                   '& .MuiSelect-select': {
                     display: 'flex',
@@ -139,45 +139,44 @@ export const DeliveryEdit = () => {
                   <ListItemIcon sx={{ minWidth: 36 }} >
                     <AccessTimeIcon fontSize="small" />
                   </ListItemIcon>
-                  PENDING
+                  {t("delivery.status.pending")}
                 </MenuItem>
                 <MenuItem value={ORDER_STATUS.CONFIRMED} sx={{ py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <CheckCircleIcon fontSize="small" />
                   </ListItemIcon>
-                  CONFIRMED
+                  {t("delivery.status.confirmed")}
                 </MenuItem>
                 <MenuItem value={ORDER_STATUS.DELIVERING} sx={{ py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <LocalShippingIcon fontSize="small" />
                   </ListItemIcon>
-                  DELIVERING
+                  {t("delivery.status.delivering")}
                 </MenuItem>
                 <MenuItem value={ORDER_STATUS.COMPLETED} sx={{ py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <DoneAllIcon fontSize="small" />
                   </ListItemIcon>
-                  COMPLETED
+                  {t("delivery.status.completed")}
                 </MenuItem>
                 <MenuItem value={ORDER_STATUS.CANCELLED} sx={{ py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <CancelIcon fontSize="small" />
                   </ListItemIcon>
-                  CANCELLED
+                  {t("delivery.status.cancelled")}
                 </MenuItem>
               </Select>
             </FormControl>
 
-          
             <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>Order Items</Typography>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t("delivery.edit.orderItems")}</Typography>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Item Name</TableCell>
-                      <TableCell align="right">Quantity</TableCell>
-                      <TableCell align="right">Price</TableCell>
+                      <TableCell>{t("delivery.edit.itemName")}</TableCell>
+                      <TableCell align="right">{t("delivery.edit.quantity")}</TableCell>
+                      <TableCell align="right">{t("delivery.edit.price")}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -194,7 +193,7 @@ export const DeliveryEdit = () => {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={3} align="center">
-                          No items found
+                          {t("delivery.edit.noItems")}
                         </TableCell>
                       </TableRow>
                     )}
@@ -215,7 +214,7 @@ export const DeliveryEdit = () => {
                 color="primary"
                 onClick={handleSave}
               >
-                Save
+                {t("delivery.edit.save")}
               </Button>
             </Box>
           </Stack>

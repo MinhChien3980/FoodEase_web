@@ -969,5 +969,35 @@
         }
       }
     }
+  },
+  "delivery": {
+    "title": "Delivery Management",
+    "list": {
+      "title": "Deliveries",
+      "orderId": "Order ID",
+      "status": "Status",
+      "deliveryTime": "Delivery Time",
+      "actions": "Actions"
+    },
+    "edit": {
+      "title": "Delivery Details",
+      "back": "Back",
+      "orderId": "Order ID",
+      "createdAt": "Created At",
+      "status": "Status",
+      "orderItems": "Order Items",
+      "itemName": "Item Name",
+      "quantity": "Quantity",
+      "price": "Price",
+      "noItems": "No items found",
+      "save": "Save"
+    },
+    "status": {
+      "pending": "PENDING",
+      "confirmed": "CONFIRMED",
+      "delivering": "DELIVERING",
+      "completed": "COMPLETED",
+      "cancelled": "CANCELLED"
+    }
   }
 }
