@@ -5,15 +5,86 @@ import {
   Button,
   Stack,
   Chip,
+  useTheme,
 } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CancelIcon from '@mui/icons-material/Cancel';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import { orange, cyan, blue, green, red } from '@mui/material/colors';
 import { orderService, Order } from '../../../services/orderService';
 import { restaurantService, MenuItem } from '../../../services/restaurantService';
 import { ORDER_STATUS } from '../../../constants';
 import { useTranslation } from 'react-i18next';
 import { RefineListView } from '../../../components';
+
+const OrderStatusChip = ({ status }: { status: string }) => {
+  const { palette } = useTheme();
+  const isDarkMode = palette.mode === "dark";
+
+  let color = "";
+  let icon: React.ReactElement;
+
+  switch (status.toUpperCase()) {
+    case ORDER_STATUS.PENDING:
+      color = isDarkMode ? orange[200] : orange[800];
+      icon = <AccessTimeIcon />;
+      break;
+    case ORDER_STATUS.CONFIRMED:
+      color = isDarkMode ? cyan[200] : cyan[800];
+      icon = <CheckCircleIcon />;
+      break;
+    case ORDER_STATUS.DELIVERING:
+      color = isDarkMode ? blue[200] : blue[800];
+      icon = <LocalShippingIcon />;
+      break;
+    case ORDER_STATUS.COMPLETED:
+      color = isDarkMode ? green[200] : green[800];
+      icon = <DoneAllIcon />;
+      break;
+    case ORDER_STATUS.CANCELLED:
+      color = isDarkMode ? red[200] : red[800];
+      icon = <CancelIcon />;
+      break;
+    default:
+      color = isDarkMode ? orange[200] : orange[800];
+      icon = <AccessTimeIcon />;
+  }
+
+  return (
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        border: `1px solid ${color}`,
+        borderRadius: '16px',
+        padding: '0 7px 0 2px',
+        color: color,
+        fontSize: '0.8125rem',
+        height: '24px',
+        gap: '4px',
+        backgroundColor: 'white'
+      }}
+    >
+      {icon}
+      <Typography
+        component="span"
+        sx={{
+          color: color,
+          fontSize: 'inherit',
+          lineHeight: 1,
+          fontWeight: 500
+        }}
+      >
+        {status}
+      </Typography>
+    </Box>
+  );
+};
 
 const UserOrders: React.FC = () => {
   const { t } = useTranslation();
@@ -60,25 +131,6 @@ const UserOrders: React.FC = () => {
     fetchOrders();
   }, [userId]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case ORDER_STATUS.PENDING:
-        return 'warning';
-      case ORDER_STATUS.CONFIRMED:
-        return 'info';
-      case ORDER_STATUS.PREPARING:
-        return 'primary';
-      case ORDER_STATUS.READY:
-        return 'success';
-      case ORDER_STATUS.COMPLETED:
-        return 'success';
-      case ORDER_STATUS.CANCELLED:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
   const columns: GridColDef<Order>[] = [
     {
       field: 'id',
@@ -120,15 +172,7 @@ const UserOrders: React.FC = () => {
       align: 'center',
       headerAlign: 'center',
       renderCell: function render({ row }) {
-        return (
-          <Stack direction="row" spacing={1} justifyContent="center">
-            <Chip 
-              label={row.activeStatus} 
-              color={getStatusColor(row.activeStatus) as any}
-              size="small"
-            />
-          </Stack>
-        );
+        return <OrderStatusChip status={row.activeStatus} />;
       },
     },
     {
@@ -174,6 +218,9 @@ const UserOrders: React.FC = () => {
         initialState={{
           pagination: {
             paginationModel: { pageSize: 10 },
+          },
+          sorting: {
+            sortModel: [{ field: 'id', sort: 'desc' }],
           },
         }}
       />

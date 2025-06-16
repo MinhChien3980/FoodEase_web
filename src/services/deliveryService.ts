@@ -9,7 +9,7 @@ export interface Delivery {
   customerAddress: string;
   deliveryPersonName: string;
   status: string;
-  createdAt: string;
+  deliveryTime: string;
 }
 
 export interface DeliveryResponse {

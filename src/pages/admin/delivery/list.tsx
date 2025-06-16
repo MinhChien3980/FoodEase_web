@@ -41,11 +41,11 @@ const DeliveryStatusChip = ({ status }: { status: string }) => {
       break;
     case ORDER_STATUS.COMPLETED:
       color = isDarkMode ? green[200] : green[800];
-      icon = <CheckCircleIcon />;
+      icon = <DoneAllIcon />;
       break;
     case ORDER_STATUS.CANCELLED:
       color = isDarkMode ? red[200] : red[800];
-      icon = <AccessTimeIcon />;
+      icon = <CancelIcon />;
       break;
     default:
       color = isDarkMode ? orange[200] : orange[800];
@@ -93,26 +93,6 @@ export const DeliveryList = () => {
 
   const columns: GridColDef<Delivery>[] = [
     {
-      field: "id",
-      headerName: "ID",
-      width: 70,
-      align: "center",
-      headerAlign: "center",
-      renderCell: function render({ row }) {
-        return (
-          <Typography sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            height: '100%',
-            width: '100%'
-          }}>
-            #{row.id}
-          </Typography>
-        );
-      },
-    },
-    {
       field: "orderId",
       headerName: "Order ID",
       width: 120,
@@ -143,8 +123,8 @@ export const DeliveryList = () => {
       },
     },
     {
-      field: "createdAt",
-      headerName: "Created At",
+      field: "deliveryTime",
+      headerName: "Delivery Time",
       width: 200,
       align: "center",
       headerAlign: "center",
@@ -157,7 +137,7 @@ export const DeliveryList = () => {
             height: '100%',
             width: '100%'
           }}>
-            {new Date(row.createdAt).toLocaleString()}
+            {new Date(row.deliveryTime).toLocaleString()}
           </Typography>
         );
       },
@@ -195,19 +175,8 @@ export const DeliveryList = () => {
           pagination: {
             paginationModel: { pageSize: 10 },
           },
-        }}
-        onRowClick={(params) => {
-          go({
-            to: `/admin/delivery/${params.row.id}/edit`,
-            type: "replace",
-          });
-        }}
-        sx={{
-          '& .MuiDataGrid-row': {
-            cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)',
-            },
+          sorting: {
+            sortModel: [{ field: 'orderId', sort: 'desc' }],
           },
         }}
       />
