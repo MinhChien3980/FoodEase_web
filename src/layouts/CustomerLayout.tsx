@@ -23,6 +23,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import {
   Home as HomeIcon,
   Restaurant as RestaurantIcon,
+  MenuBook as MenuBookIcon,
   LocalOffer as LocalOfferIcon,
   Favorite as FavoriteIcon,
   Person as PersonIcon,
@@ -121,6 +122,7 @@ const CustomerLayout: React.FC = () => {
 
   const navigation = [
     { name: t("customer.navigation.restaurants", { defaultValue: "Restaurants" }), href: "/foodease/restaurants", icon: <RestaurantIcon /> },
+    { name: t("customer.navigation.menu", { defaultValue: "Menu" }), href: "/foodease/menu", icon: <MenuBookIcon /> },
     { name: t("customer.navigation.offers", { defaultValue: "Offers" }), href: "/foodease/offers", icon: <LocalOfferIcon /> },
     { name: t("customer.navigation.favorites", { defaultValue: "Favorites" }), href: "/foodease/favorites", icon: <FavoriteIcon /> },
   ];

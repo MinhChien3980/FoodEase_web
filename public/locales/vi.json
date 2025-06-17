@@ -209,7 +209,26 @@
     "orSignUpWith": "hoặc đăng ký với",
     "alreadyHaveAnAccount": "Đã có tài khoản?",
     "signInHere": "Đăng nhập tại đây",
-    "continueBrowsingWithoutSigningUp": "← Tiếp tục duyệt mà không cần đăng ký"
+    "continueBrowsingWithoutSigningUp": "← Tiếp tục duyệt mà không cần đăng ký",
+    "failedToLoadCities": "Không thể tải danh sách thành phố. Vui lòng làm mới trang.",
+    "accountCreatedSuccessfully": "Tài khoản đã được tạo thành công! Vui lòng đăng nhập.",
+    "registrationFailed": "Đăng ký thất bại. Vui lòng thử lại.",
+    "emailAlreadyExists": "Email này đã được sử dụng cho tài khoản khác.",
+    "invalidRegistrationData": "Dữ liệu đăng ký không hợp lệ. Vui lòng kiểm tra thông tin.",
+    "validation": {
+      "fullNameRequired": "Họ và tên là bắt buộc",
+      "fullNameTooShort": "Họ và tên phải có ít nhất 2 ký tự",
+      "emailRequired": "Email là bắt buộc",
+      "emailInvalid": "Vui lòng nhập địa chỉ email hợp lệ",
+      "phoneRequired": "Số điện thoại là bắt buộc",
+      "phoneInvalid": "Vui lòng nhập số điện thoại Việt Nam hợp lệ",
+      "cityRequired": "Vui lòng chọn thành phố",
+      "passwordRequired": "Mật khẩu là bắt buộc",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+      "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
+      "passwordsDoNotMatch": "Mật khẩu không khớp",
+      "agreeToTermsRequired": "Bạn phải đồng ý với Điều khoản và Điều kiện"
+    }
   },
   "footer": {
     "tagline": "Ứng dụng giao thức ăn yêu thích của bạn",

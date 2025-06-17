@@ -1,6 +1,6 @@
 // API Configuration
 const getApiBaseUrl = (): string => {
-  return 'http://localhost:5173/api';
+  return 'http://localhost:8080/api';
 };
 
 export const API_CONFIG = {

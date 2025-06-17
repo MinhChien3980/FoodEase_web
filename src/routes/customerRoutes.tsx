@@ -9,6 +9,8 @@ import CartPage from "../pages/customer/views/CartPage";
 import ProfilePage from "../pages/customer/views/ProfilePage";
 import CustomerLogin from "../pages/customer/auth/CustomerLogin";
 import CustomerRegister from "../pages/customer/auth/CustomerRegister";
+import RestaurantDetailPage from "../pages/customer/views/RestaurantDetailPage";
+import MenuPage from "../pages/customer/views/MenuPage";
 import CustomerProtectedRoute from "../components/auth/CustomerProtectedRoute";
 
 // Customer Routes Configuration
@@ -18,6 +20,8 @@ export const customerRoutes = (
     <Route path="/foodease" element={<CustomerLayout />}>
       <Route index element={<HomePage />} />
       <Route path="restaurants" element={<RestaurantsPage />} />
+      <Route path="restaurants/:id" element={<RestaurantDetailPage />} />
+      <Route path="menu" element={<MenuPage />} />
       <Route path="offers" element={<OffersPage />} />
       <Route path="cart" element={<CartPage />} />
       <Route path="favorites" element={<div>Favorites Page - Coming Soon</div>} />
@@ -50,6 +54,11 @@ export const customerNavItems = [
     public: true,
   },
   {
+    path: "/foodease/menu",
+    label: "Menu",
+    public: true,
+  },
+  {
     path: "/foodease/offers",
     label: "Offers",
     public: true,
@@ -76,6 +85,7 @@ export const customerRouteGroups = {
   public: [
     "/foodease",
     "/foodease/restaurants",
+    "/foodease/menu",
     "/foodease/offers",
     "/foodease/cart",
   ],

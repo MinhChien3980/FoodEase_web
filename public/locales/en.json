@@ -812,7 +812,26 @@
     "orSignUpWith": "or sign up with",
     "alreadyHaveAnAccount": "Already have an account?",
     "signInHere": "Sign in here",
-    "continueBrowsingWithoutSigningUp": "← Continue browsing without signing up"
+    "continueBrowsingWithoutSigningUp": "← Continue browsing without signing up",
+    "failedToLoadCities": "Failed to load cities. Please refresh the page.",
+    "accountCreatedSuccessfully": "Account created successfully! Please sign in.",
+    "registrationFailed": "Registration failed. Please try again.",
+    "emailAlreadyExists": "An account with this email already exists.",
+    "invalidRegistrationData": "Invalid registration data. Please check your information.",
+    "validation": {
+      "fullNameRequired": "Full name is required",
+      "fullNameTooShort": "Full name must be at least 2 characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Please enter a valid Vietnamese phone number",
+      "cityRequired": "Please select a city",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "agreeToTermsRequired": "You must agree to the Terms and Conditions"
+    }
   },
   "footer": {
     "tagline": "Your favorite food delivery app",

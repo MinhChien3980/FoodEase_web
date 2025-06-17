@@ -34,6 +34,7 @@ import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import { cityService } from "../../../services/cityService";
 import { authService } from "../../../services/authService";
+import { handleApiError } from "../../../services/apiClient";
 
 interface RegisterFormData {
   fullName: string;
@@ -71,20 +72,25 @@ const CustomerRegister: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
 
   // Fetch cities on component mount
   useEffect(() => {
     const fetchCities = async () => {
       try {
+        setLoadingCities(true);
         const cities = await cityService.getAllCities();
         setCities(cities);
+      } catch (error) {
+        console.error('Failed to fetch cities:', error);
+        setError(t('auth.failedToLoadCities') || 'Failed to load cities. Please refresh the page.');
       } finally {
         setLoadingCities(false);
       }
     };
 
     fetchCities();
-  }, []);
+  }, [t]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -92,6 +98,11 @@ const CustomerRegister: React.FC = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSelectChange = (e: any) => {
@@ -100,17 +111,66 @@ const CustomerRegister: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    
+    // Clear field error when user selects
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const validateForm = (): string | null => {
-    if (!formData.fullName.trim()) return "Full name is required";
-    if (!formData.email.trim()) return "Email is required";
-    if (!formData.phone.trim()) return "Phone number is required";
-    if (!formData.cityId) return "Please select a city";
-    if (formData.password.length < 6) return "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword) return "Passwords don't match";
-    if (!formData.agreeToTerms) return "You must agree to the Terms and Conditions";
-    return null;
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^(\+84|84|0)?[1-9][0-9]{8,9}$/;
+    return phoneRegex.test(phone.replace(/\s+/g, ''));
+  };
+
+  const validateForm = (): boolean => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!formData.fullName.trim()) {
+      errors.fullName = t('auth.validation.fullNameRequired') || 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      errors.fullName = t('auth.validation.fullNameTooShort') || 'Full name must be at least 2 characters';
+    }
+    
+    if (!formData.email.trim()) {
+      errors.email = t('auth.validation.emailRequired') || 'Email is required';
+    } else if (!validateEmail(formData.email)) {
+      errors.email = t('auth.validation.emailInvalid') || 'Please enter a valid email address';
+    }
+    
+    if (!formData.phone.trim()) {
+      errors.phone = t('auth.validation.phoneRequired') || 'Phone number is required';
+    } else if (!validatePhone(formData.phone)) {
+      errors.phone = t('auth.validation.phoneInvalid') || 'Please enter a valid Vietnamese phone number';
+    }
+    
+    if (!formData.cityId) {
+      errors.cityId = t('auth.validation.cityRequired') || 'Please select a city';
+    }
+    
+    if (!formData.password) {
+      errors.password = t('auth.validation.passwordRequired') || 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = t('auth.validation.passwordTooShort') || 'Password must be at least 6 characters';
+    }
+    
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = t('auth.validation.confirmPasswordRequired') || 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = t('auth.validation.passwordsDoNotMatch') || 'Passwords do not match';
+    }
+    
+    if (!formData.agreeToTerms) {
+      errors.agreeToTerms = t('auth.validation.agreeToTermsRequired') || 'You must agree to the Terms and Conditions';
+    }
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -118,9 +178,7 @@ const CustomerRegister: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
@@ -135,18 +193,32 @@ const CustomerRegister: React.FC = () => {
         langKey: "vi"
       });
 
-      if (response.code === 201) {
+      // Handle successful registration
+      if (response && (response.code === 201 || response.code === 200)) {
         // Registration successful - redirect to login with success message
         navigate('/foodease/login', { 
           state: { 
-            message: 'Account created successfully! Please sign in.',
+            message: t('auth.accountCreatedSuccessfully') || 'Account created successfully! Please sign in.',
             email: formData.email
           }
         });
+      } else {
+        // Handle unexpected response format
+        setError(t('auth.registrationFailed') || 'Registration failed. Please try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Registration error:', err);
-      setError('Network error. Please check your connection and try again.');
+      
+      if (err.response?.data?.code === 1004) {
+        setError(t('auth.emailAlreadyExists') || 'An account with this email already exists.');
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.status === 400) {
+        setError(t('auth.invalidRegistrationData') || 'Invalid registration data. Please check your information.');
+      } else {
+        const errorMessage = handleApiError(err);
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -185,10 +257,10 @@ const CustomerRegister: React.FC = () => {
               }} 
             />
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {t('joinFoodEase')}
+              {t('auth.joinFoodEase') || t('joinFoodEase')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {t('createYourAccountToStartOrdering')}
+              {t('auth.createYourAccountToStartOrdering') || t('createYourAccountToStartOrdering')}
             </Typography>
           </Box>
 
@@ -203,11 +275,13 @@ const CustomerRegister: React.FC = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label={t('fullName')}
+              label={t('auth.fullName') || t('fullName')}
               name="fullName"
               value={formData.fullName}
               onChange={handleInputChange}
               required
+              error={!!fieldErrors.fullName}
+              helperText={fieldErrors.fullName}
               sx={{ mb: 3 }}
               InputProps={{
                 startAdornment: (
@@ -220,12 +294,14 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('email')}
+              label={t('auth.email') || t('email')}
               name="email"
               type="email"
               value={formData.email}
               onChange={handleInputChange}
               required
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
               sx={{ mb: 3 }}
               InputProps={{
                 startAdornment: (
@@ -238,12 +314,14 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('phoneNumber')}
+              label={t('auth.phoneNumber') || t('phoneNumber')}
               name="phone"
               type="tel"
               value={formData.phone}
               onChange={handleInputChange}
               required
+              error={!!fieldErrors.phone}
+              helperText={fieldErrors.phone}
               sx={{ mb: 3 }}
               InputProps={{
                 startAdornment: (
@@ -255,13 +333,13 @@ const CustomerRegister: React.FC = () => {
             />
 
             {/* City Selection */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>{t('city')}</InputLabel>
+            <FormControl fullWidth sx={{ mb: 3 }} error={!!fieldErrors.cityId}>
+              <InputLabel>{t('auth.city') || t('city')}</InputLabel>
               <Select
                 name="cityId"
                 value={formData.cityId}
                 onChange={handleSelectChange}
-                label={t('city')}
+                label={t('auth.city') || t('city')}
                 required
                 startAdornment={
                   <InputAdornment position="start">
@@ -272,7 +350,7 @@ const CustomerRegister: React.FC = () => {
                 {loadingCities ? (
                   <MenuItem disabled>
                     <CircularProgress size={20} sx={{ mr: 1 }} />
-                    {t('loadingCities')}
+                    {t('auth.loadingCities') || t('loadingCities')}
                   </MenuItem>
                 ) : (
                   cities.map((city) => (
@@ -282,16 +360,23 @@ const CustomerRegister: React.FC = () => {
                   ))
                 )}
               </Select>
+              {fieldErrors.cityId && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                  {fieldErrors.cityId}
+                </Typography>
+              )}
             </FormControl>
 
             <TextField
               fullWidth
-              label={t('password')}
+              label={t('auth.password') || t('password')}
               name="password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleInputChange}
               required
+              error={!!fieldErrors.password}
+              helperText={fieldErrors.password}
               sx={{ mb: 3 }}
               InputProps={{
                 startAdornment: (
@@ -314,12 +399,14 @@ const CustomerRegister: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('confirmPassword')}
+              label={t('auth.confirmPassword') || t('confirmPassword')}
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={handleInputChange}
               required
+              error={!!fieldErrors.confirmPassword}
+              helperText={fieldErrors.confirmPassword}
               sx={{ mb: 3 }}
               InputProps={{
                 startAdornment: (
@@ -353,10 +440,15 @@ const CustomerRegister: React.FC = () => {
                 }
                 label={
                   <Typography variant="body2">
-                    {t('agreeToTerms')}
+                    {t('auth.agreeToTerms') || t('agreeToTerms')}
                   </Typography>
                 }
               />
+              {fieldErrors.agreeToTerms && (
+                <Typography variant="caption" color="error" sx={{ display: 'block', ml: 4 }}>
+                  {fieldErrors.agreeToTerms}
+                </Typography>
+              )}
               
               <FormControlLabel
                 control={
@@ -368,7 +460,7 @@ const CustomerRegister: React.FC = () => {
                 }
                 label={
                   <Typography variant="body2" color="text.secondary">
-                    {t('subscribeNewsletter')}
+                    {t('auth.subscribeNewsletter') || t('subscribeNewsletter')}
                   </Typography>
                 }
               />
@@ -388,14 +480,21 @@ const CustomerRegister: React.FC = () => {
                 fontSize: "1.1rem"
               }}
             >
-              {loading ? t('creatingAccount') : t('createAccount')}
+              {loading ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1 }} color="inherit" />
+                  {t('auth.creatingAccount') || t('creatingAccount')}
+                </>
+              ) : (
+                t('auth.createAccount') || t('createAccount')
+              )}
             </Button>
           </Box>
 
           {/* Divider */}
           <Divider sx={{ my: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              {t('orSignUpWith')}
+              {t('auth.orSignUpWith') || t('orSignUpWith')}
             </Typography>
           </Divider>
 
@@ -407,6 +506,7 @@ const CustomerRegister: React.FC = () => {
               startIcon={<GoogleIcon />}
               onClick={() => handleSocialLogin('google')}
               sx={{ py: 1.5 }}
+              disabled={loading}
             >
               Google
             </Button>
@@ -416,6 +516,7 @@ const CustomerRegister: React.FC = () => {
               startIcon={<FacebookIcon />}
               onClick={() => handleSocialLogin('facebook')}
               sx={{ py: 1.5 }}
+              disabled={loading}
             >
               Facebook
             </Button>
@@ -424,7 +525,7 @@ const CustomerRegister: React.FC = () => {
           {/* Sign In Link */}
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="body2" color="text.secondary">
-              {t('alreadyHaveAnAccount')}
+              {t('auth.alreadyHaveAnAccount') || t('alreadyHaveAnAccount')}{' '}
               <Link
                 component={RouterLink}
                 to="/foodease/login"
@@ -435,7 +536,7 @@ const CustomerRegister: React.FC = () => {
                   "&:hover": { textDecoration: "underline" }
                 }}
               >
-                {t('signInHere')}
+                {t('auth.signInHere') || t('signInHere')}
               </Link>
             </Typography>
           </Box>
@@ -452,7 +553,7 @@ const CustomerRegister: React.FC = () => {
                 "&:hover": { textDecoration: "underline" }
               }}
             >
-              {t('continueBrowsingWithoutSigningUp')}
+              {t('auth.continueBrowsingWithoutSigningUp') || t('continueBrowsingWithoutSigningUp')}
             </Link>
           </Box>
         </Paper>

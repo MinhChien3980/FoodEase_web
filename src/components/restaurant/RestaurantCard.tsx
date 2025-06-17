@@ -7,30 +7,27 @@ import {
   Box,
   Chip,
   IconButton,
-  Avatar,
-  Tooltip,
-  CardActions,
+  Rating,
   Button,
-  Badge,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import RestaurantIcon from "@mui/icons-material/Restaurant";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { Restaurant } from "../../services/restaurantService";
-import { Category } from "../../services";
-import MenuItemsModal from "./MenuItemsModal";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
-  categories?: Category[];
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
   onView?: (id: number) => void;
   onToggleStatus?: (id: number, status: boolean) => void;
+  onToggleFavorite?: (id: number) => void;
+  isFavorite?: boolean;
+  deliveryTime?: number; // in minutes
+  rating?: number;
+  className?: string;
 }
 
 // Default images for different restaurant types
@@ -40,60 +37,25 @@ const getDefaultImage = (restaurant: Restaurant) => {
     'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1552566874-6ca15c0f7e8d?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&h=300&fit=crop'
+    'https://images.unsplash.com/photo-1466978913421-dad2ebd01117?w=400&h=300&fit=crop'
   ];
   return defaultImages[restaurant.id % defaultImages.length];
 };
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
   restaurant,
-  categories = [],
-  onEdit,
-  onDelete,
   onView,
-  onToggleStatus,
+  onToggleFavorite,
+  isFavorite = false,
+  deliveryTime = Math.floor(Math.random() * 50) + 10, // Random delivery time 10-60 min
+  rating = Math.random() * 2 + 3, // Random rating 3-5
+  className,
 }) => {
   const theme = useTheme();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showMenuModal, setShowMenuModal] = useState(false);
-
-  // Get category name by ID
-  const getCategoryNameById = (categoryId: number): string => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : `Category ${categoryId}`;
-  };
-
-  const handleStatusToggle = async () => {
-    if (onToggleStatus) {
-      setIsLoading(true);
-      try {
-        await onToggleStatus(restaurant.id, true); // Assuming active by default
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleMapClick = () => {
-    // Search for restaurant address on Google Maps
-    const searchQuery = encodeURIComponent(restaurant.address);
-    const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-    window.open(url, "_blank");
-  };
-
-  const handleViewMenu = () => {
-    if (onView) {
-      onView(restaurant.id);
-    }
-    setShowMenuModal(true);
-  };
-
-  // Get unique categories from menu items with real category names
-  const menuItems = restaurant.menuItems || [];
-  const uniqueCategoryNames = [...new Set(menuItems.map(item => getCategoryNameById(item.categoryId || 0)))];
-  const menuItemCount = menuItems.length;
+  const [isHovered, setIsHovered] = useState(false);
 
   // Calculate price range
+  const menuItems = restaurant.menuItems || [];
   const prices = menuItems.map(item => item.price);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
@@ -101,68 +63,162 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
+      minimumFractionDigits: 0,
     }).format(price);
   };
 
+  // Get main category
+  const getMainCategory = () => {
+    if (menuItems.length === 0) return "Restaurant";
+    
+    // Count category occurrences
+    const categoryCount: { [key: string]: number } = {};
+    menuItems.forEach(item => {
+      const categoryName = `Category ${item.categoryId || 1}`;
+      categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
+    });
+    
+    // Return most common category or fallback
+    const mostCommon = Object.entries(categoryCount).reduce((a, b) => 
+      categoryCount[a[0]] > categoryCount[b[0]] ? a : b
+    );
+    return mostCommon ? mostCommon[0] : "Restaurant";
+  };
+
+  const handleCardClick = () => {
+    if (onView) {
+      onView(restaurant.id);
+    }
+  };
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite(restaurant.id);
+    }
+  };
+
   return (
-    <>
     <Card
+      className={className}
       sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
         position: "relative",
-        "&:hover": {
-          boxShadow: theme.shadows[8],
-          transform: "translateY(-2px)",
-        },
+        borderRadius: 2,
+        overflow: "hidden",
+        cursor: "pointer",
         transition: "all 0.3s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: theme.shadows[8],
+        },
+        height: "auto",
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
-      {/* Menu Items Badge */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 8,
-          left: 8,
-          zIndex: 1,
-        }}
-      >
-        <Badge badgeContent={menuItemCount} color="primary">
-          <Chip
-            label="Food"
-            color="primary"
-            size="small"
-            variant="filled"
-            icon={<RestaurantMenuIcon />}
-          />
-        </Badge>
+      {/* Restaurant Image */}
+      <Box sx={{ position: "relative", height: 200 }}>
+        <CardMedia
+          component="img"
+          height="200"
+          image={getDefaultImage(restaurant)}
+          alt={restaurant.name}
+          sx={{
+            objectFit: "cover",
+            transition: "transform 0.3s ease-in-out",
+            transform: isHovered ? "scale(1.05)" : "scale(1)",
+          }}
+        />
+        
+        {/* Location Pin - Top Left */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            borderRadius: "50%",
+            width: 32,
+            height: 32,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          }}
+        >
+          <LocationOnIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+        </Box>
+
+        {/* Favorite Heart - Top Right */}
+        <IconButton
+          onClick={handleFavoriteClick}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 1)",
+            },
+            width: 36,
+            height: 36,
+          }}
+        >
+          {isFavorite ? (
+            <FavoriteIcon sx={{ color: "#ff4757", fontSize: 20 }} />
+          ) : (
+            <FavoriteBorderIcon sx={{ color: theme.palette.text.secondary, fontSize: 20 }} />
+          )}
+        </IconButton>
+
+        {/* Delivery Time Badge - Bottom Left */}
+        <Chip
+          icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
+          label={`${deliveryTime} min`}
+          size="small"
+          sx={{
+            position: "absolute",
+            bottom: 12,
+            left: 12,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: "white",
+            "& .MuiChip-icon": {
+              color: "white",
+            },
+            fontSize: "0.75rem",
+            height: 24,
+          }}
+        />
+
+        {/* Online Status Indicator - Bottom Right */}
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 12,
+            right: 12,
+            width: 12,
+            height: 12,
+            borderRadius: "50%",
+            backgroundColor: "#2ed573",
+            border: "2px solid white",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          }}
+        />
       </Box>
 
-      {/* Restaurant Image - Using placeholder since no image URL in API */}
-      <CardMedia
-        component="img"
-        height="200"
-        image={getDefaultImage(restaurant)}
-        alt={restaurant.name}
-        sx={{
-          objectFit: "cover",
-          backgroundColor: theme.palette.grey[200],
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      />
-
-      <CardContent sx={{ flexGrow: 1, p: 2 }}>
+      {/* Card Content */}
+      <CardContent sx={{ p: 2 }}>
         {/* Restaurant Name */}
         <Typography
           variant="h6"
           component="h3"
-          gutterBottom
           sx={{
-            fontWeight: 600,
+            fontWeight: 700,
+            fontSize: "1.1rem",
+            lineHeight: 1.3,
+            mb: 0.5,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -171,144 +227,79 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
           {restaurant.name}
         </Typography>
 
-        {/* Categories */}
-        <Box sx={{ mb: 2 }}>
-          {uniqueCategoryNames.slice(0, 3).map((categoryName, index) => (
-            <Chip
-              key={index}
-              label={categoryName}
-              size="small"
-              variant="outlined"
-              sx={{ mr: 0.5, mb: 0.5 }}
-            />
-          ))}
-          {uniqueCategoryNames.length > 3 && (
-            <Chip
-              label={`+${uniqueCategoryNames.length - 3} more`}
-              size="small"
-              variant="outlined"
-              sx={{ mr: 0.5, mb: 0.5 }}
-            />
-          )}
+        {/* Category */}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            fontSize: "0.875rem",
+            mb: 1,
+            fontWeight: 500,
+          }}
+        >
+          {getMainCategory()}
+        </Typography>
+
+        {/* Rating */}
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+          <Rating
+            value={rating}
+            precision={0.1}
+            readOnly
+            size="small"
+            sx={{
+              "& .MuiRating-iconFilled": {
+                color: "#ffa726",
+              },
+              mr: 1,
+            }}
+          />
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              fontSize: "0.875rem",
+            }}
+          >
+            {rating.toFixed(1)}
+          </Typography>
         </Box>
 
-        {/* Restaurant Info */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          {/* Address */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <LocationOnIcon fontSize="small" color="action" />
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                flex: 1,
-              }}
-            >
-              {restaurant.address}
-            </Typography>
-            <Tooltip title="Open in Google Maps">
-              <IconButton size="small" onClick={handleMapClick}>
-                <LocationOnIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-
-          {/* Menu Items Count */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <RestaurantMenuIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              {menuItemCount} Food
-            </Typography>
-          </Box>
-
-          {/* Price Range */}
-          {menuItemCount > 0 && (
+        {/* Price Range */}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: "0.875rem",
+            }}
+          >
+            {minPrice > 0 ? formatPrice(minPrice) : "Pricing varies"}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              fontSize: "0.875rem",
+            }}
+          >
+            For one
+          </Typography>
+          {minPrice > 0 && (
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mt: 1,
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                backgroundColor: "#2ed573",
               }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                From: {formatPrice(minPrice)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                To: {formatPrice(maxPrice)}
-              </Typography>
-            </Box>
+            />
           )}
         </Box>
       </CardContent>
-
-      {/* Action Buttons */}
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
-          {onView && (
-            <Button
-              startIcon={<VisibilityIcon />}
-              onClick={handleViewMenu}
-              variant="outlined"
-              size="small"
-              sx={{ flex: 1 }}
-            >
-              View Menu
-            </Button>
-          )}
-          {onEdit && (
-            <Tooltip title="Edit Restaurant">
-              <IconButton
-                onClick={() => onEdit(restaurant.id)}
-                color="primary"
-                size="small"
-              >
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {onDelete && (
-            <Tooltip title="Delete Restaurant">
-              <IconButton
-                onClick={() => onDelete(restaurant.id)}
-                color="error"
-                size="small"
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-      </CardActions>
-
-      {/* Toggle Status Button - Optional since API doesn't have status field */}
-      {onToggleStatus && (
-        <Box sx={{ p: 2, pt: 0 }}>
-          <Button
-            variant="contained"
-            color="success"
-            fullWidth
-            onClick={handleStatusToggle}
-            disabled={isLoading}
-            size="small"
-          >
-            {isLoading ? "Updating..." : "Active"}
-          </Button>
-        </Box>
-      )}
     </Card>
-
-    {/* Menu Items Modal */}
-    <MenuItemsModal
-      open={showMenuModal}
-      onClose={() => setShowMenuModal(false)}
-      restaurantId={restaurant.id}
-      restaurantName={restaurant.name}
-    />
-    </>
   );
 };
 

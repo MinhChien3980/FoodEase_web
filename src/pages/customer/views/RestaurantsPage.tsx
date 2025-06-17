@@ -23,6 +23,7 @@ import { useTheme } from "@mui/material/styles";
 import { useLocation } from "react-router";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import RestaurantCard from "../../../components/restaurant/RestaurantCard";
 import GoogleMapComponent from "../../../components/maps/GoogleMapComponent";
 import { restaurantService, Restaurant, categoryService, Category } from "../../../services";
@@ -39,7 +40,8 @@ const RestaurantsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const itemsPerPage = 6;
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const itemsPerPage = 9;
   const location = useLocation();
 
   // Get initial category from navigation state (from HomePage)
@@ -160,6 +162,19 @@ const RestaurantsPage: React.FC = () => {
   const handleViewRestaurant = (id: number) => {
     console.log("View restaurant:", id);
     // Navigate to restaurant detail page
+    window.location.href = `/foodease/restaurants/${id}`;
+  };
+
+  const handleToggleFavorite = (id: number) => {
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(id)) {
+        newFavorites.delete(id);
+      } else {
+        newFavorites.add(id);
+      }
+      return newFavorites;
+    });
   };
 
   if (loading) {
@@ -189,31 +204,60 @@ const RestaurantsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.background.default, minHeight: "100vh", py: 4 }}>
-      <Container maxWidth="xl">
+    <Box sx={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ mb: 4, textAlign: "center" }}>
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <LocationOnIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
+            <Typography variant="h6" color="text.secondary">
+              Bhuj, Gujarat, India
+            </Typography>
+          </Box>
           <Typography
-            variant="h3"
+            variant="h4"
             component="h1"
-            gutterBottom
             sx={{
               fontWeight: 700,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: theme.palette.text.primary,
+              mb: 1,
             }}
           >
-            Restaurants 
+            Restaurants
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            {filteredRestaurants.length} restaurants found
           </Typography>
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
           {/* Filters Sidebar */}
-          <Grid item xs={12} md={3}>
-            <Paper sx={{ p: 3, position: "sticky", top: 20 }}>
-              <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Grid item xs={12} lg={3}>
+            <Paper 
+              elevation={2}
+              sx={{ 
+                p: 3, 
+                position: "sticky", 
+                top: 20, 
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: theme.palette.divider,
+              }}
+            >
+              <Typography 
+                variant="h6" 
+                gutterBottom 
+                sx={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 1,
+                  fontWeight: 600,
+                }}
+              >
                 <FilterListIcon />
                 Filters
               </Typography>
@@ -297,16 +341,17 @@ const RestaurantsPage: React.FC = () => {
           </Grid>
 
           {/* Main Content */}
-          <Grid item xs={12} md={9}>
-            {/* Results Header */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Grid item xs={12} lg={9}>
+            {/* Active Filters */}
+            {(selectedCategory !== "All" || showOnlyWithMenu) && (
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 3 }}>
                 {selectedCategory !== "All" && (
                   <Chip
                     label={selectedCategory}
                     onDelete={() => setSelectedCategory("All")}
                     color="primary"
                     variant="outlined"
+                    size="small"
                   />
                 )}
                 {showOnlyWithMenu && (
@@ -315,21 +360,23 @@ const RestaurantsPage: React.FC = () => {
                     onDelete={() => setShowOnlyWithMenu(false)}
                     color="primary"
                     variant="outlined"
+                    size="small"
                   />
                 )}
               </Box>
-            </Box>
+            )}
 
             {/* Restaurants Grid */}
             {paginatedRestaurants.length > 0 ? (
               <>
-                <Grid container spacing={3}>
+                <Grid container spacing={3} sx={{ mb: 4 }}>
                   {paginatedRestaurants.map((restaurant) => (
-                    <Grid item xs={12} sm={6} lg={4} key={restaurant.id}>
+                    <Grid item xs={12} sm={6} xl={4} key={restaurant.id}>
                       <RestaurantCard
                         restaurant={restaurant}
-                        categories={categories}
                         onView={handleViewRestaurant}
+                        onToggleFavorite={handleToggleFavorite}
+                        isFavorite={favorites.has(restaurant.id)}
                       />
                     </Grid>
                   ))}
