@@ -18,7 +18,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { showToast } from "../../utils/foodHelpers";
-import { paymentService } from "../../services/paymentService";
+import { paymentService, PaymentIntentResponse, ConfirmPaymentResponse } from "../../services/paymentService";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY || "");
@@ -26,7 +26,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY || "");
 interface PaymentGatewayProps {
   amount: number;
   currency?: string;
-  onSuccess: (paymentResult: any) => void;
+  onSuccess: (paymentResult: ConfirmPaymentResponse) => void;
   onError: (error: string) => void;
   customerEmail?: string;
   orderId: string;
@@ -36,7 +36,7 @@ interface PaymentGatewayProps {
 interface StripeCheckoutFormProps {
   amount: number;
   currency: string;
-  onSuccess: (paymentResult: any) => void;
+  onSuccess: (paymentResult: ConfirmPaymentResponse) => void;
   onError: (error: string) => void;
   customerEmail?: string;
   orderId: string;
@@ -54,6 +54,7 @@ const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntentResponse | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -73,54 +74,24 @@ const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({
     }
 
     try {
-      // Create payment method
-      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-        billing_details: {
-          email: customerEmail,
-        },
-      });
-
-      if (paymentMethodError) {
-        onError(paymentMethodError.message || "Payment failed");
-        setIsProcessing(false);
-        return;
-      }
-
       // Create payment intent through our service
-      const { clientSecret } = await paymentService.createPaymentIntent({
+      const paymentIntentResponse = await paymentService.createPaymentIntent({
         amount,
         currency: currency.toLowerCase(),
-        paymentMethodId: paymentMethod.id,
         orderId,
         customerEmail,
+        paymentMethodId: 'pm_card_visa',
       });
 
-      // Confirm the payment
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret
-      );
-
-      if (confirmError) {
-        onError(confirmError.message || "Payment confirmation failed");
-        setIsProcessing(false);
-        return;
-      }
+      setPaymentIntent(paymentIntentResponse);
 
       // Confirm payment on our backend
-      await paymentService.confirmPayment(paymentIntent.id);
+      const confirmResponse = await paymentService.confirmPayment({
+        paymentIntentId: paymentIntentResponse.paymentIntentId,
+      });
 
       // Payment successful
-      const paymentResult = {
-        paymentIntent,
-        orderId,
-        amount,
-        currency,
-        status: paymentIntent.status,
-      };
-
-      onSuccess(paymentResult);
+      onSuccess(confirmResponse);
       showToast.success("Payment processed successfully!");
     } catch (err) {
       onError(err instanceof Error ? err.message : "Payment processing failed");

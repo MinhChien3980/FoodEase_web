@@ -5,19 +5,53 @@ import { API_ENDPOINTS } from '../config/api';
 export interface CreatePaymentIntentRequest {
   amount: number;
   currency: string;
-  paymentMethodId: string;
   orderId: string;
   customerEmail?: string;
+  paymentMethodId?: string;
 }
+
 
 export interface PaymentIntentResponse {
   clientSecret: string;
   paymentIntentId: string;
+  paymentIntent: {
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    payment_method: string;
+    created: number;
+    customer?: string;
+    metadata: {
+      orderId: string;
+    };
+  };
+}
+
+export interface ConfirmPaymentRequest {
+  paymentIntentId: string;
+}
+
+export interface ConfirmPaymentResponse {
+  success: boolean;
+  paymentIntent: {
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    payment_method: string;
+    created: number;
+    customer?: string;
+    metadata: {
+      orderId: string;
+    };
+  };
 }
 
 export const paymentService = {
   async createPaymentIntent(request: CreatePaymentIntentRequest): Promise<PaymentIntentResponse> {
     try {
+      console.log("🔍 Payload gửi lên API-INTENT:", request);
       const response: AxiosResponse<PaymentIntentResponse> = await apiClient.post(
         API_ENDPOINTS.PAYMENTS.CREATE_INTENT,
         request
@@ -28,15 +62,16 @@ export const paymentService = {
     }
   },
 
-  async confirmPayment(paymentIntentId: string): Promise<any> {
+  async confirmPayment(request: ConfirmPaymentRequest): Promise<ConfirmPaymentResponse> {
     try {
-      const response: AxiosResponse<any> = await apiClient.post(
+      console.log("🔍 Payload gửi lên API-CONFIRM:", request);
+      const response: AxiosResponse<ConfirmPaymentResponse> = await apiClient.post(
         API_ENDPOINTS.PAYMENTS.CONFIRM,
-        { paymentIntentId }
+        request
       );
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
   }
-}; 
+};

@@ -38,6 +38,7 @@ import {
   Add as AddIcon,
   Remove as RemoveIcon,
   Delete as DeleteIcon,
+  CreditCard as CreditCardIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +49,7 @@ import { orderService } from '../../../services/orderService';
 import { addressService, Address } from '../../../services/addressService';
 import { deliveryService } from '../../../services/deliveryService';
 import { ORDER_STATUS, ORDER_PAYMENT_METHOD } from '../../../constants';
+import PaymentGateway from '../../../components/payment/PaymentGateway';
 
 const CartPage: React.FC = () => {
   const theme = useTheme();
@@ -68,12 +70,14 @@ const CartPage: React.FC = () => {
     severity: 'success',
   });
   const [openCheckoutModal, setOpenCheckoutModal] = useState(false);
+  const [openStripeModal, setOpenStripeModal] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState<boolean>(false);
   const [checkoutForm, setCheckoutForm] = useState({
     paymentMethod: ORDER_PAYMENT_METHOD.CASH,
     addressId: '',
   });
+  const [currentOrderId, setCurrentOrderId] = useState<string>('');
 
   // Check authentication on component mount
   useEffect(() => {
@@ -139,10 +143,51 @@ const CartPage: React.FC = () => {
     setOpenCheckoutModal(false);
   };
 
+  const handleOpenStripeModal = () => {
+    setOpenStripeModal(true);
+  };
+
+  const handleCloseStripeModal = () => {
+    setOpenStripeModal(false);
+  };
+
   const handleCheckoutFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setCheckoutForm({
       ...checkoutForm,
       [field]: event.target.value,
+    });
+  };
+
+  const handleStripePaymentSuccess = async (paymentResult: any) => {
+    try {
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: 'Thanh toán thành công! Đơn hàng đã được xác nhận.',
+        severity: 'success',
+      });
+
+      // Wait for 1 second to show the success message
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Clear cart and close modals
+      await clearCart();
+      handleCloseStripeModal();
+      handleCloseCheckoutModal();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'Có lỗi xảy ra khi cập nhật đơn hàng',
+        severity: 'error'
+      });
+    }
+  };
+
+  const handleStripePaymentError = (error: string) => {
+    setSnackbar({
+      open: true,
+      message: `Lỗi thanh toán: ${error}`,
+      severity: 'error'
     });
   };
 
@@ -152,7 +197,7 @@ const CartPage: React.FC = () => {
       
       if (!checkoutForm.addressId) {
         throw new Error('Vui lòng chọn địa chỉ giao hàng');
-      }
+     }
 
       // Prepare order items from cart
       const orderItems = cart.items.map(item => ({
@@ -175,31 +220,41 @@ const CartPage: React.FC = () => {
       const response = await orderService.createOrder(orderRequest);
 
       if (response.code === 200 || response.code === 201) {
-        const deliveryTime = new Date(Date.now() + 30 * 60000).toISOString();
+        const orderId = response.data.id;
+        setCurrentOrderId(orderId.toString());
 
-        // Create delivery request
-        const deliveryRequest = {
-          orderId: response.data.id,
-          status: ORDER_STATUS.PENDING,
-          deliveryTime: deliveryTime
-        };
+        if (checkoutForm.paymentMethod.includes('CREDIT_CARD')) {
+          // For credit card payment, open Stripe modal
+          handleCloseCheckoutModal();
+          handleOpenStripeModal();
+        } else {
+          // For cash payment, proceed with delivery creation
+          const deliveryTime = new Date(Date.now() + 30 * 60000).toISOString();
 
-        // Create delivery
-        await deliveryService.createDelivery(deliveryRequest);
+          // Create delivery request
+          const deliveryRequest = {
+            orderId: orderId,
+            status: ORDER_STATUS.PENDING,
+            deliveryTime: deliveryTime
+          };
 
-        // Show success message first
-        setSnackbar({
-          open: true,
-          message: 'Đặt hàng thành công!',
-          severity: 'success',
-        });
+          // Create delivery
+          await deliveryService.createDelivery(deliveryRequest);
 
-        // Wait for 1 second to show the success message
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Show success message first
+          setSnackbar({
+            open: true,
+            message: 'Đặt hàng thành công!',
+            severity: 'success',
+          });
 
-        // Then clear cart and close modal
-        await clearCart();
-        handleCloseCheckoutModal();
+          // Wait for 1 second to show the success message
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Then clear cart and close modal
+          await clearCart();
+          handleCloseCheckoutModal();
+        }
       } else {
         throw new Error(response.message || 'Đặt hàng thất bại');
       }
@@ -665,6 +720,66 @@ const CartPage: React.FC = () => {
             startIcon={isCheckingOut ? <CircularProgress size={20} color="inherit" /> : null}
           >
             {isCheckingOut ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Stripe Payment Modal */}
+      <Dialog 
+        open={openStripeModal} 
+        onClose={handleCloseStripeModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CreditCardIcon sx={{ color: theme.palette.primary.main }} />
+            <Typography 
+              component="div"
+              sx={{ 
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                color: 'text.primary'
+              }}
+            >
+              Thanh toán bằng thẻ tín dụng
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Typography variant="body2">
+                Vui lòng nhập thông tin thẻ tín dụng để hoàn tất thanh toán.
+              </Typography>
+            </Alert>
+            
+            <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Tổng thanh toán:
+              </Typography>
+              <Typography variant="h6" color="primary" fontWeight="bold">
+                {formatPrice(cart.totalAmount + (cart.totalAmount * 0.1))}
+              </Typography>
+            </Box>
+
+            <PaymentGateway
+              amount={cart.totalAmount + (cart.totalAmount * 0.1)}
+              currency="VND"
+              orderId={currentOrderId}
+              customerEmail={customerUser?.email}
+              onSuccess={handleStripePaymentSuccess}
+              onError={handleStripePaymentError}
+              enableStripe={true}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            onClick={handleCloseStripeModal}
+            sx={{ mr: 1 }}
+          >
+            Hủy
           </Button>
         </DialogActions>
       </Dialog>
