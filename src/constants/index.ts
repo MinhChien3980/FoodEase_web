@@ -15,3 +15,7 @@ export const ORDER_PAYMENT_METHOD = {
   BANK_TRANSFER: 'BANK_TRANSFER'
 } as const;
 
+export const ORDER_PAYMENT_STATUS = {
+  PAID: 'PAID',
+  UNPAID: 'UNPAID'
+} as const;

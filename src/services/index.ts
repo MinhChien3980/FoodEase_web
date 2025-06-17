@@ -9,6 +9,7 @@ export { authService } from './authService';
 export { userService } from './userService';
 export { cartService } from './cartService';
 export { addressService } from './addressService';
+export { transactionService } from './transactionService';
 
 // Export Types
 export type { 
@@ -57,4 +58,10 @@ export type {
 } from './cartService';
 
 export type { Address, AddressResponse, AddressesResponse } from './addressService';
+
+export type {
+  Transaction,
+  TransactionResponse,
+  TransactionsResponse,
+} from './transactionService';
 

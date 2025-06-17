@@ -82,4 +82,10 @@ export const API_ENDPOINTS = {
     CREATE_INTENT: '/payments/create-intent',
     CONFIRM: '/payments/confirm',
   },
+  TRANSACTIONS: {
+    GET_ALL: '/transactions',
+    GET_BY_ID: (id: number) => `/transactions/${id}`,
+    GET_BY_ORDER: (orderId: number) => `/transactions/order/${orderId}`,
+    CREATE: '/transactions',
+  },
 }; 

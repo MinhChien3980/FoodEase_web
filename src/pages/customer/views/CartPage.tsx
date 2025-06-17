@@ -50,6 +50,8 @@ import { addressService, Address } from '../../../services/addressService';
 import { deliveryService } from '../../../services/deliveryService';
 import { ORDER_STATUS, ORDER_PAYMENT_METHOD } from '../../../constants';
 import PaymentGateway from '../../../components/payment/PaymentGateway';
+import { transactionService } from '../../../services/transactionService';
+import { ORDER_PAYMENT_STATUS } from '../../../constants';
 
 const CartPage: React.FC = () => {
   const theme = useTheme();
@@ -105,7 +107,6 @@ const CartPage: React.FC = () => {
           const response = await addressService.getAddressesByUser(customerUser.id);
           if (response.code === 200) {
             setAddresses(response.data);
-            // Set default address if available
             if (response.data.length > 0) {
               setCheckoutForm(prev => ({
                 ...prev,
@@ -160,17 +161,37 @@ const CartPage: React.FC = () => {
 
   const handleStripePaymentSuccess = async (paymentResult: any) => {
     try {
-      // Show success message
+      // Create delivery
+      const deliveryTime = new Date(Date.now() + 30 * 60000).toISOString();
+
+      const deliveryRequest = {
+        orderId: parseInt(currentOrderId),
+        status: ORDER_STATUS.PENDING,
+        deliveryTime: deliveryTime
+      };
+
+      await deliveryService.createDelivery(deliveryRequest);
+
+      // Create transaction
+      const transactionRequest = {
+        userId: customerUser.id,
+        orderId: parseInt(currentOrderId),
+        paymentMethod: checkoutForm.paymentMethod,
+        amount: cart.totalAmount + (cart.totalAmount * 0.1),
+        status: ORDER_PAYMENT_STATUS.PAID,
+        createdAt: new Date().toISOString(),
+      };
+
+      await transactionService.createTransaction(transactionRequest);
+
       setSnackbar({
         open: true,
         message: 'Thanh toán thành công! Đơn hàng đã được xác nhận.',
         severity: 'success',
       });
 
-      // Wait for 1 second to show the success message
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Clear cart and close modals
       await clearCart();
       handleCloseStripeModal();
       handleCloseCheckoutModal();
@@ -224,34 +245,40 @@ const CartPage: React.FC = () => {
         setCurrentOrderId(orderId.toString());
 
         if (checkoutForm.paymentMethod.includes('CREDIT_CARD')) {
-          // For credit card payment, open Stripe modal
           handleCloseCheckoutModal();
           handleOpenStripeModal();
         } else {
-          // For cash payment, proceed with delivery creation
+          // Create delivery
           const deliveryTime = new Date(Date.now() + 30 * 60000).toISOString();
 
-          // Create delivery request
           const deliveryRequest = {
             orderId: orderId,
             status: ORDER_STATUS.PENDING,
             deliveryTime: deliveryTime
           };
 
-          // Create delivery
           await deliveryService.createDelivery(deliveryRequest);
 
-          // Show success message first
+          // Create transaction
+          const transactionRequest = {
+            userId: customerUser.id,
+            orderId: orderId,
+            paymentMethod: checkoutForm.paymentMethod,
+            amount: cart.totalAmount + (cart.totalAmount * 0.1),
+            status: ORDER_PAYMENT_STATUS.UNPAID,
+            createdAt: new Date().toISOString(),
+          };
+
+          await transactionService.createTransaction(transactionRequest);
+
           setSnackbar({
             open: true,
             message: 'Đặt hàng thành công!',
             severity: 'success',
           });
 
-          // Wait for 1 second to show the success message
           await new Promise(resolve => setTimeout(resolve, 1000));
 
-          // Then clear cart and close modal
           await clearCart();
           handleCloseCheckoutModal();
         }
