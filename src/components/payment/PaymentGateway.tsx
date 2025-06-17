@@ -17,15 +17,11 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import {
-  PayPalScriptProvider,
-  PayPalButtons,
-  usePayPalScriptReducer,
-} from "@paypal/react-paypal-js";
 import { showToast } from "../../utils/foodHelpers";
+import { paymentService } from "../../services/paymentService";
 
 // Initialize Stripe
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY || "");
 
 interface PaymentGatewayProps {
   amount: number;
@@ -35,7 +31,6 @@ interface PaymentGatewayProps {
   customerEmail?: string;
   orderId: string;
   enableStripe?: boolean;
-  enablePayPal?: boolean;
 }
 
 interface StripeCheckoutFormProps {
@@ -79,7 +74,7 @@ const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({
 
     try {
       // Create payment method
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
+      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
         type: "card",
         card: cardElement,
         billing_details: {
@@ -87,26 +82,48 @@ const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({
         },
       });
 
-      if (error) {
-        onError(error.message || "Payment failed");
+      if (paymentMethodError) {
+        onError(paymentMethodError.message || "Payment failed");
         setIsProcessing(false);
         return;
       }
 
-      // Here you would typically call your backend to create a payment intent
-      // For demo purposes, we'll simulate a successful payment
+      // Create payment intent through our service
+      const { clientSecret } = await paymentService.createPaymentIntent({
+        amount,
+        currency: currency.toLowerCase(),
+        paymentMethodId: paymentMethod.id,
+        orderId,
+        customerEmail,
+      });
+
+      // Confirm the payment
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret
+      );
+
+      if (confirmError) {
+        onError(confirmError.message || "Payment confirmation failed");
+        setIsProcessing(false);
+        return;
+      }
+
+      // Confirm payment on our backend
+      await paymentService.confirmPayment(paymentIntent.id);
+
+      // Payment successful
       const paymentResult = {
-        paymentMethod: paymentMethod,
-        orderId: orderId,
-        amount: amount,
-        currency: currency,
-        status: "succeeded",
+        paymentIntent,
+        orderId,
+        amount,
+        currency,
+        status: paymentIntent.status,
       };
 
       onSuccess(paymentResult);
       showToast.success("Payment processed successfully!");
     } catch (err) {
-      onError("Payment processing failed");
+      onError(err instanceof Error ? err.message : "Payment processing failed");
     } finally {
       setIsProcessing(false);
     }
@@ -145,114 +162,19 @@ const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({
   );
 };
 
-// PayPal Checkout Component
-const PayPalCheckout: React.FC<{
-  amount: number;
-  currency: string;
-  onSuccess: (paymentResult: any) => void;
-  onError: (error: string) => void;
-  orderId: string;
-}> = ({ amount, currency, onSuccess, onError, orderId }) => {
-  const [{ isPending, isResolved, isRejected }] = usePayPalScriptReducer();
-
-  const createOrder = (data: any, actions: any) => {
-    return actions.order.create({
-      purchase_units: [
-        {
-          amount: {
-            value: amount.toFixed(2),
-            currency_code: currency,
-          },
-          reference_id: orderId,
-        },
-      ],
-      application_context: {
-        shipping_preference: "NO_SHIPPING",
-      },
-    });
-  };
-
-  const onApprove = async (data: any, actions: any) => {
-    try {
-      const details = await actions.order.capture();
-      const paymentResult = {
-        orderID: data.orderID,
-        payerID: data.payerID,
-        paymentDetails: details,
-        orderId: orderId,
-        amount: amount,
-        currency: currency,
-        status: "completed",
-      };
-      
-      onSuccess(paymentResult);
-      showToast.success("PayPal payment completed successfully!");
-    } catch (err) {
-      onError("PayPal payment failed");
-    }
-  };
-
-  const onErrorHandler = (err: any) => {
-    console.error("PayPal error:", err);
-    onError("PayPal payment error occurred");
-  };
-
-  if (isPending) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (isRejected) {
-    return (
-      <Alert severity="error">
-        PayPal failed to load. Please try again later.
-      </Alert>
-    );
-  }
-
-  return (
-    <PayPalButtons
-      createOrder={createOrder}
-      onApprove={onApprove}
-      onError={onErrorHandler}
-      style={{
-        layout: "vertical",
-        color: "blue",
-        shape: "rect",
-        label: "paypal",
-      }}
-    />
-  );
-};
-
 // Main Payment Gateway Component
 const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   amount,
-  currency = "USD",
+  currency = "VND",
   onSuccess,
   onError,
   customerEmail,
   orderId,
-  enableStripe = true,
-  enablePayPal = true,
 }) => {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    "stripe" | "paypal" | null
-  >(null);
-
   const stripeOptions: StripeElementsOptions = {
     appearance: {
       theme: "stripe",
     },
-  };
-
-  const paypalOptions = {
-    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID || "",
-    currency: currency,
-    intent: "capture",
   };
 
   return (
@@ -266,75 +188,16 @@ const PaymentGateway: React.FC<PaymentGatewayProps> = ({
           Order Amount: <strong>{currency} {amount.toFixed(2)}</strong>
         </Typography>
 
-        {!selectedPaymentMethod && (
-          <Grid container spacing={2}>
-            {enableStripe && (
-              <Grid item xs={12} sm={enablePayPal ? 6 : 12}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => setSelectedPaymentMethod("stripe")}
-                  sx={{ p: 2 }}
-                >
-                  Pay with Card
-                </Button>
-              </Grid>
-            )}
-            {enablePayPal && (
-              <Grid item xs={12} sm={enableStripe ? 6 : 12}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => setSelectedPaymentMethod("paypal")}
-                  sx={{ p: 2 }}
-                >
-                  Pay with PayPal
-                </Button>
-              </Grid>
-            )}
-          </Grid>
-        )}
-
-        {selectedPaymentMethod && (
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Button
-                variant="text"
-                onClick={() => setSelectedPaymentMethod(null)}
-                size="small"
-              >
-                ← Back to payment methods
-              </Button>
-            </Box>
-            
-            <Divider sx={{ mb: 3 }} />
-
-            {selectedPaymentMethod === "stripe" && enableStripe && (
-              <Elements stripe={stripePromise} options={stripeOptions}>
-                <StripeCheckoutForm
-                  amount={amount}
-                  currency={currency}
-                  onSuccess={onSuccess}
-                  onError={onError}
-                  customerEmail={customerEmail}
-                  orderId={orderId}
-                />
-              </Elements>
-            )}
-
-            {selectedPaymentMethod === "paypal" && enablePayPal && (
-              <PayPalScriptProvider options={paypalOptions}>
-                <PayPalCheckout
-                  amount={amount}
-                  currency={currency}
-                  onSuccess={onSuccess}
-                  onError={onError}
-                  orderId={orderId}
-                />
-              </PayPalScriptProvider>
-            )}
-          </Box>
-        )}
+        <Elements stripe={stripePromise} options={stripeOptions}>
+          <StripeCheckoutForm
+            amount={amount}
+            currency={currency}
+            onSuccess={onSuccess}
+            onError={onError}
+            customerEmail={customerEmail}
+            orderId={orderId}
+          />
+        </Elements>
       </CardContent>
     </Card>
   );
