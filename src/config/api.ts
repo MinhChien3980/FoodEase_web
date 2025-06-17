@@ -62,6 +62,7 @@ export const API_ENDPOINTS = {
     GET_ALL: '/orders',
     GET_BY_ID: (id: number) => `/orders/${id}`,
     GET_BY_USER: (userId: number) => `/orders/${userId}`,
+    UPDATE: (id: number) => `/orders/${id}`,
   },
   ORDER_ITEMS: {
     GET_BY_ORDER_ID: (orderId: number) => `/orders/${orderId}/items`,
@@ -76,5 +77,9 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: number) => `/deliveries/${id}`,
     UPDATE_STATUS: (id: number) => `/deliveries/${id}/status`,
     CREATE: '/deliveries',
+  },
+  PAYMENTS: {
+    CREATE_INTENT: '/payments/create-intent',
+    CONFIRM: '/payments/confirm',
   },
 }; 
