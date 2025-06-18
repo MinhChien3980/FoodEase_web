@@ -33,7 +33,7 @@ interface MenuItemFormData {
 export const MenuItemEdit = () => {
   const t = useTranslate();
   const go = useGo();
-  const { id } = useParams();
+  const { menuItemId } = useParams();
   const [searchParams] = useSearchParams();
   const restaurantId = searchParams.get("restaurantId");
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ export const MenuItemEdit = () => {
     refineCoreProps: {
       resource: "menu-items",
       action: "edit",
-      id: id,
+      id: menuItemId,
     },
     defaultValues: {
       name: "",
@@ -67,7 +67,7 @@ export const MenuItemEdit = () => {
     const fetchData = async () => {
       try {
         const [menuItemData, categoriesData] = await Promise.all([
-          restaurantService.getMenuItemById(Number(id)),
+          restaurantService.getMenuItemById(Number(menuItemId)),
           categoryService.getAllCategories()
         ]);
         setMenuItem(menuItemData);
@@ -90,13 +90,13 @@ export const MenuItemEdit = () => {
     };
 
     fetchData();
-  }, [id, reset]);
+  }, [menuItemId, reset]);
 
   const onSubmit = async (data: MenuItemFormData) => {
     try {
       console.log('Form Data:', data);
       const updateData = {
-        id: Number(id),
+        id: Number(menuItemId),
         restaurantId: Number(data.restaurantId),
         categoryId: Number(data.categoryId),
         name: data.name,
@@ -106,7 +106,7 @@ export const MenuItemEdit = () => {
       };
       console.log('Update Data to API:', updateData);
       
-      await restaurantService.updateMenuItem(Number(id), updateData);
+      await restaurantService.updateMenuItem(Number(menuItemId), updateData);
       go({
         to: `/admin/restaurants/${data.restaurantId}/menu-items`,
         type: "replace",

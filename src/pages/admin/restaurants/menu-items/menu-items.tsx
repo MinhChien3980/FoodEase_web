@@ -87,6 +87,19 @@ export const RestaurantMenuItems = () => {
               svgIconProps={{
                 color: "action",
               }}
+              onClick={() => {
+                go({
+                  to: `/admin/restaurants/${id}/menu-items/${row.id}/edit`,
+                  query: {
+                    restaurantId: id,
+                    menuItemId: row.id
+                  },
+                  options: {
+                    keepQuery: true,
+                  },
+                  type: "replace",
+                });
+              }}
             />
             <DeleteButton
               hideText
