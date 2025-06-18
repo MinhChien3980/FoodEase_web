@@ -58,6 +58,24 @@
           "other": "Khác"
         }
       }
+    },
+    "transaction": {
+      "title": "Quản lý giao dịch",
+      "fields": {
+        "userId": "ID người dùng",
+        "orderId": "ID đơn hàng",
+        "amount": "Số tiền",
+        "status": "Trạng thái",
+        "paymentMethod": "Phương thức thanh toán",
+        "createdAt": "Ngày tạo",
+        "actions": "Thao tác"
+      },
+      "status": {
+        "paid": "Đã thanh toán",
+        "unpaid": "Chưa thanh toán",
+        "pending": "Đang xử lý",
+        "failed": "Thất bại"
+      }
     }
   },
   "customer": {
@@ -413,6 +431,22 @@
       "delivering": "ĐANG GIAO",
       "completed": "HOÀN THÀNH",
       "cancelled": "ĐÃ HỦY"
+    }
+  },
+  "transaction": {
+    "status": {
+      "paid": "Đã thanh toán",
+      "unpaid": "Chưa thanh toán"
+    },
+    "edit": {
+      "title": "Chỉnh sửa giao dịch",
+      "back": "Quay lại",
+      "orderId": "Mã đơn hàng",
+      "amount": "Số tiền",
+      "paymentMethod": "Phương thức thanh toán",
+      "createdAt": "Ngày tạo",
+      "status": "Trạng thái",
+      "save": "Lưu thay đổi"
     }
   }
 } 

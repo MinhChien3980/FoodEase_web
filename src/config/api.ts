@@ -87,5 +87,6 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: number) => `/transactions/${id}`,
     GET_BY_ORDER: (orderId: number) => `/transactions/order/${orderId}`,
     CREATE: '/transactions',
+    UPDATE: (id: number) => `/transactions/${id}`,
   },
 }; 

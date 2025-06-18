@@ -89,6 +89,24 @@
           "other": "Other"
         }
       }
+    },
+    "transaction": {
+      "title": "Transaction Management",
+      "fields": {
+        "userId": "User ID",
+        "orderId": "Order ID",
+        "amount": "Amount",
+        "status": "Status",
+        "paymentMethod": "Payment Method",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "status": {
+        "paid": "Paid",
+        "unpaid": "Unpaid",
+        "pending": "Pending",
+        "failed": "Failed"
+      }
     }
   },
   "actions": {
@@ -1018,6 +1036,22 @@
       "delivering": "DELIVERING",
       "completed": "COMPLETED",
       "cancelled": "CANCELLED"
+    }
+  },
+  "transaction": {
+    "status": {
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "edit": {
+      "title": "Edit Transaction",
+      "back": "Back",
+      "orderId": "Order ID",
+      "amount": "Amount",
+      "paymentMethod": "Payment Method",
+      "createdAt": "Created At",
+      "status": "Status",
+      "save": "Save Changes"
     }
   }
 }

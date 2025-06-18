@@ -21,6 +21,7 @@ import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import PaymentsIcon from "@mui/icons-material/Payments";
 
 import { authProvider } from "./authProvider";
 import { ColorModeContextProvider } from "./contexts";
@@ -104,6 +105,7 @@ function getResourceIcon(resourceName: string) {
     customers: <AccountCircleOutlinedIcon />,
     "user-orders": <ReceiptLongIcon />,
     delivery: <MopedOutlined />,
+    transactions: <PaymentsIcon />,
   };
   
   return iconMap[resourceName] || <Dashboard />;

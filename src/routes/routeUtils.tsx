@@ -7,6 +7,7 @@ import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import PaymentsIcon from "@mui/icons-material/Payments";
 
 // Types for route configuration
 export interface RouteResource {
@@ -43,6 +44,7 @@ export function getResourceIcon(resourceName: string): ReactNode {
     customers: <AccountCircleOutlinedIcon />,
     "customer-orders": <ReceiptLongIcon />,
     delivery: <MopedOutlined />,
+    transactions: <PaymentsIcon />,
   };
   
   return iconMap[resourceName] || <Dashboard />;
