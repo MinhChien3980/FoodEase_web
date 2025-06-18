@@ -14,6 +14,7 @@ import { MenuItemEdit } from "../pages/admin/restaurants/menu-items/edit";
 import { list as List } from "../pages/admin/customer";
 import UserOrders from "../pages/admin/customer/orders";
 import { DeliveryList, DeliveryEdit } from "../pages/admin/delivery";
+import { TransactionList } from "../pages/admin/transaction";
 import { isAdmin } from "../utils/sessionManager";
 
 // Admin Layout Wrapper Component
@@ -70,6 +71,11 @@ export const adminRoutes = (
       <Route index element={<DeliveryList />} />
       <Route path=":id/edit" element={<DeliveryEdit />} />
     </Route>
+
+    {/* Transaction Management Routes */}
+    <Route path="transactions">
+      <Route index element={<TransactionList />} />
+    </Route>
   </Route>
 );
 
@@ -101,6 +107,13 @@ export const adminResources = [
     edit: "/admin/delivery/:id/edit",
     meta: {
       label: "Delivery Management",
+    },
+  },
+  {
+    name: "transactions",
+    list: "/admin/transactions",
+    meta: {
+      label: "Transaction Management",
     },
   },
 ]; 
