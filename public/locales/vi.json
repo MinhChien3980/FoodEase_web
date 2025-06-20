@@ -1,0 +1,452 @@
+{
+  "pages": {
+    "login": {
+      "title": "Đăng nhập vào tài khoản của bạn",
+      "signin": "Đăng nhập",
+      "signup": "Đăng ký",
+      "divider": "hoặc",
+      "fields": {
+        "email": "Email",
+        "password": "Mật khẩu"
+      },
+      "errors": {
+        "validEmail": "Địa chỉ email không hợp lệ"
+      },
+      "buttons": {
+        "submit": "Đăng nhập",
+        "forgotPassword": "Quên mật khẩu?",
+        "noAccount": "Chưa có tài khoản?",
+        "rememberMe": "Ghi nhớ đăng nhập"
+      }
+    },
+    "register": {
+      "title": "Đăng ký tài khoản mới",
+      "fields": {
+        "email": "Email",
+        "password": "Mật khẩu",
+        "fullName": "Họ và tên",
+        "phone": "Số điện thoại",
+        "city": "Thành phố"
+      },
+      "buttons": {
+        "submit": "Đăng ký",
+        "haveAccount": "Đã có tài khoản?"
+      }
+    },
+    "profile": {
+      "title": "Hồ sơ của tôi",
+      "subtitle": "Quản lý cài đặt và tùy chọn tài khoản",
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "accountInformation": "Thông tin tài khoản",
+      "email": "Email",
+      "username": "Tên người dùng",
+      "phone": "Số điện thoại",
+      "city": "Thành phố",
+      "memberSince": "Thành viên từ {{date}}",
+      "verified": "Đã xác minh",
+      "unverified": "Chưa xác minh",
+      "address": {
+        "title": "Địa chỉ",
+        "addressLine": "Địa chỉ",
+        "area": "Khu vực",
+        "city": "Thành phố",
+        "type": "Loại địa chỉ",
+        "addNew": "Thêm địa chỉ mới",
+        "types": {
+          "home": "Nhà riêng",
+          "work": "Công ty",
+          "other": "Khác"
+        }
+      }
+    },
+    "transaction": {
+      "title": "Quản lý giao dịch",
+      "fields": {
+        "userId": "ID người dùng",
+        "orderId": "ID đơn hàng",
+        "amount": "Số tiền",
+        "status": "Trạng thái",
+        "paymentMethod": "Phương thức thanh toán",
+        "createdAt": "Ngày tạo",
+        "actions": "Thao tác"
+      },
+      "status": {
+        "paid": "Đã thanh toán",
+        "unpaid": "Chưa thanh toán",
+        "pending": "Đang xử lý",
+        "failed": "Thất bại"
+      }
+    }
+  },
+  "customer": {
+    "navigation": {
+      "home": "Trang chủ",
+      "restaurants": "Nhà hàng",
+      "offers": "Ưu đãi",
+      "favorites": "Yêu thích",
+      "profile": "Hồ sơ",
+      "cart": "Giỏ hàng",
+      "signIn": "Đăng nhập",
+      "logout": "Đăng xuất"
+    },
+    "profile": {
+      "title": "Hồ sơ của tôi",
+      "subtitle": "Quản lý cài đặt tài khoản và sở thích của bạn",
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "accountInfo": "Thông tin tài khoản",
+      "recentOrders": "Đơn hàng gần đây",
+      "quickActions": "Hành động nhanh",
+      "fields": {
+        "username": "Tên người dùng",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "city": "Thành phố",
+        "fullName": "Họ và tên"
+      },
+      "actions": {
+        "myFavorites": "Yêu thích của tôi",
+        "paymentMethods": "Phương thức thanh toán",
+        "deliveryAddresses": "Địa chỉ giao hàng",
+        "notifications": "Thông báo",
+        "privacySecurity": "Bảo mật & Riêng tư"
+      },
+      "stats": {
+        "ordersCompleted": "Đơn hàng hoàn thành",
+        "totalSpent": "Tổng chi tiêu",
+        "favoriteRestaurants": "Nhà hàng yêu thích",
+        "accountStatus": "Trạng thái tài khoản"
+      },
+      "memberSince": "Thành viên từ {{date}}",
+      "verified": "Đã xác minh",
+      "unverified": "Chưa xác minh",
+      "address": {
+        "title": "Địa chỉ",
+        "addressLine": "Địa chỉ",
+        "area": "Khu vực",
+        "city": "Thành phố",
+        "type": "Loại địa chỉ",
+        "addNew": "Thêm địa chỉ mới",
+        "types": {
+          "home": "Nhà riêng",
+          "work": "Công ty",
+          "other": "Khác"
+        }
+      }
+    },
+    "home": {
+      "welcome": "Chào mừng đến với FoodEase",
+      "subtitle": "Khám phá những nhà hàng tuyệt vời gần bạn",
+      "browseRestaurants": "Duyệt nhà hàng",
+      "viewOffers": "Xem ưu đãi"
+    },
+    "auth": {
+      "welcomeBack": "Chào mừng trở lại!",
+      "signInSubtitle": "Đăng nhập vào tài khoản FoodEase của bạn",
+      "continueWithGoogle": "Tiếp tục với Google",
+      "continueWithFacebook": "Tiếp tục với Facebook",
+      "continueBrowsing": "← Tiếp tục duyệt mà không cần đăng nhập",
+      "dontHaveAccount": "Chưa có tài khoản?",
+      "signUpHere": "Đăng ký tại đây",
+      "alreadyHaveAccount": "Đã có tài khoản?",
+      "signInHere": "Đăng nhập tại đây",
+      "agreeToTerms": "Tôi đồng ý với điều khoản dịch vụ",
+      "subscribeNewsletter": "Đăng ký nhận bản tin"
+    }
+  },
+  "homePage": {
+    "header": {
+      "title": "Thức ăn ngon",
+      "subtitle": "Giao hàng nhanh",
+      "description": "Đặt món từ nhà hàng yêu thích và nhận hàng trong vài phút"
+    },
+    "search": {
+      "placeholder": "Tìm kiếm nhà hàng hoặc món ăn..."
+    },
+    "stats": {
+      "restaurants": "Nhà hàng",
+      "avgDelivery": "Giao hàng TB",
+      "rating": "Đánh giá"
+    },
+    "browseByCategory": {
+      "title": "Duyệt theo danh mục",
+      "description": "Tìm loại thức ăn yêu thích của bạn"
+    },
+    "popularRestaurants": {
+      "title": "Nhà hàng phổ biến",
+      "viewAll": "Xem tất cả",
+      "noResults": "Không tìm thấy nhà hàng nào cho",
+      "clearSearch": "Xóa tìm kiếm"
+    },
+    "whyChooseFoodEase": {
+      "title": "Tại sao chọn FoodEase?",
+      "description": "Chúng tôi làm cho việc giao thức ăn trở nên đơn giản và đáng tin cậy",
+      "fastDelivery": {
+        "title": "Giao hàng nhanh",
+        "description": "Nhận thức ăn trong 30 phút hoặc ít hơn"
+      },
+      "bestOffers": {
+        "title": "Ưu đãi tốt nhất",
+        "description": "Tận hưởng các ưu đãi và giảm giá độc quyền cho món ăn yêu thích"
+      },
+      "qualityFood": {
+        "title": "Thức ăn chất lượng",
+        "description": "Hợp tác với những nhà hàng tốt nhất để đảm bảo chất lượng"
+      }
+    },
+    "getTheFoodEaseApp": {
+      "title": "Tải ứng dụng FoodEase",
+      "description": "Tải ứng dụng di động để đặt hàng nhanh hơn và nhận ưu đãi độc quyền",
+      "downloadForiOS": "Tải cho iOS",
+      "downloadForAndroid": "Tải cho Android"
+    }
+  },
+  "auth": {
+    "welcomeBack": "Chào mừng trở lại!",
+    "signInToYourFoodEaseAccount": "Đăng nhập vào tài khoản FoodEase của bạn",
+    "checkingSession": "Đang kiểm tra phiên...",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "signingIn": "Đang đăng nhập...",
+    "signIn": "Đăng nhập",
+    "forgotYourPassword": "Quên mật khẩu?",
+    "orContinueWith": "hoặc tiếp tục với",
+    "dontHaveAnAccount": "Chưa có tài khoản?",
+    "signUpHere": "Đăng ký tại đây",
+    "continueBrowsingWithoutSigningIn": "← Tiếp tục duyệt mà không cần đăng nhập",
+    "joinFoodEase": "Tham gia FoodEase",
+    "createYourAccountToStartOrdering": "Tạo tài khoản để bắt đầu đặt thức ăn ngon",
+    "fullName": "Họ và tên",
+    "phoneNumber": "Số điện thoại",
+    "city": "Thành phố",
+    "loadingCities": "Đang tải thành phố...",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "agreeToTerms": "Tôi đồng ý với điều khoản và điều kiện",
+    "subscribeNewsletter": "Đăng ký nhận bản tin cho ưu đãi độc quyền và cập nhật",
+    "creatingAccount": "Đang tạo tài khoản...",
+    "createAccount": "Tạo tài khoản",
+    "orSignUpWith": "hoặc đăng ký với",
+    "alreadyHaveAnAccount": "Đã có tài khoản?",
+    "signInHere": "Đăng nhập tại đây",
+    "continueBrowsingWithoutSigningUp": "← Tiếp tục duyệt mà không cần đăng ký",
+    "failedToLoadCities": "Không thể tải danh sách thành phố. Vui lòng làm mới trang.",
+    "accountCreatedSuccessfully": "Tài khoản đã được tạo thành công! Vui lòng đăng nhập.",
+    "registrationFailed": "Đăng ký thất bại. Vui lòng thử lại.",
+    "emailAlreadyExists": "Email này đã được sử dụng cho tài khoản khác.",
+    "invalidRegistrationData": "Dữ liệu đăng ký không hợp lệ. Vui lòng kiểm tra thông tin.",
+    "validation": {
+      "fullNameRequired": "Họ và tên là bắt buộc",
+      "fullNameTooShort": "Họ và tên phải có ít nhất 2 ký tự",
+      "emailRequired": "Email là bắt buộc",
+      "emailInvalid": "Vui lòng nhập địa chỉ email hợp lệ",
+      "phoneRequired": "Số điện thoại là bắt buộc",
+      "phoneInvalid": "Vui lòng nhập số điện thoại Việt Nam hợp lệ",
+      "cityRequired": "Vui lòng chọn thành phố",
+      "passwordRequired": "Mật khẩu là bắt buộc",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+      "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
+      "passwordsDoNotMatch": "Mật khẩu không khớp",
+      "agreeToTermsRequired": "Bạn phải đồng ý với Điều khoản và Điều kiện"
+    }
+  },
+  "footer": {
+    "tagline": "Ứng dụng giao thức ăn yêu thích của bạn",
+    "quickLinks": "Liên kết nhanh",
+    "support": "Hỗ trợ",
+    "helpCenter": "Trung tâm trợ giúp",
+    "contactUs": "Liên hệ chúng tôi",
+    "privacyPolicy": "Chính sách bảo mật",
+    "copyright": "© 2024 FoodEase. Tất cả quyền được bảo lưu."
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "confirm": "Xác nhận",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "sort": "Sắp xếp",
+    "all": "Tất cả",
+    "none": "Không có",
+    "yes": "Có",
+    "no": "Không",
+    "language": "Ngôn ngữ"
+  },
+  "myProfile": "Hồ sơ của tôi",
+  "manageAccountSettingsPreferences": "Quản lý cài đặt tài khoản và sở thích của bạn",
+  "profileUpdatedSuccessfully": "Cập nhật hồ sơ thành công!",
+  "failedToUpdateProfile": "Không thể cập nhật hồ sơ",
+  "loadingProfile": "Đang tải hồ sơ...",
+  "noUserDataAvailable": "Không có dữ liệu người dùng",
+  "fullName": "Họ và tên",
+  "phone": "Số điện thoại",
+  "memberSince": "Thành viên từ",
+  "verified": "Đã xác minh",
+  "unverified": "Chưa xác minh",
+  "referralCode": "Mã giới thiệu",
+  "editProfile": "Chỉnh sửa hồ sơ",
+  "quickActions": "Hành động nhanh",
+  "myFavorites": "Yêu thích của tôi",
+  "paymentMethods": "Phương thức thanh toán",
+  "deliveryAddresses": "Địa chỉ giao hàng",
+  "notifications": "Thông báo",
+  "privacySecurity": "Bảo mật & Riêng tư",
+  "logout": "Đăng xuất",
+  "accountInformation": "Thông tin tài khoản",
+  "username": "Tên người dùng",
+  "notSet": "Chưa thiết lập",
+  "notProvided": "Chưa cung cấp",
+  "recentOrders": "Đơn hàng gần đây",
+  "viewAll": "Xem tất cả",
+  "order": "Đơn hàng",
+  "items": "món",
+  "orderItems": "Danh sách món ăn",
+  "noOrdersYet": "Chưa có đơn hàng nào",
+  "startOrderingFromFavoriteRestaurants": "Bắt đầu đặt món từ những nhà hàng yêu thích",
+  "browseRestaurants": "Duyệt nhà hàng",
+  "ordersCompleted": "Đơn hàng hoàn thành",
+  "totalSpent": "Tổng chi tiêu",
+  "favoriteRestaurants": "Yêu thích",
+  "accountStatus": "Trạng thái tài khoản",
+  "showLess": "Ẩn bớt",
+  "addresses": "Địa chỉ",
+  "addressLine": "Địa chỉ",
+  "addressArea": "Khu vực",
+  "addressCity": "Thành phố",
+  "addressType": "Loại địa chỉ",
+  "addAddress": "Thêm địa chỉ mới",
+  "addressTypes": {
+    "home": "Nhà riêng",
+    "work": "Công ty",
+    "other": "Khác"
+  },
+  "noAddressesYet": "Chưa có địa chỉ nào",
+  "restaurants": {
+    "titles": {
+      "list": "Danh sách nhà hàng",
+      "create": "Thêm nhà hàng mới",
+      "edit": "Chỉnh sửa nhà hàng"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Tên nhà hàng",
+      "description": "Mô tả",
+      "address": "Địa chỉ",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "imageUrl": "Hình ảnh",
+      "status": {
+        "label": "Trạng thái",
+        "active": "Hoạt động",
+        "inactive": "Không hoạt động"
+      }
+    },
+    "actions": {
+      "add": "Thêm nhà hàng",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "viewMenu": "Xem thực đơn"
+    }
+  },
+  "menuItems": {
+    "titles": {
+      "list": "Danh sách món ăn",
+      "create": "Thêm món ăn mới",
+      "edit": "Chỉnh sửa món ăn"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Tên món ăn",
+      "description": "Mô tả",
+      "price": "Giá tiền",
+      "imageUrl": "Hình ảnh",
+      "categoryId": "Danh mục",
+      "restaurantId": "Nhà hàng"
+    },
+    "actions": {
+      "add": "Thêm món ăn",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa"
+    }
+  },
+  "admin": {
+    "customer": {
+      "list": {
+        "title": "Quản lý khách hàng",
+        "fields": {
+          "email": "Email",
+          "fullName": "Họ và tên",
+          "phone": "Số điện thoại",
+          "role": "Vai trò",
+          "status": "Trạng thái"
+        }
+      },
+      "orders": {
+        "title": "Đơn hàng của người dùng",
+        "back": "Quay lại",
+        "noOrders": "Không tìm thấy đơn hàng",
+        "table": {
+          "orderId": "Mã đơn hàng",
+          "date": "Ngày",
+          "totalPrice": "Tổng tiền",
+          "status": "Trạng thái",
+          "items": "Sản phẩm",
+          "item": "Món"
+        }
+      }
+    }
+  },
+  "delivery": {
+    "title": "Quản lý giao hàng",
+    "list": {
+      "title": "Danh sách giao hàng",
+      "orderId": "Mã đơn hàng",
+      "status": "Trạng thái",
+      "deliveryTime": "Thời gian giao hàng",
+      "actions": "Thao tác"
+    },
+    "edit": {
+      "title": "Chi tiết giao hàng",
+      "back": "Quay lại",
+      "orderId": "Mã đơn hàng",
+      "createdAt": "Thời gian tạo",
+      "status": "Trạng thái",
+      "orderItems": "Danh sách món ăn",
+      "itemName": "Tên món",
+      "quantity": "Số lượng",
+      "price": "Giá",
+      "noItems": "Không tìm thấy món ăn",
+      "save": "Lưu"
+    },
+    "status": {
+      "pending": "CHỜ XÁC NHẬN",
+      "confirmed": "ĐÃ XÁC NHẬN",
+      "delivering": "ĐANG GIAO",
+      "completed": "HOÀN THÀNH",
+      "cancelled": "ĐÃ HỦY"
+    }
+  },
+  "transaction": {
+    "status": {
+      "paid": "Đã thanh toán",
+      "unpaid": "Chưa thanh toán"
+    },
+    "edit": {
+      "title": "Chỉnh sửa giao dịch",
+      "back": "Quay lại",
+      "orderId": "Mã đơn hàng",
+      "amount": "Số tiền",
+      "paymentMethod": "Phương thức thanh toán",
+      "createdAt": "Ngày tạo",
+      "status": "Trạng thái",
+      "save": "Lưu thay đổi"
+    }
+  }
+} 
