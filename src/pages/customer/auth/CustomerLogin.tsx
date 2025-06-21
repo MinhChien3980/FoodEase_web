@@ -25,6 +25,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import { setCustomerSession, setCustomerToken, getAuthHeaders, autoLoginIfTokenExists, ensureUserCart } from "../../../utils/sessionManager";
 import { authService } from "../../../services";
 import { userService } from "../../../services/userService";
+import { useSnackbar } from "notistack";
 
 interface LoginFormData {
   email: string;
@@ -45,6 +46,7 @@ const CustomerLogin: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const { t } = useTranslation();
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     const checkExistingSession = async () => {
@@ -96,31 +98,34 @@ const CustomerLogin: React.FC = () => {
           
           const profileData = await userService.getProfile();
           
-          if (profileData.code === 200) {
-            setCustomerSession(response.data.token, profileData.data);
-            
-            // Kiểm tra và tạo cart nếu cần thiết
-            await ensureUserCart(profileData.data.id);
+          if (profileData.code === 200 || profileData.code === 201) {
+            setCustomerSession(response.data.token, {
+              ...profileData.data,
+              role: "CUSTOMER",
+            });
+            enqueueSnackbar("Login successful!", { variant: "success" });
+            navigate("/foodease");
           } else {
-            const fallbackUser = {
+            setCustomerSession(response.data.token, {
               email: formData.email,
               fullName: formData.email.split('@')[0],
-              id: 'customer'
-            };
-            setCustomerSession(response.data.token, fallbackUser);
+              id: 'customer',
+              role: "CUSTOMER",
+            });
+            enqueueSnackbar("Login successful, but could not fetch profile.", { variant: "warning" });
+            navigate("/foodease");
           }
         } catch (profileError) {
           console.error('Failed to fetch profile:', profileError);
-          const fallbackUser = {
+          setCustomerSession(response.data.token, {
             email: formData.email,
             fullName: formData.email.split('@')[0],
-            id: 'customer'
-          };
-          setCustomerSession(response.data.token, fallbackUser);
+            id: 'customer',
+            role: 'CUSTOMER',
+          });
+          enqueueSnackbar("Login successful, but failed to fetch profile.", { variant: "error" });
+          navigate("/foodease");
         }
-        
-        const returnPath = location.state?.from || '/foodease/profile';
-        navigate(returnPath);
       } else {
         setError(response.message || 'Login failed. Please check your credentials.');
       }
