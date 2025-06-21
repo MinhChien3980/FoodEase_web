@@ -27,6 +27,7 @@ import type { ICategory, IFile, IProduct, Nullable } from "../../../interfaces";
 
 type Props = {
   action: "create" | "edit";
+  categories: ICategory[];
 };
 
 export const ProductDrawerForm = (props: Props) => {
@@ -249,35 +250,24 @@ export const ProductDrawerForm = (props: Props) => {
             </FormControl>
             <FormControl>
               <Controller
-                disabled={formLoading}
-                control={control}
                 name="category"
-                defaultValue={null}
+                control={control}
                 rules={{
-                  required: t("errors.required.field", {
-                    field: "category",
-                  }),
+                  required: "Category is required",
                 }}
                 render={({ field }) => (
-                  <Autocomplete<ICategory>
-                    id="category"
+                  <Autocomplete
                     {...autocompleteProps}
                     {...field}
                     onChange={(_, value) => {
                       field.onChange(value);
                     }}
                     getOptionLabel={(item) => {
-                      return (
-                        autocompleteProps?.options?.find(
-                          (p) => p?.id?.toString() === item?.id?.toString(),
-                        )?.title ?? ""
-                      );
+                      return item.name || "";
                     }}
-                    isOptionEqualToValue={(option, value) =>
-                      value === undefined ||
-                      option?.id?.toString() ===
-                        (value?.id ?? value)?.toString()
-                    }
+                    isOptionEqualToValue={(option, value) => {
+                      return option.id === value.id;
+                    }}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -292,9 +282,6 @@ export const ProductDrawerForm = (props: Props) => {
                   />
                 )}
               />
-              {errors.category && (
-                <FormHelperText error>{errors.category.message}</FormHelperText>
-              )}
             </FormControl>
 
             <FormControl>

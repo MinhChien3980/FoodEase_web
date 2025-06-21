@@ -18,6 +18,9 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import TablePagination from "@mui/material/TablePagination";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 
 type Props = {
   categories: ICategory[];
@@ -95,7 +98,7 @@ export const ProductListCard = (props: Props) => {
           return (
             <Chip
               key={category.id}
-              label={category.title}
+              label={category.name}
               color={
                 categoryFilters?.includes(category.id) ? "primary" : undefined
               }
@@ -226,14 +229,22 @@ export const ProductListCard = (props: Props) => {
                       borderColor: (theme) => theme.palette.divider,
                     }}
                   >
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        backgroundColor: "transparent",
-                      }}
-                      label={category?.title}
-                    />
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Tooltip title={product?.category?.name || ""}>
+                        <IconButton>
+                          <LabelOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Typography
+                        sx={{
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          color: "text.primary",
+                        }}
+                      >
+                        {product?.category?.name}
+                      </Typography>
+                    </Stack>
                     <ProductStatus size="small" value={product.isActive} />
                   </CardActions>
                 </CardActionArea>

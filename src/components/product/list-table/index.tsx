@@ -9,6 +9,7 @@ import { useLocation } from "react-router";
 import IconButton from "@mui/material/IconButton";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { ProductStatus } from "../status";
+import Chip from "@mui/material/Chip";
 
 type Props = {
   categories: ICategory[];
@@ -89,7 +90,7 @@ export const ProductListTable = (props: Props) => {
         },
       },
       {
-        field: "category.title",
+        field: "category.name",
         headerName: t("products.fields.category"),
         minWidth: 160,
         sortable: false,
@@ -99,8 +100,7 @@ export const ProductListTable = (props: Props) => {
           const category = props.categories.find(
             (category) => category.id === row.category.id,
           );
-
-          return <Typography>{category?.title}</Typography>;
+          return <Chip label={category?.name} />;
         },
       },
       {

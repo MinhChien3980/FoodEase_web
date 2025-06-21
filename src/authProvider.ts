@@ -38,7 +38,10 @@ export const authProvider: AuthProvider = {
             console.log('Admin token set successfully in session');
 
             // Set session with token and user data
-            await setCustomerSession(loginResponse.data.token, profileData.data);
+            await setCustomerSession(loginResponse.data.token, {
+              ...profileData.data,
+              role: "ADMIN",
+            });
             console.log('Session set successfully');
 
             return {
