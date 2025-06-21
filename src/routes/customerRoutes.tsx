@@ -12,6 +12,7 @@ import CustomerRegister from "../pages/customer/auth/CustomerRegister";
 import RestaurantDetailPage from "../pages/customer/views/RestaurantDetailPage";
 import MenuPage from "../pages/customer/views/MenuPage";
 import CustomerProtectedRoute from "../components/auth/CustomerProtectedRoute";
+import FavoritesPage from "../pages/customer/views/FavoritesPage";
 
 // Customer Routes Configuration
 export const customerRoutes = (
@@ -24,7 +25,7 @@ export const customerRoutes = (
       <Route path="menu" element={<MenuPage />} />
       <Route path="offers" element={<OffersPage />} />
       <Route path="cart" element={<CartPage />} />
-      <Route path="favorites" element={<div>Favorites Page - Coming Soon</div>} />
+      <Route path="favorites" element={<FavoritesPage />} />
       <Route 
         path="profile" 
         element={
@@ -97,4 +98,10 @@ export const customerRouteGroups = {
     "/foodease/login",
     "/foodease/register",
   ],
-}; 
+};
+
+export const CUSTOMER_ROUTES = [
+  { path: "/foodease/profile", component: "ProfilePage", layout: "CustomerLayout" },
+  { path: "/foodease/offers", component: "OffersPage", layout: "CustomerLayout" },
+  { path: "/foodease/favorites", component: "FavoritesPage", layout: "CustomerLayout" },
+]; 

@@ -89,4 +89,8 @@ export const API_ENDPOINTS = {
     CREATE: '/transactions',
     UPDATE: (id: number) => `/transactions/${id}`,
   },
+  FAVORITES: {
+    TOGGLE: '/favorites/toggle',
+    GET_ALL: '/favorites',
+  },
 }; 

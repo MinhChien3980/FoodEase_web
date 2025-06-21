@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Container,
@@ -37,21 +37,28 @@ import GridViewIcon from "@mui/icons-material/GridView";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import TuneIcon from "@mui/icons-material/Tune";
-import { restaurantService, categoryService } from "../../../services";
+import { restaurantService, categoryService, favoriteService } from "../../../services";
 import type { Restaurant, MenuItem as RestaurantMenuItem } from "../../../services/restaurantService";
+import { MenuItemWithRestaurant } from "../../../interfaces/menuItem";
 import type { Category } from "../../../services/categoryService";
 import { useCart } from "../../../contexts/CartContext";
 import { isCustomerAuthenticated } from "../../../utils/sessionManager";
-
-interface MenuItemWithRestaurant extends RestaurantMenuItem {
-  restaurantName: string;
-}
+import MenuItemCard from "../../../components/menu-item/MenuItemCard";
+import { useSnackbar } from "notistack";
+import { FloatingCartButton } from "../../../components/common/FloatingCartButton";
 
 const MenuPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { cart, addToCart, getItemQuantity } = useCart();
+  const { enqueueSnackbar } = useSnackbar();
+  const {
+    cart,
+    addToCart,
+    getItemQuantity,
+    updateQuantity,
+    removeItem,
+  } = useCart();
 
   // State management
   const [allMenuItems, setAllMenuItems] = useState<MenuItemWithRestaurant[]>([]);
@@ -159,6 +166,20 @@ const MenuPage: React.FC = () => {
     setFilteredMenuItems(filtered);
   }, [allMenuItems, selectedCategory, selectedRestaurant, searchQuery, sortBy]);
 
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (isAuthenticated) {
+        try {
+          const favs = await favoriteService.getFavorites();
+          setFavorites(new Set(favs.menu_items.map((item) => item.id)));
+        } catch (error) {
+          console.error("Failed to fetch favorites:", error);
+        }
+      }
+    };
+    fetchFavorites();
+  }, [isAuthenticated]);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -185,18 +206,35 @@ const MenuPage: React.FC = () => {
     };
 
     addToCart(cartItem);
+    enqueueSnackbar(`${item.name} has been added to your cart!`, {
+      variant: "success",
+    });
   };
 
-  const handleToggleFavorite = (itemId: number) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(itemId)) {
-        newFavorites.delete(itemId);
-      } else {
-        newFavorites.add(itemId);
-      }
-      return newFavorites;
-    });
+  const handleToggleFavorite = async (itemId: number) => {
+    if (!isAuthenticated) {
+      navigate("/foodease/login");
+      return;
+    }
+
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(itemId)) {
+      newFavorites.delete(itemId);
+    } else {
+      newFavorites.add(itemId);
+    }
+    setFavorites(newFavorites);
+
+    try {
+      await favoriteService.toggleFavorite({
+        favoritableId: itemId,
+        favoritableType: "menu_item",
+      });
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+      // Revert if API call fails
+      setFavorites(favorites);
+    }
   };
 
   const getDiscountPercentage = (item: MenuItemWithRestaurant) => {
@@ -224,6 +262,30 @@ const MenuPage: React.FC = () => {
     const restaurant = restaurants.find(rest => rest.id === restaurantId);
     return restaurant ? restaurant.name : `Restaurant ${restaurantId}`;
   };
+
+  const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
+    // Assuming all items on this page are from the same restaurant for simplicity
+    // A more robust solution would involve knowing the restaurantId for each item
+    if (allMenuItems.length > 0) {
+      const item = allMenuItems.find(mi => mi.id === itemId);
+      if(item) {
+        if (newQuantity === 0) {
+            removeItem(itemId, item.restaurantId);
+        } else {
+            updateQuantity(itemId, item.restaurantId, newQuantity);
+        }
+      }
+    }
+  };
+
+  const handleRemoveFromCart = (itemId: number) => {
+    if (allMenuItems.length > 0) {
+        const item = allMenuItems.find(mi => mi.id === itemId);
+        if(item) {
+            removeItem(itemId, item.restaurantId);
+        }
+    }
+  }
 
   if (loading) {
     return (
@@ -363,224 +425,26 @@ const MenuPage: React.FC = () => {
         {/* Menu Items Grid */}
         {filteredMenuItems.length > 0 ? (
           <Grid container spacing={3}>
-            {filteredMenuItems.map((item) => {
-              const discount = getDiscountPercentage(item);
-              const rating = getRandomRating(item);
-              const isVeg = isVegetarian(item);
-              const quantity = getItemQuantity(item.id);
-
-              return (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={`${item.id}-${item.restaurantId}`}>
-                  <Card
-                    sx={{
-                      height: "100%",
-                      position: "relative",
-                      borderRadius: 2,
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: theme.shadows[8],
-                      },
-                    }}
-                  >
-                    {/* Image */}
-                    <Box sx={{ position: "relative" }}>
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={item.imageUrl || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop'}
-                        alt={item.name}
-                        sx={{ objectFit: "cover" }}
-                      />
-
-                      {/* Veg/Non-veg Indicator */}
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 12,
-                          left: 12,
-                          width: 24,
-                          height: 24,
-                          borderRadius: "4px",
-                          backgroundColor: "white",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: "50%",
-                            backgroundColor: isVeg ? "#2ed573" : "#ff4757",
-                          }}
-                        />
-                      </Box>
-
-                      {/* Favorite Button */}
-                      <IconButton
-                        onClick={() => handleToggleFavorite(item.id)}
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          backgroundColor: "rgba(255, 255, 255, 0.9)",
-                          "&:hover": {
-                            backgroundColor: "white",
-                          },
-                          width: 36,
-                          height: 36,
-                        }}
-                      >
-                        {favorites.has(item.id) ? (
-                          <FavoriteIcon sx={{ color: "#ff4757", fontSize: 20 }} />
-                        ) : (
-                          <FavoriteBorderIcon sx={{ fontSize: 20 }} />
-                        )}
-                      </IconButton>
-
-                      {/* Discount Badge */}
-                      {discount > 0 && (
-                        <Chip
-                          label={`${discount}% OFF`}
-                          size="small"
-                          sx={{
-                            position: "absolute",
-                            bottom: 12,
-                            left: 12,
-                            backgroundColor: "#ff4757",
-                            color: "white",
-                            fontWeight: 600,
-                            fontSize: "0.75rem",
-                          }}
-                        />
-                      )}
-                    </Box>
-
-                    {/* Content */}
-                    <CardContent sx={{ p: 2, pb: 1 }}>
-                      {/* Restaurant Name */}
-                      <Chip
-                        label={item.restaurantName}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          mb: 1,
-                          fontSize: "0.7rem",
-                          height: 20,
-                          borderColor: theme.palette.primary.main,
-                          color: theme.palette.primary.main,
-                        }}
-                      />
-
-                      <Typography
-                        variant="h6"
-                        component="h3"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: "1rem",
-                          lineHeight: 1.3,
-                          mb: 0.5,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {item.name}
-                      </Typography>
-
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          mb: 1,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          fontSize: "0.875rem",
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {item.description}
-                      </Typography>
-
-                      {/* Rating */}
-                      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                        <Rating
-                          value={rating}
-                          precision={0.1}
-                          readOnly
-                          size="small"
-                          sx={{
-                            "& .MuiRating-iconFilled": {
-                              color: "#ffa726",
-                            },
-                            mr: 0.5,
-                          }}
-                        />
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "text.secondary", fontSize: "0.75rem" }}
-                        >
-                          ({rating.toFixed(1)})
-                        </Typography>
-                      </Box>
-
-                      {/* Price */}
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Box>
-                          {discount > 0 && (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                textDecoration: "line-through",
-                                color: "text.secondary",
-                                fontSize: "0.75rem",
-                              }}
-                            >
-                              {formatPrice(item.price)}
-                            </Typography>
-                          )}
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: "0.875rem",
-                              color: theme.palette.text.primary,
-                            }}
-                          >
-                            {formatPrice(discount > 0 ? item.price * (1 - discount / 100) : item.price)}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-
-                    {/* Add Button */}
-                    <CardActions sx={{ p: 2, pt: 0 }}>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        onClick={() => handleAddToCart(item)}
-                        sx={{
-                          backgroundColor: "#ff4757",
-                          "&:hover": {
-                            backgroundColor: "#ff3838",
-                          },
-                          textTransform: "none",
-                          fontWeight: 600,
-                          py: 1,
-                        }}
-                      >
-                        {quantity > 0 ? `Add More (${quantity})` : "Add"}
-                      </Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              );
-            })}
+            {filteredMenuItems.map((item) => (
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
+                key={`${item.id}-${item.restaurantId}`}
+              >
+                <MenuItemCard
+                  item={item}
+                  isFavorite={favorites.has(item.id)}
+                  onToggleFavorite={handleToggleFavorite}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  onRemoveFromCart={handleRemoveFromCart}
+                  quantityInCart={getItemQuantity(item.id)}
+                />
+              </Grid>
+            ))}
           </Grid>
         ) : (
           <Paper sx={{ p: 6, textAlign: "center" }}>
@@ -592,28 +456,8 @@ const MenuPage: React.FC = () => {
             </Typography>
           </Paper>
         )}
-
-        {/* Floating Cart Button */}
-        {cart.totalItems > 0 && (
-          <Fab
-            color="primary"
-            sx={{
-              position: "fixed",
-              bottom: 24,
-              right: 24,
-              backgroundColor: "#ff4757",
-              "&:hover": {
-                backgroundColor: "#ff3838",
-              },
-            }}
-            onClick={() => navigate('/foodease/cart')}
-          >
-            <Badge badgeContent={cart.totalItems} color="secondary">
-              <ShoppingCartIcon />
-            </Badge>
-          </Fab>
-        )}
       </Container>
+      <FloatingCartButton />
     </Box>
   );
 };

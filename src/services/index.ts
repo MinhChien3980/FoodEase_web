@@ -10,6 +10,11 @@ export { userService } from './userService';
 export { cartService } from './cartService';
 export { addressService } from './addressService';
 export { transactionService } from './transactionService';
+export { favoriteService } from './favoriteService';
+export { deliveryService } from './deliveryService';
+export { orderItemService } from './orderItemService';
+export { orderService } from './orderService';
+export { paymentService } from './paymentService';
 
 // Export Types
 export type { 

@@ -103,8 +103,7 @@ export interface IProduct {
 
 export interface ICategory {
   id: number;
-  title: string;
-  isActive: boolean;
+  name: string;
 }
 
 export interface IOrderFilterVariables {

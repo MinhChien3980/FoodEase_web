@@ -33,7 +33,9 @@ import RestaurantCard from "../../../components/restaurant/RestaurantCard";
 import RatingBox from "../../../components/common/RatingBox";
 import { formatPrice } from "../../../utils/foodHelpers";
 import { Restaurant, restaurantService } from "../../../services/restaurantService";
-import { Category, categoryService } from "../../../services/categoryService";
+import { categoryService } from "../../../services/categoryService";
+import { ICategory } from "../../../interfaces";
+import { favoriteService } from "../../../services/favoriteService";
 
 const HomePage: React.FC = () => {
   const theme = useTheme();
@@ -42,11 +44,12 @@ const HomePage: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState("New York, NY");
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [allRestaurants, setAllRestaurants] = useState<Restaurant[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const [favoriteRestaurantIds, setFavoriteRestaurantIds] = useState<Set<number>>(new Set());
   const { t } = useTranslation();
 
   // Fetch restaurants from API
@@ -62,6 +65,41 @@ const HomePage: React.FC = () => {
       console.error('Error fetching restaurants:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const favorites = await favoriteService.getFavorites();
+      const favoriteIds = new Set(favorites.restaurants.map(r => r.id));
+      setFavoriteRestaurantIds(favoriteIds);
+    } catch (error) {
+      console.error("Failed to fetch favorites", error);
+      // Handle error gracefully, maybe show a toast
+    }
+  };
+
+  const handleToggleFavorite = async (restaurantId: number) => {
+    const isCurrentlyFavorite = favoriteRestaurantIds.has(restaurantId);
+
+    // Optimistically update UI
+    const newFavoriteIds = new Set(favoriteRestaurantIds);
+    if (isCurrentlyFavorite) {
+      newFavoriteIds.delete(restaurantId);
+    } else {
+      newFavoriteIds.add(restaurantId);
+    }
+    setFavoriteRestaurantIds(newFavoriteIds);
+
+    try {
+      await favoriteService.toggleFavorite({
+        favoritableId: restaurantId,
+        favoritableType: 'restaurant',
+      });
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+      // Revert UI change on error
+      setFavoriteRestaurantIds(favoriteRestaurantIds);
     }
   };
 
@@ -99,6 +137,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     fetchRestaurants();
     fetchCategories();
+    fetchFavorites();
   }, []);
 
   useEffect(() => {
@@ -397,7 +436,10 @@ const HomePage: React.FC = () => {
             <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
               <RestaurantCard
                 restaurant={restaurant}
-                onView={(id) => console.log("View restaurant:", id)}
+                onView={(id) => navigate(`/foodease/restaurants/${id}`)}
+                isFavorite={favoriteRestaurantIds.has(restaurant.id)}
+                onToggleFavorite={handleToggleFavorite}
+                categories={categories}
               />
             </Grid>
           ))}

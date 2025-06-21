@@ -3,6 +3,10 @@ import { KBarProvider } from "@refinedev/kbar";
 import {
   useNotificationProvider,
   RefineSnackbarProvider,
+  ThemedLayoutV2,
+  ThemedHeaderV2,
+  ThemedSiderV2,
+  ThemedTitleV2,
 } from "@refinedev/mui";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -11,31 +15,14 @@ import routerProvider, {
   UnsavedChangesNotifier,
   DocumentTitleHandler,
 } from "@refinedev/react-router";
-import { BrowserRouter, Routes } from "react-router";
+import { BrowserRouter, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import MopedOutlined from "@mui/icons-material/MopedOutlined";
-import Dashboard from "@mui/icons-material/Dashboard";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
-import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
-import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
-import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import PaymentsIcon from "@mui/icons-material/Payments";
-
 import { authProvider } from "./authProvider";
 import { ColorModeContextProvider } from "./contexts";
 import { CartProvider } from "./contexts/CartContext";
-
-// Import grouped routes and utilities
-import { 
-  adminRoutes, 
-  adminResources, 
-  customerRoutes, 
-  authRoutes, 
-  rootRoutes 
-} from "./routes";
+import { adminRoutes, adminResources, customerRoutes, authRoutes, rootRoutes } from "./routes";
 import { enhanceResourcesWithIcons } from "./routes/routeUtils";
+import { SnackbarProvider } from "notistack";
 
 const API_URL = "http://localhost:5173/api";
 
@@ -47,7 +34,6 @@ const App: React.FC = () => {
     getLocale: () => i18n.language,
   };
 
-  // Enhanced admin resources with icons using utility function
   const enhancedAdminResources = enhanceResourcesWithIcons(adminResources);
 
   return (
@@ -58,36 +44,37 @@ const App: React.FC = () => {
             <CssBaseline />
             <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
             <RefineSnackbarProvider>
-              <Refine
-                routerProvider={routerProvider}
-                dataProvider={dataProvider(API_URL)}
-                authProvider={authProvider}
-                i18nProvider={i18nProvider}
-                options={{
-                  syncWithLocation: true,
-                  warnWhenUnsavedChanges: true,
-                  breadcrumb: false,
-                  useNewQueryKeys: true,
+              <SnackbarProvider
+                maxSnack={3}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
                 }}
-                notificationProvider={useNotificationProvider}
-                resources={enhancedAdminResources}
               >
-                <Routes>
-                  {/* Root Routes */}
-                  {rootRoutes}
-                  
-                  {/* Customer Routes */}
-                  {customerRoutes}
-
-                  {/* Admin Routes */}
-                  {adminRoutes}
-
-                  {/* Auth Routes */}
-                  {authRoutes}
-                </Routes>
-                <UnsavedChangesNotifier />
-                <DocumentTitleHandler />
-              </Refine>
+                <Refine
+                  routerProvider={routerProvider}
+                  dataProvider={dataProvider(API_URL)}
+                  authProvider={authProvider}
+                  i18nProvider={i18nProvider}
+                  options={{
+                    syncWithLocation: true,
+                    warnWhenUnsavedChanges: true,
+                    breadcrumb: false,
+                    useNewQueryKeys: true,
+                  }}
+                  notificationProvider={useNotificationProvider}
+                  resources={enhancedAdminResources}
+                >
+                  <Routes>
+                    {rootRoutes}
+                    {customerRoutes}
+                    {adminRoutes}
+                    {authRoutes}
+                  </Routes>
+                  <UnsavedChangesNotifier />
+                  <DocumentTitleHandler />
+                </Refine>
+              </SnackbarProvider>
             </RefineSnackbarProvider>
           </CartProvider>
         </ColorModeContextProvider>
@@ -95,20 +82,5 @@ const App: React.FC = () => {
     </BrowserRouter>
   );
 };
-
-// Helper function to get resource icons
-function getResourceIcon(resourceName: string) {
-  const iconMap: Record<string, JSX.Element> = {
-    dashboard: <Dashboard />,
-    restaurants: <StoreOutlinedIcon />,
-    "menu-items": <FastfoodOutlinedIcon />,
-    customers: <AccountCircleOutlinedIcon />,
-    "user-orders": <ReceiptLongIcon />,
-    delivery: <MopedOutlined />,
-    transactions: <PaymentsIcon />,
-  };
-  
-  return iconMap[resourceName] || <Dashboard />;
-}
 
 export default App;
