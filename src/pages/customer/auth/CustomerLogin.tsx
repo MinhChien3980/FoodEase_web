@@ -168,7 +168,7 @@ const CustomerLogin: React.FC = () => {
             }} 
           />
           <Typography variant="h6" gutterBottom>
-            {t('checkingSession')}
+            {t('auth.checkingSession')}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <div style={{ 
@@ -222,10 +222,10 @@ const CustomerLogin: React.FC = () => {
               }} 
             />
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {t('welcomeBack')}
+              {t('auth.welcomeBack')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {t('signInToYourFoodEaseAccount')}
+              {t('auth.signInToYourFoodEaseAccount')}
             </Typography>
           </Box>
 
@@ -247,7 +247,7 @@ const CustomerLogin: React.FC = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label={t('email')}
+              label={t('auth.email')}
               name="email"
               type="email"
               value={formData.email}
@@ -265,7 +265,7 @@ const CustomerLogin: React.FC = () => {
 
             <TextField
               fullWidth
-              label={t('password')}
+              label={t('auth.password')}
               name="password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
@@ -305,7 +305,7 @@ const CustomerLogin: React.FC = () => {
                 fontSize: "1.1rem"
               }}
             >
-              {loading ? t('signingIn') : t('signIn')}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </Box>
 
@@ -320,14 +320,14 @@ const CustomerLogin: React.FC = () => {
                 "&:hover": { textDecoration: "underline" }
               }}
             >
-              {t('forgotYourPassword')}
+              {t('auth.forgotYourPassword')}
             </Link>
           </Box>
 
           {/* Divider */}
           <Divider sx={{ my: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              {t('orContinueWith')}
+              {t('auth.orContinueWith')}
             </Typography>
           </Divider>
 
@@ -356,7 +356,7 @@ const CustomerLogin: React.FC = () => {
           {/* Sign Up Link */}
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="body2" color="text.secondary">
-              {t('dontHaveAnAccount')}
+              {t('auth.dontHaveAnAccount')}
               {" "}
               <Link
                 component={RouterLink}
@@ -368,7 +368,7 @@ const CustomerLogin: React.FC = () => {
                   "&:hover": { textDecoration: "underline" }
                 }}
               >
-                {t('signUpHere')}
+                {t('auth.signUpHere')}
               </Link>
             </Typography>
           </Box>
@@ -385,7 +385,7 @@ const CustomerLogin: React.FC = () => {
                 "&:hover": { textDecoration: "underline" }
               }}
             >
-              {t('continueBrowsingWithoutSigningIn')}
+              {t('auth.continueBrowsingWithoutSigningIn')}
             </Link>
           </Box>
         </Paper>

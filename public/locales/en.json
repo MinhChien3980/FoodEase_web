@@ -139,7 +139,8 @@
     "reject": "Reject",
     "rejectAll": "Reject All",
     "nextStep": "Next",
-    "previousStep": "Prev"
+    "previousStep": "Prev",
+    "login": "Login"
   },
   "loading": "Loading",
   "tags": {

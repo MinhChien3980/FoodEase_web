@@ -332,6 +332,9 @@ const HomePage: React.FC = () => {
                         textAlign: "center",
                         cursor: "pointer",
                         transition: "all 0.3s ease",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
                         "&:hover": {
                           transform: "translateY(-4px)",
                           boxShadow: theme.shadows[8],
@@ -347,7 +350,7 @@ const HomePage: React.FC = () => {
                       <Typography variant="h3" sx={{ mb: 1 }}>
                         {getCategoryIcon(category.name)}
                       </Typography>
-                      <Typography variant="h6" fontWeight="600">
+                      <Typography variant="h6" fontWeight="600"  sx={{ minHeight: '2.5em', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {category.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">

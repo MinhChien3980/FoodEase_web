@@ -72,7 +72,7 @@ export const transactionService = {
     }
   },
 
-  async createTransaction(transaction: Transaction): Promise<Transaction> {
+  async createTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction> {
     try {
       const response: AxiosResponse<TransactionResponse> = await apiClient.post(API_ENDPOINTS.TRANSACTIONS.CREATE, transaction);
       if (response.data.code === 200 || response.data.code === 201) {
