@@ -1,7 +1,9 @@
 // Customer session management utilities for FoodEase
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 export interface CustomerSession {
-  token: string;
+  token: string | null;
   user: any; // User data from API
 }
 
@@ -51,7 +53,10 @@ export const isCustomerAuthenticated = (): boolean => {
 /**
  * Store complete customer session (token + user data)
  */
-export const setCustomerSession = (token: string, user: any): void => {
+export const setCustomerSession = (
+  token: string,
+  user: { id: any; fullName: any; email: any; role: string; }
+): void => {
   setCustomerToken(token);
   setCustomerUser(user);
 };
@@ -167,7 +172,7 @@ export const validateStoredToken = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await fetch('http://localhost:8080/api/users/profile', {
+    const response = await fetch(`${API_BASE_URL}/users/profile`, {
       method: 'GET',
       headers: {
         'accept': '*/*',
@@ -247,7 +252,7 @@ export const autoLoginIfTokenExists = async (): Promise<{ success: boolean; user
 
   // If we only have token, try to fetch user profile
   try {
-    const response = await fetch('http://localhost:8080/api/users/profile', {
+    const response = await fetch(`${API_BASE_URL}/users/profile`, {
       method: 'GET',
       headers: {
         'accept': '*/*',
@@ -287,4 +292,20 @@ export const autoLoginIfTokenExists = async (): Promise<{ success: boolean; user
 export const isAdmin = (): boolean => {
   const user = getCustomerUser();
   return user?.role === 'ADMIN';
-}; 
+};
+
+async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  // Implementation of fetchWithAuth function
+}
+
+async function getUpdatedUserProfile() {
+  // Implementation of getUpdatedUserProfile function
+}
+
+export async function refreshUserSession() {
+  // Implementation of refreshUserSession function
+}
+
+async function getInitialUserProfile() {
+  // Implementation of getInitialUserProfile function
+} 
