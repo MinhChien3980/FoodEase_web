@@ -1,10 +1,12 @@
 // API Configuration
-const getApiBaseUrl = (): string => {
-  return 'http://localhost:8080/api';
+const getApiUrl = (): string => {
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 };
 
+const API_URL = getApiUrl();
+
 export const API_CONFIG = {
-  BASE_URL: getApiBaseUrl(),
+  BASE_URL: API_URL,
   TIMEOUT: 10000, 
   HEADERS: {
     'Content-Type': 'application/json',
