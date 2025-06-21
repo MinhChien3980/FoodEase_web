@@ -20,19 +20,24 @@ import {
   Alert,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import RestaurantCard from "../../../components/restaurant/RestaurantCard";
 import GoogleMapComponent from "../../../components/maps/GoogleMapComponent";
-import { restaurantService, Restaurant, categoryService, Category } from "../../../services";
+import { restaurantService, Restaurant, categoryService, Category, favoriteService } from "../../../services";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import GridViewIcon from "@mui/icons-material/GridView";
+import TuneIcon from "@mui/icons-material/Tune";
+import { useCart } from "../../../contexts/CartContext";
+import { ICategory } from "../../../interfaces";
 
 const RestaurantsPage: React.FC = () => {
   const theme = useTheme();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
@@ -43,6 +48,7 @@ const RestaurantsPage: React.FC = () => {
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const itemsPerPage = 9;
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Get initial category from navigation state (from HomePage)
   useEffect(() => {
@@ -78,22 +84,54 @@ const RestaurantsPage: React.FC = () => {
     { value: "menuCount", label: "Menu Items Count" },
   ];
 
+  const fetchFavorites = async () => {
+    try {
+      const favs = await favoriteService.getFavorites();
+      setFavorites(new Set(favs.restaurants.map(r => r.id)));
+    } catch (error) {
+      console.error("Failed to fetch favorites:", error);
+    }
+  };
+
+  const handleToggleFavorite = async (restaurantId: number) => {
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(restaurantId)) {
+      newFavorites.delete(restaurantId);
+    } else {
+      newFavorites.add(restaurantId);
+    }
+    setFavorites(newFavorites);
+
+    try {
+      await favoriteService.toggleFavorite({
+        favoritableId: restaurantId,
+        favoritableType: "restaurant",
+      });
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+      // Revert if API call fails
+      setFavorites(favorites);
+    }
+  };
+
   // Fetch restaurants and categories from API
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       try {
         setLoading(true);
         setError(null);
         
         // Fetch both restaurants and categories in parallel
-        const [restaurantData, categoryData] = await Promise.all([
+        const [restaurantsData, categoriesData] = await Promise.all([
           restaurantService.getAllRestaurants(),
           categoryService.getAllCategories()
         ]);
         
-        setRestaurants(restaurantData);
-        setCategories(categoryData);
-        setFilteredRestaurants(restaurantData);
+        setRestaurants(restaurantsData);
+        setCategories(categoriesData);
+        setFilteredRestaurants(restaurantsData);
+
+        await fetchFavorites();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data');
         console.error('Error fetching data:', err);
@@ -102,7 +140,7 @@ const RestaurantsPage: React.FC = () => {
       }
     };
 
-    fetchData();
+    fetchAllData();
   }, []);
 
   // Filter and sort restaurants
@@ -163,18 +201,6 @@ const RestaurantsPage: React.FC = () => {
     console.log("View restaurant:", id);
     // Navigate to restaurant detail page
     window.location.href = `/foodease/restaurants/${id}`;
-  };
-
-  const handleToggleFavorite = (id: number) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(id)) {
-        newFavorites.delete(id);
-      } else {
-        newFavorites.add(id);
-      }
-      return newFavorites;
-    });
   };
 
   if (loading) {
@@ -371,12 +397,13 @@ const RestaurantsPage: React.FC = () => {
               <>
                 <Grid container spacing={3} sx={{ mb: 4 }}>
                   {paginatedRestaurants.map((restaurant) => (
-                    <Grid item xs={12} sm={6} xl={4} key={restaurant.id}>
+                    <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
                       <RestaurantCard
                         restaurant={restaurant}
-                        onView={handleViewRestaurant}
-                        onToggleFavorite={handleToggleFavorite}
+                        onView={() => handleViewRestaurant(restaurant.id)}
                         isFavorite={favorites.has(restaurant.id)}
+                        onToggleFavorite={handleToggleFavorite}
+                        categories={categories}
                       />
                     </Grid>
                   ))}

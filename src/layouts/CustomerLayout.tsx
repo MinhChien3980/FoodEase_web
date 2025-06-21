@@ -47,7 +47,7 @@ import { useCustomerNavigation } from "../hooks/useCustomerNavigation";
 const CustomerLayout: React.FC = () => {
   const theme = useTheme();
   const location = useLocation();
-  const { navigateToCart, navigateToHome } = useCustomerNavigation();
+  const { navigateToCart, navigateToHome, navigate } = useCustomerNavigation();
   const { t, i18n } = useTranslation();
   const { cart } = useCart();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -277,13 +277,23 @@ const CustomerLayout: React.FC = () => {
                       onClick={handleMenuClose}
                     >
                       <ListItemIcon>
-                        <PersonIcon />
+                        <PersonIcon fontSize="small" />
                       </ListItemIcon>
                       <ListItemText 
                         primary="Profile" 
-                        secondary={customerUser?.fullName}
+                        secondary={customerUser?.fullName || customerUser?.email} 
                       />
                     </MenuItem>
+
+                    <MenuItem onClick={() => { handleMenuClose(); navigate("/foodease/favorites"); }}>
+                      <ListItemIcon>
+                        <FavoriteIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary="Favorites" />
+                    </MenuItem>
+
+                    <Divider sx={{ my: 1 }} />
+                    
                     <MenuItem onClick={handleLogout}>
                       <ListItemIcon>
                         <LogoutIcon />

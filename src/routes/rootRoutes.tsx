@@ -3,17 +3,16 @@ import { Authenticated } from "@refinedev/core";
 import { ThemedLayoutV2, ErrorComponent } from "@refinedev/mui";
 
 // Root Components
-import LandingPage from "../pages/LandingPage";
 import { Header, Title } from "../components";
 
 // Root and Miscellaneous Routes Configuration
 export const rootRoutes = (
   <>
-    {/* Root Landing Page */}
-    <Route path="/" element={<LandingPage />} />
+    {/* Redirect root to the customer home page */}
+    <Route path="/" element={<Navigate to="/foodease" replace />} />
 
     {/* Legacy redirects for backward compatibility */}
-    <Route path="/welcome" element={<Navigate to="/" replace />} />
+    <Route path="/welcome" element={<Navigate to="/foodease" replace />} />
 
     {/* Catch-all Routes */}
     <Route
@@ -34,7 +33,7 @@ export const rootRoutes = (
 export const rootConfig = {
   landing: {
     path: "/",
-    component: "LandingPage",
+    component: "Navigate",
     public: true,
   },
   error: {
@@ -45,7 +44,7 @@ export const rootConfig = {
   redirects: [
     {
       from: "/welcome",
-      to: "/",
+      to: "/foodease",
       replace: true,
     },
   ],

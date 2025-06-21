@@ -16,6 +16,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { Restaurant } from "../../services/restaurantService";
+import type { ICategory } from "../../interfaces";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -25,6 +26,7 @@ interface RestaurantCardProps {
   onToggleStatus?: (id: number, status: boolean) => void;
   onToggleFavorite?: (id: number) => void;
   isFavorite?: boolean;
+  categories: ICategory[];
   deliveryTime?: number; // in minutes
   rating?: number;
   className?: string;
@@ -47,6 +49,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   onView,
   onToggleFavorite,
   isFavorite = false,
+  categories,
   deliveryTime = Math.floor(Math.random() * 50) + 10, // Random delivery time 10-60 min
   rating = Math.random() * 2 + 3, // Random rating 3-5
   className,
@@ -70,20 +73,29 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
 
   // Get main category
   const getMainCategory = () => {
-    if (menuItems.length === 0) return "Restaurant";
-    
+    if (!restaurant.menuItems || restaurant.menuItems.length === 0)
+      return "Restaurant";
+
     // Count category occurrences
-    const categoryCount: { [key: string]: number } = {};
-    menuItems.forEach(item => {
-      const categoryName = `Category ${item.categoryId || 1}`;
-      categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
+    const categoryCount: { [key: number]: number } = {};
+    restaurant.menuItems.forEach((item) => {
+      const categoryId = item.categoryId || 1;
+      categoryCount[categoryId] = (categoryCount[categoryId] || 0) + 1;
     });
-    
-    // Return most common category or fallback
-    const mostCommon = Object.entries(categoryCount).reduce((a, b) => 
-      categoryCount[a[0]] > categoryCount[b[0]] ? a : b
+
+    if (Object.keys(categoryCount).length === 0) {
+      return "Restaurant";
+    }
+
+    // Find the most common category ID
+    const mostCommonId = parseInt(
+      Object.entries(categoryCount).reduce((a, b) => (a[1] > b[1] ? a : b))[0]
     );
-    return mostCommon ? mostCommon[0] : "Restaurant";
+
+    // Find the category name from the props
+    const category = categories.find((c) => c.id === mostCommonId);
+
+    return category ? category.name : "Miscellaneous";
   };
 
   const handleCardClick = () => {
@@ -251,52 +263,12 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
               "& .MuiRating-iconFilled": {
                 color: "#ffa726",
               },
-              mr: 1,
+              mr: 0.5,
             }}
           />
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-              color: theme.palette.text.primary,
-              fontSize: "0.875rem",
-            }}
-          >
+          <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5, fontSize: '0.875rem', fontWeight: 500 }}>
             {rating.toFixed(1)}
           </Typography>
-        </Box>
-
-        {/* Price Range */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography
-            variant="body2"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: "0.875rem",
-            }}
-          >
-            {minPrice > 0 ? formatPrice(minPrice) : "Pricing varies"}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-              color: theme.palette.text.primary,
-              fontSize: "0.875rem",
-            }}
-          >
-            For one
-          </Typography>
-          {minPrice > 0 && (
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: "50%",
-                backgroundColor: "#2ed573",
-              }}
-            />
-          )}
         </Box>
       </CardContent>
     </Card>
